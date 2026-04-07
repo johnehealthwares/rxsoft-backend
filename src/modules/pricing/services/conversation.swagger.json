@@ -1,0 +1,2156 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/questions": {
+      "post": {
+        "operationId": "QuestionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Question created"
+          }
+        },
+        "summary": "Create Question",
+        "tags": [
+          "Questions"
+        ]
+      },
+      "get": {
+        "operationId": "QuestionController_findAll",
+        "parameters": [
+          {
+            "name": "questionnaireId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "questionType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "text",
+                "number",
+                "date",
+                "email",
+                "single_choice",
+                "multi_choice",
+                "boolean",
+                "file",
+                "ai_open"
+              ]
+            }
+          },
+          {
+            "name": "processMode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "none",
+                "option_processed",
+                "api_processed",
+                "ai_processed",
+                "question_type",
+                "rule_engine"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get Questions (Filterable)",
+        "tags": [
+          "Questions"
+        ]
+      }
+    },
+    "/api/questions/{id}": {
+      "get": {
+        "operationId": "QuestionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get Question by ID",
+        "tags": [
+          "Questions"
+        ]
+      },
+      "put": {
+        "operationId": "QuestionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Update Question",
+        "tags": [
+          "Questions"
+        ]
+      },
+      "delete": {
+        "operationId": "QuestionController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Delete Question",
+        "tags": [
+          "Questions"
+        ]
+      }
+    },
+    "/api/option-lists": {
+      "post": {
+        "operationId": "OptionListController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOptionListDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OptionLists"
+        ]
+      },
+      "get": {
+        "operationId": "OptionListController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OptionLists"
+        ]
+      }
+    },
+    "/api/option-lists/{id}": {
+      "get": {
+        "operationId": "OptionListController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OptionLists"
+        ]
+      },
+      "patch": {
+        "operationId": "OptionListController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOptionListDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OptionLists"
+        ]
+      },
+      "delete": {
+        "operationId": "OptionListController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OptionLists"
+        ]
+      }
+    },
+    "/api/questionnaires": {
+      "post": {
+        "operationId": "QuestionnaireController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionnaireDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Questionnaires"
+        ]
+      },
+      "get": {
+        "operationId": "QuestionnaireController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Questionnaires"
+        ]
+      }
+    },
+    "/api/questionnaires/{id}": {
+      "get": {
+        "operationId": "QuestionnaireController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Questionnaires"
+        ]
+      },
+      "patch": {
+        "operationId": "QuestionnaireController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuestionnaireDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Questionnaires"
+        ]
+      },
+      "delete": {
+        "operationId": "QuestionnaireController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Questionnaires"
+        ]
+      }
+    },
+    "/api/tags": {
+      "post": {
+        "operationId": "TagController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      },
+      "get": {
+        "operationId": "TagController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/api/tags/ensure": {
+      "post": {
+        "operationId": "TagController_ensure",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnsureTagsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/api/tags/{id}": {
+      "get": {
+        "operationId": "TagController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      },
+      "patch": {
+        "operationId": "TagController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      },
+      "delete": {
+        "operationId": "TagController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/api/channels": {
+      "post": {
+        "operationId": "ChannelController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChannelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      },
+      "get": {
+        "operationId": "ChannelController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      }
+    },
+    "/api/channels/{id}": {
+      "get": {
+        "operationId": "ChannelController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      },
+      "patch": {
+        "operationId": "ChannelController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChannelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      },
+      "delete": {
+        "operationId": "ChannelController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      }
+    },
+    "/api/channels/send-message": {
+      "post": {
+        "operationId": "ChannelController_sendMessage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChannelMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      }
+    },
+    "/api/channels/{channelId}/send-message": {
+      "post": {
+        "operationId": "ChannelController_sendMessageByChannelPath",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageByChannelPathDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      }
+    },
+    "/api/channels/send-media": {
+      "post": {
+        "operationId": "ChannelController_sendMedia",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChannelMediaFormDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Channels"
+        ]
+      }
+    },
+    "/api/webhooks/whatsapp": {
+      "get": {
+        "operationId": "ChannelWebhookController_verifyWhatsappWebhook",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChannelWebhook"
+        ]
+      },
+      "post": {
+        "operationId": "ChannelWebhookController_whatsapp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WhatsAppWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChannelWebhook"
+        ]
+      }
+    },
+    "/api/webhooks/mock": {
+      "post": {
+        "operationId": "ChannelWebhookController_mock",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MockInboundDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChannelWebhook"
+        ]
+      }
+    },
+    "/api/workflows": {
+      "post": {
+        "operationId": "WorkflowController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkflowDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create a workflow definition",
+        "tags": [
+          "Workflows"
+        ]
+      },
+      "get": {
+        "operationId": "WorkflowController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List workflow definitions",
+        "tags": [
+          "Workflows"
+        ]
+      }
+    },
+    "/api/workflows/{id}": {
+      "get": {
+        "operationId": "WorkflowController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get a workflow definition by id",
+        "tags": [
+          "Workflows"
+        ]
+      },
+      "patch": {
+        "operationId": "WorkflowController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkflowDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Update a workflow definition",
+        "tags": [
+          "Workflows"
+        ]
+      },
+      "delete": {
+        "operationId": "WorkflowController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Delete a workflow definition",
+        "tags": [
+          "Workflows"
+        ]
+      }
+    },
+    "/api/workflow-instances": {
+      "post": {
+        "operationId": "WorkflowInstanceController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkflowInstanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create a workflow instance",
+        "tags": [
+          "Workflow Instances"
+        ]
+      },
+      "get": {
+        "operationId": "WorkflowInstanceController_findAll",
+        "parameters": [
+          {
+            "name": "flowId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List workflow instances",
+        "tags": [
+          "Workflow Instances"
+        ]
+      }
+    },
+    "/api/workflow-instances/by-flow/{flowId}/active": {
+      "get": {
+        "operationId": "WorkflowInstanceController_findActiveByConversationId",
+        "parameters": [
+          {
+            "name": "flowId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get the active workflow instance for a conversation/flow id",
+        "tags": [
+          "Workflow Instances"
+        ]
+      }
+    },
+    "/api/workflow-instances/{id}": {
+      "get": {
+        "operationId": "WorkflowInstanceController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get a workflow instance by id",
+        "tags": [
+          "Workflow Instances"
+        ]
+      },
+      "patch": {
+        "operationId": "WorkflowInstanceController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkflowInstanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Update a workflow instance",
+        "tags": [
+          "Workflow Instances"
+        ]
+      },
+      "delete": {
+        "operationId": "WorkflowInstanceController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Delete a workflow instance",
+        "tags": [
+          "Workflow Instances"
+        ]
+      }
+    },
+    "/api/workflow-events": {
+      "post": {
+        "operationId": "WorkflowEventController_emit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmitWorkflowEventDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Emit and persist a workflow event",
+        "tags": [
+          "Workflow Events"
+        ]
+      },
+      "get": {
+        "operationId": "WorkflowEventController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List workflow events",
+        "tags": [
+          "Workflow Events"
+        ]
+      }
+    },
+    "/api/workflow-events/unprocessed": {
+      "get": {
+        "operationId": "WorkflowEventController_findUnprocessed",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List unprocessed workflow events",
+        "tags": [
+          "Workflow Events"
+        ]
+      }
+    },
+    "/api/workflow-events/{id}/processed": {
+      "patch": {
+        "operationId": "WorkflowEventController_markProcessed",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkWorkflowEventProcessedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mark a workflow event as processed",
+        "tags": [
+          "Workflow Events"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Conversation Engine API",
+    "description": "Question & Option Management",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "CreateOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Existing Option ID to attach"
+          },
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "index": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value",
+          "index"
+        ]
+      },
+      "CreateQuestionDto": {
+        "type": "object",
+        "properties": {
+          "questionnaireId": {
+            "type": "string"
+          },
+          "attribute": {
+            "type": "string",
+            "description": "Machine-friendly attribute key used when responses are aggregated"
+          },
+          "text": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "tags": {
+            "description": "List of tags associated with the question",
+            "example": [
+              "ai",
+              "urgent",
+              "feedback"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "questionType": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "email",
+              "single_choice",
+              "multi_choice",
+              "boolean",
+              "file",
+              "ai_open"
+            ]
+          },
+          "renderMode": {
+            "type": "string",
+            "enum": [
+              "input",
+              "textarea",
+              "radio",
+              "checkbox",
+              "TEXT_WITH_LINK",
+              "LINK",
+              "dropdown",
+              "chat",
+              "file_upload"
+            ]
+          },
+          "processMode": {
+            "type": "string",
+            "enum": [
+              "none",
+              "option_processed",
+              "api_processed",
+              "ai_processed",
+              "question_type",
+              "rule_engine"
+            ]
+          },
+          "index": {
+            "type": "number"
+          },
+          "isRequired": {
+            "type": "boolean",
+            "default": false
+          },
+          "hasLink": {
+            "type": "boolean",
+            "default": false
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "optionListId": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateOptionDto"
+            }
+          },
+          "previousQuestionId": {
+            "type": "string"
+          },
+          "nextQuestionId": {
+            "type": "string"
+          },
+          "childQuestionnaireId": {
+            "type": "string"
+          },
+          "aiConfig": {
+            "type": "object"
+          },
+          "optionSource": {
+            "type": "object"
+          },
+          "apiNavigation": {
+            "type": "object"
+          },
+          "validationRules": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "questionnaireId",
+          "text",
+          "questionType",
+          "renderMode",
+          "processMode",
+          "index",
+          "isRequired",
+          "isActive",
+          "optionListId"
+        ]
+      },
+      "CreateOptionListDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Gender Options"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateOptionDto"
+            }
+          },
+          "tags": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "options"
+        ]
+      },
+      "UpdateOptionListDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateOptionDto"
+            }
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "CreateQuestionnaireDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isDynamic": {
+            "type": "boolean",
+            "default": false
+          },
+          "version": {
+            "type": "number",
+            "default": 1
+          },
+          "startQuestionId": {
+            "type": "string"
+          },
+          "allowBackNavigation": {
+            "type": "boolean",
+            "default": true
+          },
+          "allowMultipleSessions": {
+            "type": "boolean",
+            "default": false
+          },
+          "processingStrategy": {
+            "type": "string",
+            "enum": [
+              "STATIC",
+              "AI_ASSISTED",
+              "FULL_AI"
+            ]
+          },
+          "tags": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "isDynamic",
+          "version",
+          "allowBackNavigation",
+          "allowMultipleSessions",
+          "processingStrategy",
+          "tags",
+          "isActive"
+        ]
+      },
+      "UpdateQuestionnaireDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isDynamic": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "number"
+          },
+          "startQuestionId": {
+            "type": "string"
+          },
+          "allowBackNavigation": {
+            "type": "boolean"
+          },
+          "allowMultipleSessions": {
+            "type": "boolean"
+          },
+          "processingStrategy": {
+            "type": "string",
+            "enum": [
+              "STATIC",
+              "AI_ASSISTED",
+              "FULL_AI"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "urgent"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "EnsureTagsDto": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "example": [
+              "urgent",
+              "ai",
+              "feedback"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "tags"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "important"
+          }
+        }
+      },
+      "CreateChannelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "MOCK",
+              "WHATSAPP",
+              "SMS",
+              "EMAIL",
+              "WEBCHAT",
+              "TELEGRAM",
+              "API"
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "isActive"
+        ]
+      },
+      "UpdateChannelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "MOCK",
+              "WHATSAPP",
+              "SMS",
+              "EMAIL",
+              "WEBCHAT",
+              "TELEGRAM",
+              "API"
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "SendChannelMessageDto": {
+        "type": "object",
+        "properties": {
+          "channelId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "previewLink": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "channelId",
+          "title",
+          "previewLink",
+          "message"
+        ]
+      },
+      "SendMessageByChannelPathDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "previewLink": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "message",
+          "title",
+          "previewLink"
+        ]
+      },
+      "SendChannelMediaFormDto": {
+        "type": "object",
+        "properties": {
+          "channelId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "documentType": {
+            "type": "string",
+            "enum": [
+              "document",
+              "image",
+              "video",
+              "audio"
+            ]
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "channelId",
+          "title",
+          "message",
+          "documentType"
+        ]
+      },
+      "MetadataDto": {
+        "type": "object",
+        "properties": {
+          "display_phone_number": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "phone_number_id": {
+            "type": "string",
+            "example": "123456789012345"
+          }
+        },
+        "required": [
+          "display_phone_number",
+          "phone_number_id"
+        ]
+      },
+      "ContactDto": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": "object",
+            "example": {
+              "name": "John Doe"
+            }
+          },
+          "wa_id": {
+            "type": "string",
+            "example": "2348012345678"
+          }
+        },
+        "required": [
+          "profile",
+          "wa_id"
+        ]
+      },
+      "TextDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "example": "Hello from WhatsApp"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "InteractiveDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "MediaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "sha256": {
+            "type": "string",
+            "example": "abcdef1234567890"
+          },
+          "caption": {
+            "type": "string",
+            "example": "image caption"
+          },
+          "filename": {
+            "type": "string",
+            "example": "photo.jpg"
+          }
+        },
+        "required": [
+          "id",
+          "mime_type",
+          "sha256"
+        ]
+      },
+      "LocationDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "example": 6.5244
+          },
+          "longitude": {
+            "type": "number",
+            "example": 3.3792
+          },
+          "name": {
+            "type": "string",
+            "example": "Victoria Island"
+          },
+          "address": {
+            "type": "string",
+            "example": "Lagos, Nigeria"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      },
+      "MessageDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2348012345678"
+          },
+          "id": {
+            "type": "string",
+            "example": "wamid.HBgMNT..."
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "1700000000"
+          },
+          "type": {
+            "type": "string",
+            "example": "text",
+            "enum": [
+              "text",
+              "image",
+              "document",
+              "audio",
+              "video",
+              "location"
+            ]
+          },
+          "text": {
+            "$ref": "#/components/schemas/TextDto"
+          },
+          "interactive": {
+            "$ref": "#/components/schemas/InteractiveDto"
+          },
+          "image": {
+            "$ref": "#/components/schemas/MediaDto"
+          },
+          "document": {
+            "$ref": "#/components/schemas/MediaDto"
+          },
+          "audio": {
+            "$ref": "#/components/schemas/MediaDto"
+          },
+          "video": {
+            "$ref": "#/components/schemas/MediaDto"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          }
+        },
+        "required": [
+          "from",
+          "id",
+          "timestamp",
+          "type"
+        ]
+      },
+      "StatusDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "wamid.HBgLMjM0ODE1MDQ4NzgyOBUCABEYEjQ2Q0M4ODVGRkI2RjYyNDc5AA=="
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "delivered",
+              "read",
+              "failed"
+            ],
+            "example": "delivered"
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "1710060212",
+            "description": "Unix timestamp from WhatsApp"
+          },
+          "recipient_id": {
+            "type": "string",
+            "example": "2348150487828"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "timestamp",
+          "recipient_id"
+        ]
+      },
+      "WebhookValueDto": {
+        "type": "object",
+        "properties": {
+          "messaging_product": {
+            "type": "string",
+            "example": "whatsapp"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/MetadataDto"
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactDto"
+            }
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageDto"
+            }
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusDto"
+            }
+          }
+        },
+        "required": [
+          "messaging_product",
+          "metadata"
+        ]
+      },
+      "ChangeDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "example": "messages"
+          },
+          "value": {
+            "$ref": "#/components/schemas/WebhookValueDto"
+          }
+        },
+        "required": [
+          "field",
+          "value"
+        ]
+      },
+      "EntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123456789"
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChangeDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "changes"
+        ]
+      },
+      "WhatsAppWebhookDto": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "whatsapp_business_account"
+          },
+          "entry": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntryDto"
+            }
+          }
+        },
+        "required": [
+          "object",
+          "entry"
+        ]
+      },
+      "MockInboundDto": {
+        "type": "object",
+        "properties": {
+          "channelId": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "questionnaireCode": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "channelId",
+          "from",
+          "text"
+        ]
+      },
+      "WorkflowTransitionDto": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string"
+          },
+          "condition": {
+            "type": "string"
+          },
+          "nextStepId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "event",
+          "nextStepId"
+        ]
+      },
+      "WorkflowStepDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "QUESTIONNAIRE",
+              "ACTION",
+              "WAIT",
+              "END"
+            ]
+          },
+          "config": {
+            "type": "object"
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowTransitionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "transitions"
+        ]
+      },
+      "CreateWorkflowDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "steps": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowStepDto"
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "steps",
+          "isActive"
+        ]
+      },
+      "UpdateWorkflowDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "steps": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowStepDto"
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "CreateWorkflowInstanceDto": {
+        "type": "object",
+        "properties": {
+          "workflowId": {
+            "type": "string"
+          },
+          "flowId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "object"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED",
+              "STOPPED"
+            ],
+            "default": "ACTIVE"
+          },
+          "currentStepId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflowId",
+          "flowId",
+          "status"
+        ]
+      },
+      "UpdateWorkflowInstanceDto": {
+        "type": "object",
+        "properties": {
+          "workflowId": {
+            "type": "string"
+          },
+          "flowId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "object"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED",
+              "STOPPED"
+            ],
+            "default": "ACTIVE"
+          },
+          "currentStepId": {
+            "type": "string"
+          }
+        }
+      },
+      "EmitWorkflowEventDto": {
+        "type": "object",
+        "properties": {
+          "workflowInstanceId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "workflowInstanceId",
+          "type"
+        ]
+      },
+      "MarkWorkflowEventProcessedDto": {
+        "type": "object",
+        "properties": {
+          "processed": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "processed"
+        ]
+      }
+    }
+  }
+}

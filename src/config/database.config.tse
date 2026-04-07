@@ -1,0 +1,10 @@
+export const databaseConfig = {
+  type: (process.env.DB_TYPE ?? 'postgres') as 'postgres' | 'sqlite' | 'sqljs',
+  host: process.env.DB_HOST ?? 'localhost',
+  port: Number(process.env.DB_PORT ?? 5432),
+  username: process.env.DB_USER ?? 'postgres',
+  password: process.env.DB_PASSWORD ?? 'postgres',
+  database: process.env.DB_NAME ?? 'rxsoft',
+  synchronize: process.env.DB_SYNCHRONIZE === 'true',
+  dropSchema: process.env.DB_DROP_SCHEMA === 'true',
+};

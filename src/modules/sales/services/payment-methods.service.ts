@@ -1,0 +1,76 @@
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import type { PaymentMethodType } from '../../../shared/domain';
+import { toPaymentMethodType } from '../../../shared/domain/mappers';
+import { PaymentMethodOrmEntity } from '../entities/payment-method.orm-entity';
+import { CreatePaymentMethodDto, ListPaymentMethodsDto, UpdatePaymentMethodDto } from '../dto/payment-methods.dto';
+
+@Injectable()
+export class PaymentMethodsService {
+  constructor(
+    @InjectRepository(PaymentMethodOrmEntity)
+    private readonly paymentMethodRepository: Repository<PaymentMethodOrmEntity>,
+  ) {}
+
+  async list(query: ListPaymentMethodsDto, organizationId: string): Promise<{ data: PaymentMethodType[]; total: number }> {
+    const qb = this.paymentMethodRepository
+      .createQueryBuilder('payment_method')
+      .where('payment_method.organization_id = :organizationId', { organizationId })
+      .orderBy('payment_method.updated_at', 'DESC')
+      .skip(query.offset)
+      .take(query.limit);
+
+    if (query.search) {
+      qb.andWhere('(payment_method.code ILIKE :search OR payment_method.name ILIKE :search)', {
+        search: `%${query.search}%`,
+      });
+    }
+
+    const [data, total] = await qb.getManyAndCount();
+    return { data: data.map(toPaymentMethodType), total };
+  }
+
+  async get(id: string, organizationId: string): Promise<PaymentMethodType> {
+    const item = await this.paymentMethodRepository.findOne({ where: { id, organizationId } });
+    if (!item) throw new NotFoundException('Payment method not found');
+    return toPaymentMethodType(item);
+  }
+
+  async create(payload: CreatePaymentMethodDto, organizationId: string): Promise<PaymentMethodType> {
+    const duplicate = await this.paymentMethodRepository.findOne({ where: { organizationId, code: payload.code } });
+    if (duplicate) throw new BadRequestException('Payment method code already exists');
+
+    const entity = this.paymentMethodRepository.create({
+      organizationId,
+      code: payload.code,
+      name: payload.name,
+      methodType: payload.methodType,
+      isActive: payload.isActive ?? true,
+    });
+    const saved = await this.paymentMethodRepository.save(entity);
+    return toPaymentMethodType(saved);
+  }
+
+  async update(id: string, payload: UpdatePaymentMethodDto, organizationId: string): Promise<PaymentMethodType> {
+    const item = await this.paymentMethodRepository.findOne({ where: { id, organizationId } });
+    if (!item) throw new NotFoundException('Payment method not found');
+
+    if (payload.code && payload.code !== item.code) {
+      const duplicate = await this.paymentMethodRepository.findOne({ where: { organizationId, code: payload.code } });
+      if (duplicate) throw new BadRequestException('Payment method code already exists');
+      item.code = payload.code;
+    }
+    if (payload.name !== undefined) item.name = payload.name;
+    if (payload.methodType !== undefined) item.methodType = payload.methodType;
+    if (payload.isActive !== undefined) item.isActive = payload.isActive;
+
+    const saved = await this.paymentMethodRepository.save(item);
+    return toPaymentMethodType(saved);
+  }
+
+  async remove(id: string, organizationId: string): Promise<void> {
+    const result = await this.paymentMethodRepository.delete({ id, organizationId });
+    if (!result.affected) throw new NotFoundException('Payment method not found');
+  }
+}

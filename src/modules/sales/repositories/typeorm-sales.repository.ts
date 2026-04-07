@@ -1,0 +1,490 @@
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { ProductOrmEntity } from '../../catalog/entities/product.orm-entity';
+import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
+import {
+  StockAdjustmentOrmEntity,
+  StockBalanceOrmEntity,
+  StockLotOrmEntity,
+  StoreStockLocationOrmEntity,
+} from '../../inventory/entities';
+import { ReceivableTransactionOrmEntity } from '../../receivables/entities';
+import { Sale } from '../domains/sale.entity';
+import {
+  AccountReceivableOrmEntity,
+  PaymentMethodOrmEntity,
+  SaleLineOrmEntity,
+  SaleOrmEntity,
+  SalePaymentOrmEntity,
+  SaleRefundLineOrmEntity,
+  SaleRefundOrmEntity,
+  UomOrmEntity,
+} from '../entities';
+import {
+  CreateSaleRefundRepositoryPayload,
+  CreateSaleRefundResult,
+  CreateSaleRepositoryPayload,
+  CreateSaleResult,
+  SalesListQuery,
+  SalesRepository,
+} from './sales.repository';
+
+function toDomain(entity: SaleOrmEntity): Sale {
+  return new Sale(
+    entity.id,
+    entity.organizationId,
+    entity.saleNumber,
+    entity.saleChannel,
+    entity.status,
+    entity.totalAmount,
+    entity.paidAmount,
+    entity.changeAmount,
+    entity.saleDate,
+  );
+}
+
+@Injectable()
+export class TypeormSalesRepository implements SalesRepository {
+  constructor(
+    @InjectRepository(SaleOrmEntity)
+    private readonly saleRepository: Repository<SaleOrmEntity>,
+    private readonly dataSource: DataSource,
+  ) {}
+
+  async list(query: SalesListQuery): Promise<{ items: Sale[]; total: number }> {
+    const qb = this.saleRepository
+      .createQueryBuilder('sale')
+      .where('sale.organization_id = :organizationId', { organizationId: query.organizationId })
+      .orderBy('sale.saleDate', 'DESC')
+      .skip(query.offset)
+      .take(query.limit);
+
+    if (query.status) {
+      qb.andWhere('sale.status = :status', { status: query.status });
+    }
+
+    const [items, total] = await qb.getManyAndCount();
+    return {
+      items: items.map(toDomain),
+      total,
+    };
+  }
+
+  async createWithSettlement(payload: CreateSaleRepositoryPayload): Promise<CreateSaleResult> {
+    return this.dataSource.transaction(async (manager) => {
+      const saleRepo = manager.getRepository(SaleOrmEntity);
+      const saleLineRepo = manager.getRepository(SaleLineOrmEntity);
+      const salePaymentRepo = manager.getRepository(SalePaymentOrmEntity);
+      const receivableRepo = manager.getRepository(AccountReceivableOrmEntity);
+      const productRepo = manager.getRepository(ProductOrmEntity);
+      const lotRepo = manager.getRepository(StockLotOrmEntity);
+      const uomRepo = manager.getRepository(UomOrmEntity);
+      const paymentMethodRepo = manager.getRepository(PaymentMethodOrmEntity);
+      const userRepo = manager.getRepository(UserOrmEntity);
+
+      // Validate every foreign reference in org scope before writing anything.
+      const soldByUser = await userRepo.findOne({
+        where: { id: payload.soldByUserId, organizationId: payload.organizationId },
+      });
+      if (!soldByUser) {
+        throw new Error('Sold-by user is not valid for this organization');
+      }
+
+      const productIds = [...new Set(payload.lines.map((line) => line.productId))];
+      if (productIds.length) {
+        const products = await productRepo.find({
+          where: {
+            id: In(productIds),
+            organizationId: payload.organizationId,
+          },
+          select: ['id'],
+        });
+        if (products.length !== productIds.length) {
+          throw new Error('One or more product references are invalid');
+        }
+      }
+
+      const uomIds = [...new Set(payload.lines.map((line) => line.uomId))];
+      if (uomIds.length) {
+        const uoms = await uomRepo.find({
+          where: {
+            id: In(uomIds),
+            organizationId: payload.organizationId,
+          },
+          select: ['id'],
+        });
+        if (uoms.length !== uomIds.length) {
+          throw new Error('One or more UOM references are invalid');
+        }
+      }
+
+      const lotIds = [...new Set(payload.lines.map((line) => line.lotId).filter((lotId): lotId is string => Boolean(lotId)))];
+      if (lotIds.length) {
+        const lots = await lotRepo.find({
+          where: {
+            id: In(lotIds),
+            organizationId: payload.organizationId,
+          },
+          select: ['id'],
+        });
+        if (lots.length !== lotIds.length) {
+          throw new Error('One or more lot references are invalid');
+        }
+      }
+
+      const paymentMethodIds = [...new Set(payload.payments.map((payment) => payment.paymentMethodId))];
+      if (paymentMethodIds.length) {
+        const paymentMethods = await paymentMethodRepo.find({
+          where: {
+            id: In(paymentMethodIds),
+            organizationId: payload.organizationId,
+          },
+          select: ['id'],
+        });
+        if (paymentMethods.length !== paymentMethodIds.length) {
+          throw new Error('One or more payment method references are invalid');
+        }
+      }
+
+      const receiverIds = [
+        ...new Set(
+          payload.payments
+            .map((payment) => payment.receivedByUserId)
+            .filter((receivedByUserId): receivedByUserId is string => Boolean(receivedByUserId)),
+        ),
+      ];
+      if (receiverIds.length) {
+        const receivers = await userRepo.find({
+          where: {
+            id: In(receiverIds),
+            organizationId: payload.organizationId,
+          },
+          select: ['id'],
+        });
+        if (receivers.length !== receiverIds.length) {
+          throw new Error('One or more receiver user references are invalid');
+        }
+      }
+
+      const saleEntity = saleRepo.create({
+        organizationId: payload.organizationId,
+        saleNumber: payload.saleNumber,
+        saleChannel: payload.saleChannel,
+        storeId: payload.storeId,
+        customerId: payload.customerId,
+        status: 'posted',
+        subtotalAmount: payload.subtotalAmount,
+        discountAmount: 0,
+        taxAmount: 0,
+        totalAmount: payload.totalAmount,
+        paidAmount: payload.paidAmount,
+        changeAmount: payload.changeAmount,
+        saleDate: payload.saleDate,
+        soldByUserId: payload.soldByUserId,
+      });
+      const savedSale = await saleRepo.save(saleEntity);
+
+      if (payload.lines.length) {
+        // Save detail rows after header creation to keep line->sale FK consistent.
+        const lineEntities = payload.lines.map((line) =>
+          saleLineRepo.create({
+            sale: savedSale,
+            lineNumber: line.lineNumber,
+            product: { id: line.productId },
+            lot: line.lotId ? { id: line.lotId } : null,
+            uom: { id: line.uomId },
+            quantity: line.quantity,
+            unitPrice: line.unitPrice,
+            discountPercent: 0,
+            taxPercent: 0,
+            lineSubtotal: line.lineSubtotal,
+            lineTotal: line.lineTotal,
+          }),
+        );
+        await saleLineRepo.save(lineEntities);
+      }
+
+      if (payload.payments.length) {
+        // Persist payment allocations linked to the sale.
+        const paymentEntities = payload.payments.map((payment) =>
+          salePaymentRepo.create({
+            sale: savedSale,
+            paymentMethod: { id: payment.paymentMethodId },
+            amount: payment.amount,
+            paymentReference: payment.paymentReference,
+            paidAt: payment.paidAt,
+            receivedByUser: payment.receivedByUserId ? { id: payment.receivedByUserId } : null,
+          }),
+        );
+        await salePaymentRepo.save(paymentEntities);
+      }
+
+      let receivableId: string | null = null;
+      let outstandingAmount = 0;
+
+      if (payload.receivable) {
+        // Mirrors legacy rule: any underpayment opens an accounts receivable.
+        const receivable = receivableRepo.create({
+          organizationId: payload.organizationId,
+          customerId: payload.receivable.customerId,
+          saleId: savedSale.id,
+          receivableNumber: payload.receivable.receivableNumber,
+          originalAmount: payload.receivable.originalAmount,
+          outstandingAmount: payload.receivable.outstandingAmount,
+          status: 'open',
+          openedAt: payload.saleDate,
+          closedAt: null,
+        });
+        const savedReceivable = await receivableRepo.save(receivable);
+        receivableId = savedReceivable.id;
+        outstandingAmount = savedReceivable.outstandingAmount;
+      }
+
+      return {
+        sale: toDomain(savedSale),
+        receivableCreated: Boolean(payload.receivable),
+        receivableId,
+        outstandingAmount,
+      };
+    });
+  }
+
+  async createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult> {
+    return this.dataSource.transaction(async (manager) => {
+      const saleRepo = manager.getRepository(SaleOrmEntity);
+      const saleLineRepo = manager.getRepository(SaleLineOrmEntity);
+      const refundRepo = manager.getRepository(SaleRefundOrmEntity);
+      const refundLineRepo = manager.getRepository(SaleRefundLineOrmEntity);
+      const receivableRepo = manager.getRepository(AccountReceivableOrmEntity);
+      const receivableTxnRepo = manager.getRepository(ReceivableTransactionOrmEntity);
+      const storeStockLocationRepo = manager.getRepository(StoreStockLocationOrmEntity);
+      const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
+      const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
+      const userRepo = manager.getRepository(UserOrmEntity);
+
+      const actor = await userRepo.findOne({
+        where: { id: payload.refundedByUserId, organizationId: payload.organizationId },
+      });
+      if (!actor) {
+        throw new NotFoundException('Refund user not found');
+      }
+
+      const sale = await saleRepo.findOne({
+        where: { id: payload.saleId, organizationId: payload.organizationId },
+      });
+      if (!sale) {
+        throw new NotFoundException('Sale not found');
+      }
+      if (sale.status === 'voided') {
+        throw new BadRequestException('Cannot refund a voided sale');
+      }
+
+      const requestedLineIds = [...new Set(payload.lines.map((line) => line.saleLineId))];
+      const saleLines = await saleLineRepo.find({
+        where: {
+          id: In(requestedLineIds),
+          sale: { id: sale.id },
+        },
+        relations: ['sale', 'product', 'lot'],
+      });
+      if (saleLines.length !== requestedLineIds.length) {
+        throw new BadRequestException('One or more sale lines are invalid for this sale');
+      }
+
+      const priorRefundLines = await refundLineRepo.find({
+        where: {
+          refund: {
+            sale: { id: sale.id },
+            organizationId: payload.organizationId,
+            status: 'posted',
+          },
+        },
+        relations: ['saleLine', 'refund', 'refund.sale'],
+      });
+      const refundedQtyByLineId = new Map<string, number>();
+      for (const line of priorRefundLines) {
+        const key = line.saleLine.id;
+        refundedQtyByLineId.set(key, Number(((refundedQtyByLineId.get(key) ?? 0) + line.quantity).toFixed(4)));
+      }
+      const requestedQtyByLineId = new Map<string, number>();
+      for (const line of payload.lines) {
+        requestedQtyByLineId.set(
+          line.saleLineId,
+          Number(((requestedQtyByLineId.get(line.saleLineId) ?? 0) + line.quantity).toFixed(4)),
+        );
+      }
+
+      for (const [saleLineId, requestedQty] of requestedQtyByLineId) {
+        const saleLine = saleLines.find((line) => line.id === saleLineId)!;
+        const alreadyRefundedQty = refundedQtyByLineId.get(saleLineId) ?? 0;
+        const maxRefundableQty = Number((saleLine.quantity - alreadyRefundedQty).toFixed(4));
+        if (requestedQty > maxRefundableQty) {
+          throw new BadRequestException(
+            `Refund quantity exceeds refundable quantity for sale line ${saleLineId}`,
+          );
+        }
+      }
+
+      const refund = refundRepo.create({
+        organizationId: payload.organizationId,
+        sale: { id: sale.id },
+        refundNumber: payload.refundNumber,
+        status: 'posted',
+        totalAmount: 0,
+        refundDate: payload.refundDate,
+        reason: payload.reason,
+        refundedByUser: actor,
+      });
+      const savedRefund = await refundRepo.save(refund);
+
+      const saleLineById = new Map(saleLines.map((line) => [line.id, line]));
+      const refundLineEntities = payload.lines.map((line) => {
+        const sourceLine = saleLineById.get(line.saleLineId)!;
+        const lineTotal = Number((line.quantity * sourceLine.unitPrice).toFixed(2));
+        return refundLineRepo.create({
+          refund: savedRefund,
+          saleLine: sourceLine,
+          quantity: line.quantity,
+          unitPrice: sourceLine.unitPrice,
+          lineTotal,
+        });
+      });
+      const savedRefundLines = await refundLineRepo.save(refundLineEntities);
+      const totalAmount = Number(savedRefundLines.reduce((sum, line) => sum + line.lineTotal, 0).toFixed(2));
+
+      savedRefund.totalAmount = totalAmount;
+      await refundRepo.save(savedRefund);
+
+      const saleReturnLocation = await storeStockLocationRepo.findOne({
+        where: {
+          organizationId: payload.organizationId,
+          storeId: sale.storeId,
+          purpose: 'sale_return',
+          isActive: true,
+        },
+        relations: ['stockLocation'],
+      });
+      if (!saleReturnLocation) {
+        throw new BadRequestException(
+          'No active sale_return stock location mapping configured for this store',
+        );
+      }
+
+      // Restock refunded quantity at mapped sale_return stock location.
+      for (const line of refundLineEntities) {
+        const sourceLine = line.saleLine;
+        const stockBalance = await stockBalanceRepo.findOne({
+          where: {
+            organizationId: payload.organizationId,
+            product: { id: sourceLine.product.id },
+            location: { id: saleReturnLocation.stockLocation.id },
+            lot: sourceLine.lot ? { id: sourceLine.lot.id } : IsNull(),
+          },
+          relations: ['product', 'location', 'lot'],
+        });
+
+        const upsertBalance =
+          stockBalance ??
+          stockBalanceRepo.create({
+            organizationId: payload.organizationId,
+            product: { id: sourceLine.product.id },
+            location: { id: saleReturnLocation.stockLocation.id },
+            lot: sourceLine.lot ? { id: sourceLine.lot.id } : null,
+            quantityOnHand: 0,
+            quantityReserved: 0,
+            averageCost: 0,
+          });
+        upsertBalance.quantityOnHand = Number((upsertBalance.quantityOnHand + line.quantity).toFixed(4));
+        const savedBalance = await stockBalanceRepo.save(upsertBalance);
+
+        await stockAdjustmentRepo.save(
+          stockAdjustmentRepo.create({
+            stockBalance: savedBalance,
+            reason: `sale_refund:${savedRefund.refundNumber}`,
+            deltaQuantity: line.quantity,
+            performedByUserId: actor.id,
+            performedAt: payload.refundDate,
+          }),
+        );
+      }
+
+      // If sale created an open receivable, refund credit reduces outstanding balance.
+      const receivable = await receivableRepo.findOne({
+        where: { organizationId: payload.organizationId, saleId: sale.id },
+      });
+      if (receivable) {
+        if (receivable.status === 'written_off') {
+          throw new BadRequestException(
+            'Cannot auto-credit a written-off receivable; resolve receivable status first',
+          );
+        }
+
+        const creditAmount = Number(Math.min(totalAmount, receivable.outstandingAmount).toFixed(2));
+        if (creditAmount > 0) {
+          receivable.outstandingAmount = Number((receivable.outstandingAmount - creditAmount).toFixed(2));
+          if (receivable.outstandingAmount <= 0) {
+            receivable.outstandingAmount = 0;
+            receivable.status = 'closed';
+            receivable.closedAt = payload.refundDate;
+          } else {
+            receivable.status = 'partially_paid';
+            receivable.closedAt = null;
+          }
+          await receivableRepo.save(receivable);
+
+          await receivableTxnRepo.save(
+            receivableTxnRepo.create({
+              receivable,
+              transactionType: 'adjustment',
+              amount: -creditAmount,
+              transactionDate: payload.refundDate,
+              paymentMethod: null,
+              referenceNumber: savedRefund.refundNumber,
+              receivedByUser: actor,
+              note: `Auto credit from refund ${savedRefund.refundNumber}`,
+            }),
+          );
+        }
+      }
+
+      // Mark sale as refunded only when every line is fully refunded.
+      const cumulativeRefundLines = await refundLineRepo.find({
+        where: {
+          refund: {
+            sale: { id: sale.id },
+            organizationId: payload.organizationId,
+            status: 'posted',
+          },
+        },
+        relations: ['saleLine', 'refund', 'refund.sale'],
+      });
+      const cumulativeRefundQtyByLineId = new Map<string, number>();
+      for (const line of cumulativeRefundLines) {
+        const key = line.saleLine.id;
+        cumulativeRefundQtyByLineId.set(
+          key,
+          Number(((cumulativeRefundQtyByLineId.get(key) ?? 0) + line.quantity).toFixed(4)),
+        );
+      }
+      const saleLinesForStatus = await saleLineRepo.find({ where: { sale: { id: sale.id } }, relations: ['sale'] });
+      const isFullyRefunded = saleLinesForStatus.every((line) => {
+        const refundedQty = cumulativeRefundQtyByLineId.get(line.id) ?? 0;
+        return refundedQty >= line.quantity;
+      });
+      if (isFullyRefunded && sale.status !== 'refunded') {
+        sale.status = 'refunded';
+        await saleRepo.save(sale);
+      }
+
+      return {
+        id: savedRefund.id,
+        saleId: sale.id,
+        refundNumber: savedRefund.refundNumber,
+        status: savedRefund.status,
+        totalAmount,
+        refundDate: savedRefund.refundDate,
+      };
+    });
+  }
+}
