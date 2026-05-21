@@ -8,8 +8,8 @@ import { CreateUomDto } from '../dto/create-uom.dto';
 import { ListUomsDto } from '../dto/list-uoms.dto';
 import { UpdateUomDto } from '../dto/update-uom.dto';
 import { UomOrmEntity } from '../entities/uom.orm-entity';
-import { ForeignProperty } from 'src/modules/catalog/dto/product-response.dto';
-import { applyFilters } from 'src/database/list';
+import { ForeignProperty } from '../../../modules/catalog/dto/product-response.dto';
+import { applyFilters } from '../../../database/list';
 
 type UomRecord = {
   id: string;

@@ -16,7 +16,7 @@ import {
   UpdatePriceListItemDto,
 } from '../dto/pricing.dto';
 import { PriceListItemOrmEntity, PriceListOrmEntity } from '../entities';
-import { applyFilters } from 'src/database/list';
+import { applyFilters } from '../../../database/list';
 
 @Injectable()
 export class PricingService {
