@@ -22,7 +22,7 @@ export class ProductOrmEntity {
   @ManyToOne(() => ProductCategoryOrmEntity, (category) => category.products, {
     nullable: false,
   })
-  @JoinColumn({ name: 'category_id' })
+  @JoinColumn({ name: 'category_id',  })
   category!: ProductCategoryOrmEntity;
 
   @ManyToOne(() => GenericProductOrmEntity, (genericProduct) => genericProduct.products, {

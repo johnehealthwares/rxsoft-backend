@@ -147,6 +147,7 @@ export const toUomType = (entity: UomOrmEntity): UomType => ({
   id: entity.id,
   organizationId: entity.organizationId,
   categoryId: entity.categoryId,
+  category: entity.category,
   code: entity.code,
   name: entity.name,
   uomType: entity.uomType,

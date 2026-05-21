@@ -1,0 +1,4256 @@
+openapi: 3.0.0
+paths:
+  /health:
+    get:
+      operationId: HealthController_ping
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Health check
+      tags:
+        - health
+  /auth/login:
+    post:
+      operationId: AuthController_login
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponseDto'
+      summary: Authenticate and issue access/refresh tokens
+      tags: &ref_0
+        - auth
+  /auth/refresh-token:
+    post:
+      operationId: AuthController_refreshToken
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponseDto'
+      summary: Rotate refresh token and issue a new token pair
+      tags: *ref_0
+  /users:
+    post:
+      operationId: UsersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+      security: &ref_1
+        - bearer: []
+      summary: Create a user account
+      tags: &ref_2
+        - users
+    get:
+      operationId: UsersController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: ''
+      security: *ref_1
+      summary: List users with pagination
+      tags: *ref_2
+  /users/{userId}/roles:
+    patch:
+      operationId: UsersController_assignRole
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRoleDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+      security: *ref_1
+      summary: Assign role to user
+      tags: *ref_2
+  /products:
+    get:
+      operationId: ProductsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by product name/code
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Search by product name/code
+          schema:
+            type: string
+        - name: categoryCode
+          required: false
+          in: query
+          schema:
+            example: ANALGESICS
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: name
+            type: string
+            enum:
+              - name
+              - code
+              - createdAt
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: asc
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: ''
+      security: &ref_3
+        - bearer: []
+      summary: List products with pagination, filtering and sorting
+      tags: &ref_4
+        - products
+    post:
+      operationId: ProductsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+      security: *ref_3
+      summary: Create a catalog product
+      tags: *ref_4
+  /products/dependencies/categories:
+    get:
+      operationId: ProductsController_listCategories
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by name or code
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_3
+      summary: Search product categories by name or code
+      tags: *ref_4
+  /products/dependencies/generic-products:
+    get:
+      operationId: ProductsController_listGenericProducts
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by name or code
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_3
+      summary: Search generic products by name or code
+      tags: *ref_4
+  /products/dependencies/uoms:
+    get:
+      operationId: ProductsController_listUoms
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by name or code
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_3
+      summary: Search UOMs by name or code
+      tags: *ref_4
+  /products/{productId}:
+    get:
+      operationId: ProductsController_get
+      parameters:
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+      security: *ref_3
+      summary: Get product details by id
+      tags: *ref_4
+    put:
+      operationId: ProductsController_replace
+      parameters:
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+      security: *ref_3
+      summary: Create a catalog product
+      tags: *ref_4
+    patch:
+      operationId: ProductsController_patch
+      parameters:
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+      security: *ref_3
+      summary: Patch a catalog product
+      tags: *ref_4
+  /generic-products:
+    get:
+      operationId: GenericProductsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_5
+        - bearer: []
+      summary: List generic products
+      tags: &ref_6
+        - generic-products
+    post:
+      operationId: GenericProductsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGenericProductDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_5
+      tags: *ref_6
+  /generic-products/search:
+    get:
+      operationId: GenericProductsController_search
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_5
+      tags: *ref_6
+  /generic-products/{genericProductId}:
+    get:
+      operationId: GenericProductsController_get
+      parameters:
+        - name: genericProductId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_5
+      tags: *ref_6
+    put:
+      operationId: GenericProductsController_replace
+      parameters:
+        - name: genericProductId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGenericProductDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_5
+      tags: *ref_6
+    patch:
+      operationId: GenericProductsController_patch
+      parameters:
+        - name: genericProductId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGenericProductDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_5
+      tags: *ref_6
+  /pharmaceutics:
+    get:
+      operationId: PharmaceuticsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_7
+        - bearer: []
+      tags: &ref_8
+        - pharmaceutics
+    post:
+      operationId: PharmaceuticsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePharmaceuticsDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_7
+      tags: *ref_8
+  /pharmaceutics/{pharmaceuticsId}:
+    get:
+      operationId: PharmaceuticsController_get
+      parameters:
+        - name: pharmaceuticsId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_7
+      tags: *ref_8
+    put:
+      operationId: PharmaceuticsController_replace
+      parameters:
+        - name: pharmaceuticsId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePharmaceuticsDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_7
+      tags: *ref_8
+    patch:
+      operationId: PharmaceuticsController_patch
+      parameters:
+        - name: pharmaceuticsId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePharmaceuticsDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_7
+      tags: *ref_8
+    delete:
+      operationId: PharmaceuticsController_remove
+      parameters:
+        - name: pharmaceuticsId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_7
+      tags: *ref_8
+  /drug-components:
+    get:
+      operationId: DrugComponentsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_9
+        - bearer: []
+      tags: &ref_10
+        - drug-components
+    post:
+      operationId: DrugComponentsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDrugComponentDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_9
+      tags: *ref_10
+  /drug-components/{drugComponentId}:
+    get:
+      operationId: DrugComponentsController_get
+      parameters:
+        - name: drugComponentId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_9
+      tags: *ref_10
+    put:
+      operationId: DrugComponentsController_replace
+      parameters:
+        - name: drugComponentId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDrugComponentDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_9
+      tags: *ref_10
+    patch:
+      operationId: DrugComponentsController_patch
+      parameters:
+        - name: drugComponentId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDrugComponentDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_9
+      tags: *ref_10
+    delete:
+      operationId: DrugComponentsController_remove
+      parameters:
+        - name: drugComponentId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_9
+      tags: *ref_10
+  /inventory/stock-balances:
+    get:
+      operationId: InventoryController_listStockBalances
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: productId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_11
+        - bearer: []
+      summary: List stock balances with pagination and filters
+      tags: &ref_12
+        - inventory
+  /inventory/stock-movements:
+    get:
+      operationId: InventoryController_listStockMovements
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: movementType
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - in
+              - out
+              - transfer
+              - adjustment
+      responses:
+        '200':
+          description: ''
+      security: *ref_11
+      summary: List stock movements with pagination and optional movement type filter
+      tags: *ref_12
+  /inventory/adjustments:
+    post:
+      operationId: InventoryController_createAdjustment
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStockAdjustmentDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_11
+      summary: Apply stock adjustment to an existing stock balance record
+      tags: *ref_12
+  /inventory/adjust-quantity:
+    post:
+      operationId: InventoryController_adjustQuantity
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustStockByReferenceDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_11
+      summary: >-
+        Adjust stock quantity by product and location, creating balance if
+        needed
+      tags: *ref_12
+  /stock-locations:
+    get:
+      operationId: StockLocationsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: warehouseId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_13
+        - bearer: []
+      summary: List stock locations
+      tags: &ref_14
+        - stock-locations
+    post:
+      operationId: StockLocationsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStockLocationDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_13
+      tags: *ref_14
+  /stock-locations/search:
+    get:
+      operationId: StockLocationsController_search
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: warehouseId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_13
+      tags: *ref_14
+  /stock-locations/{stockLocationId}:
+    get:
+      operationId: StockLocationsController_get
+      parameters:
+        - name: stockLocationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_13
+      tags: *ref_14
+    put:
+      operationId: StockLocationsController_replace
+      parameters:
+        - name: stockLocationId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStockLocationDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_13
+      tags: *ref_14
+    patch:
+      operationId: StockLocationsController_patch
+      parameters:
+        - name: stockLocationId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStockLocationDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_13
+      tags: *ref_14
+  /price-lists:
+    get:
+      operationId: PricingController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_15
+        - bearer: []
+      summary: List price lists
+      tags: &ref_16
+        - price-lists
+    post:
+      operationId: PricingController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePriceListDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+  /price-lists/search:
+    get:
+      operationId: PricingController_search
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+  /price-lists/items:
+    post:
+      operationId: PricingController_createItem
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePriceListItemDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+    get:
+      operationId: PricingController_listAllItems
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: productId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+  /price-lists/{priceListId}:
+    get:
+      operationId: PricingController_get
+      parameters:
+        - name: priceListId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+    put:
+      operationId: PricingController_update
+      parameters:
+        - name: priceListId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePriceListDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+    delete:
+      operationId: PricingController_remove
+      parameters:
+        - name: priceListId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+  /price-lists/{priceListId}/items:
+    get:
+      operationId: PricingController_listPriceListItems
+      parameters:
+        - name: priceListId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: productId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+  /price-lists/{priceListId}/items/{itemId}:
+    patch:
+      operationId: PricingController_updateItem
+      parameters:
+        - name: priceListId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: itemId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePriceListItemDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+    delete:
+      operationId: PricingController_removeItem
+      parameters:
+        - name: priceListId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: itemId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+  /price-lists/adjust-price:
+    post:
+      operationId: PricingController_adjustPrice
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustProductPriceDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_15
+      tags: *ref_16
+  /categories:
+    get:
+      operationId: CategoriesController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_17
+        - bearer: []
+      summary: List categories with pagination/filter/sort
+      tags: &ref_18
+        - categories
+    post:
+      operationId: CategoriesController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_17
+      tags: *ref_18
+  /categories/export:
+    get:
+      operationId: CategoriesController_export
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_17
+      tags: *ref_18
+  /categories/{categoryId}:
+    put:
+      operationId: CategoriesController_replace
+      parameters:
+        - name: categoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_17
+      tags: *ref_18
+    patch:
+      operationId: CategoriesController_patch
+      parameters:
+        - name: categoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_17
+      tags: *ref_18
+    get:
+      operationId: CategoriesController_get
+      parameters:
+        - name: categoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_17
+      tags: *ref_18
+    delete:
+      operationId: CategoriesController_remove
+      parameters:
+        - name: categoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_17
+      tags: *ref_18
+  /customers:
+    get:
+      operationId: CustomersController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_19
+        - bearer: []
+      tags: &ref_20
+        - customers
+    post:
+      operationId: CustomersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_19
+      tags: *ref_20
+  /customers/export:
+    get:
+      operationId: CustomersController_export
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_19
+      tags: *ref_20
+  /customers/{customerId}:
+    put:
+      operationId: CustomersController_replace
+      parameters:
+        - name: customerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_19
+      tags: *ref_20
+    patch:
+      operationId: CustomersController_patch
+      parameters:
+        - name: customerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_19
+      tags: *ref_20
+    delete:
+      operationId: CustomersController_remove
+      parameters:
+        - name: customerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_19
+      tags: *ref_20
+  /sales:
+    get:
+      operationId: SalesController_listSales
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - draft
+              - posted
+              - voided
+              - refunded
+      responses:
+        '200':
+          description: ''
+      security: &ref_21
+        - bearer: []
+      summary: List sales with pagination and optional status filter
+      tags: &ref_22
+        - sales
+    post:
+      operationId: SalesController_createSale
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSaleDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSaleResponseDto'
+      security: *ref_21
+      summary: Create posted sale and receivable on underpayment
+      tags: *ref_22
+  /sales/{saleId}/refunds:
+    post:
+      operationId: SalesController_createRefund
+      parameters:
+        - name: saleId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSaleRefundDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSaleRefundResponseDto'
+      security: *ref_21
+      summary: Create sale refund with quantity validation against original sale lines
+      tags: *ref_22
+  /uoms:
+    get:
+      operationId: UomsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by code or name
+          schema:
+            type: string
+        - name: uomType
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - reference
+              - bigger
+              - smaller
+        - name: isActive
+          required: false
+          in: query
+          schema:
+            type: boolean
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: name
+            type: string
+            enum:
+              - name
+              - code
+              - createdAt
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: asc
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: ''
+      security: &ref_23
+        - bearer: []
+      summary: List/search UOMs by name or code
+      tags: &ref_24
+        - uoms
+    post:
+      operationId: UomsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUomDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_23
+      summary: Create UOM
+      tags: *ref_24
+  /uoms/{uomId}:
+    get:
+      operationId: UomsController_getById
+      parameters:
+        - name: uomId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_23
+      summary: Get UOM by id
+      tags: *ref_24
+    put:
+      operationId: UomsController_replace
+      parameters:
+        - name: uomId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUomDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_23
+      summary: Update UOM
+      tags: *ref_24
+    patch:
+      operationId: UomsController_patch
+      parameters:
+        - name: uomId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUomDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_23
+      summary: Patch UOM
+      tags: *ref_24
+  /uom-categories:
+    get:
+      operationId: UomCategoriesController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_25
+        - bearer: []
+      summary: List/search UOM categories
+      tags: &ref_26
+        - uom-categories
+    post:
+      operationId: UomCategoriesController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUomCategoryDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_25
+      tags: *ref_26
+  /uom-categories/{categoryId}:
+    get:
+      operationId: UomCategoriesController_get
+      parameters:
+        - name: categoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_25
+      tags: *ref_26
+    put:
+      operationId: UomCategoriesController_replace
+      parameters:
+        - name: categoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUomCategoryDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_25
+      tags: *ref_26
+    patch:
+      operationId: UomCategoriesController_patch
+      parameters:
+        - name: categoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUomCategoryDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_25
+      tags: *ref_26
+  /payment-methods:
+    get:
+      operationId: PaymentMethodsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_27
+        - bearer: []
+      tags: &ref_28
+        - payment-methods
+    post:
+      operationId: PaymentMethodsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentMethodDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_27
+      tags: *ref_28
+  /payment-methods/{paymentMethodId}:
+    get:
+      operationId: PaymentMethodsController_get
+      parameters:
+        - name: paymentMethodId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_27
+      tags: *ref_28
+    put:
+      operationId: PaymentMethodsController_replace
+      parameters:
+        - name: paymentMethodId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentMethodDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_27
+      tags: *ref_28
+    patch:
+      operationId: PaymentMethodsController_patch
+      parameters:
+        - name: paymentMethodId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentMethodDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_27
+      tags: *ref_28
+    delete:
+      operationId: PaymentMethodsController_remove
+      parameters:
+        - name: paymentMethodId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_27
+      tags: *ref_28
+  /receivables:
+    get:
+      operationId: ReceivablesController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - open
+              - partially_paid
+              - closed
+              - written_off
+        - name: customerId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_29
+        - bearer: []
+      summary: List receivables with pagination and filters
+      tags: &ref_30
+        - receivables
+  /receivables/{receivableId}/transactions:
+    get:
+      operationId: ReceivablesController_listTransactions
+      parameters:
+        - name: receivableId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: transactionType
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - charge
+              - payment
+              - adjustment
+              - write_off
+      responses:
+        '200':
+          description: ''
+      security: *ref_29
+      summary: List receivable transactions with pagination and optional type filter
+      tags: *ref_30
+  /receivables/{receivableId}/payments:
+    post:
+      operationId: ReceivablesController_collectPayment
+      parameters:
+        - name: receivableId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectReceivablePaymentDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_29
+      summary: Collect payment against an open receivable
+      tags: *ref_30
+  /receivables/{receivableId}/adjustments:
+    post:
+      operationId: ReceivablesController_applyAdjustment
+      parameters:
+        - name: receivableId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyReceivableAdjustmentDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_29
+      summary: Apply signed adjustment to a receivable and record ledger entry
+      tags: *ref_30
+  /receivables/{receivableId}/write-off:
+    post:
+      operationId: ReceivablesController_writeOff
+      parameters:
+        - name: receivableId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WriteOffReceivableDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_29
+      summary: Write off receivable outstanding amount and close it
+      tags: *ref_30
+  /purchases:
+    get:
+      operationId: PurchasesController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_31
+        - bearer: []
+      tags: &ref_32
+        - purchases
+    post:
+      operationId: PurchasesController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePurchaseDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_31
+      tags: *ref_32
+  /purchases/{purchaseId}:
+    get:
+      operationId: PurchasesController_getById
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_31
+      tags: *ref_32
+    put:
+      operationId: PurchasesController_replace
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePurchaseDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_31
+      tags: *ref_32
+    patch:
+      operationId: PurchasesController_patch
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePurchaseDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_31
+      tags: *ref_32
+    delete:
+      operationId: PurchasesController_remove
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_31
+      tags: *ref_32
+  /organizations:
+    get:
+      operationId: OrganizationsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_33
+        - bearer: []
+      tags: &ref_34
+        - organizations
+    post:
+      operationId: OrganizationsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_33
+      tags: *ref_34
+  /organizations/{organizationId}:
+    get:
+      operationId: OrganizationsController_get
+      parameters:
+        - name: organizationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_33
+      tags: *ref_34
+    put:
+      operationId: OrganizationsController_replace
+      parameters:
+        - name: organizationId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_33
+      tags: *ref_34
+    patch:
+      operationId: OrganizationsController_patch
+      parameters:
+        - name: organizationId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_33
+      tags: *ref_34
+    delete:
+      operationId: OrganizationsController_remove
+      parameters:
+        - name: organizationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_33
+      tags: *ref_34
+  /manufacturers:
+    get:
+      operationId: ManufacturersController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_35
+        - bearer: []
+      tags: &ref_36
+        - manufacturers
+    post:
+      operationId: ManufacturersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateManufacturerDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_35
+      tags: *ref_36
+  /manufacturers/{manufacturerId}:
+    get:
+      operationId: ManufacturersController_get
+      parameters:
+        - name: manufacturerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_35
+      tags: *ref_36
+    put:
+      operationId: ManufacturersController_replace
+      parameters:
+        - name: manufacturerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateManufacturerDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_35
+      tags: *ref_36
+    patch:
+      operationId: ManufacturersController_patch
+      parameters:
+        - name: manufacturerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateManufacturerDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_35
+      tags: *ref_36
+    delete:
+      operationId: ManufacturersController_remove
+      parameters:
+        - name: manufacturerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_35
+      tags: *ref_36
+  /journals:
+    get:
+      operationId: AccountingController_listJournals
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_37
+        - bearer: []
+      tags: &ref_38
+        - accounting
+    post:
+      operationId: AccountingController_createJournal
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+  /journals/{journalId}:
+    get:
+      operationId: AccountingController_getJournal
+      parameters:
+        - name: journalId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+    patch:
+      operationId: AccountingController_updateJournal
+      parameters:
+        - name: journalId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+    delete:
+      operationId: AccountingController_removeJournal
+      parameters:
+        - name: journalId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+  /journal-entries:
+    get:
+      operationId: AccountingController_listJournalEntries
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+    post:
+      operationId: AccountingController_createJournalEntry
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalEntryDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+  /journal-entries/{entryId}:
+    get:
+      operationId: AccountingController_getJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+    patch:
+      operationId: AccountingController_updateJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalEntryDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+    delete:
+      operationId: AccountingController_removeJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+  /journal-entries/{entryId}/lines:
+    get:
+      operationId: AccountingController_listJournalEntryLines
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+    post:
+      operationId: AccountingController_createJournalEntryLine
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalEntryLineDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+  /journal-entries/{entryId}/lines/{lineId}:
+    patch:
+      operationId: AccountingController_updateJournalEntryLine
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: lineId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalEntryLineDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+    delete:
+      operationId: AccountingController_removeJournalEntryLine
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: lineId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
+  /reports/daily-sales:
+    get:
+      operationId: ReportsController_dailySales
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_39
+        - bearer: []
+      tags: &ref_40
+        - reports
+  /reports/inventory-valuation:
+    get:
+      operationId: ReportsController_inventoryValuation
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_39
+      tags: *ref_40
+  /reports/top-selling-products:
+    get:
+      operationId: ReportsController_topSellingProducts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_39
+      tags: *ref_40
+  /reports/export:
+    get:
+      operationId: ReportsController_exportSummary
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_39
+      tags: *ref_40
+  /audit-logs:
+    get:
+      operationId: AuditController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearer: []
+      tags:
+        - audit-logs
+info:
+  title: RxSoft Backend API
+  description: Phase 3 identity module and API contracts
+  version: 1.0.0
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    LoginDto:
+      type: object
+      properties:
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          example: P@ssw0rd!
+      required:
+        - username
+        - password
+    AuthResponseDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        accessTokenExpiresIn:
+          type: number
+        refreshTokenExpiresIn:
+          type: number
+      required:
+        - accessToken
+        - refreshToken
+        - accessTokenExpiresIn
+        - refreshTokenExpiresIn
+    RefreshTokenDto:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+        - refreshToken
+    CreateUserDto:
+      type: object
+      properties:
+        username:
+          type: string
+          example: cashier01
+        password:
+          type: string
+          example: P@ssw0rd!
+        roleCodes:
+          example:
+            - cashier
+          type: array
+          items:
+            type: string
+      required:
+        - username
+        - password
+    UserResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        roles:
+          type: array
+          items:
+            type: array
+      required:
+        - id
+        - username
+        - roles
+    Object:
+      type: object
+      properties: {}
+    AssignRoleDto:
+      type: object
+      properties:
+        roleCode:
+          type: string
+          example: cashier
+      required:
+        - roleCode
+    ProductCategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - code
+        - name
+    PharmaceuticsResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        clinicalName:
+          type: string
+        drugClass:
+          type: string
+        pharmaceutics:
+          type: string
+      required:
+        - code
+        - clinicalName
+        - drugClass
+        - pharmaceutics
+    GenericProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        pharmaceutics:
+          $ref: '#/components/schemas/PharmaceuticsResponse'
+        isPrescriptionRequired:
+          type: boolean
+        isControlledSubstance:
+          type: boolean
+      required:
+        - id
+        - code
+        - name
+        - pharmaceutics
+        - isPrescriptionRequired
+        - isControlledSubstance
+    ProductResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        categoryId:
+          type: string
+        genericProductId:
+          type: string
+        category:
+          $ref: '#/components/schemas/ProductCategoryResponse'
+        genericProduct:
+          $ref: '#/components/schemas/GenericProductResponse'
+        barcode:
+          type: object
+          nullable: true
+        baseUomId:
+          type: string
+        purchaseUomId:
+          type: object
+          nullable: true
+        saleUomId:
+          type: object
+          nullable: true
+        saleUom:
+          type: object
+          nullable: true
+        baseUom:
+          type: object
+          nullable: true
+        purchaseUom:
+          type: object
+          nullable: true
+        trackLot:
+          type: boolean
+        trackExpiry:
+          type: boolean
+        shelfLifeDays:
+          type: object
+          nullable: true
+        isActive:
+          type: boolean
+      required:
+        - id
+        - code
+        - name
+        - categoryId
+        - genericProductId
+        - category
+        - genericProduct
+        - barcode
+        - baseUomId
+        - purchaseUomId
+        - saleUomId
+        - saleUom
+        - baseUom
+        - purchaseUom
+        - trackLot
+        - trackExpiry
+        - shelfLifeDays
+        - isActive
+    CreateProductDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: PCM001
+        name:
+          type: string
+          example: Paracetamol 500mg Tablet
+        categoryId:
+          type: string
+          example: 2f9e3c8a-7fb2-4f43-98b7-5f2a0d4f9021
+        genericProductId:
+          type: string
+          example: 5c0d6f5d-2952-4924-8ec6-c2c488a54cab
+        baseUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        purchaseUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        saleUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        barcode:
+          type: string
+          example: '1234567890123'
+        trackLot:
+          type: boolean
+          default: true
+        trackExpiry:
+          type: boolean
+          default: true
+        shelfLifeDays:
+          type: number
+          example: 730
+        isActive:
+          type: boolean
+          default: true
+      required:
+        - code
+        - name
+        - categoryId
+        - genericProductId
+        - baseUomId
+    CreateGenericProductDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        pharmaceuticsId:
+          type: string
+        therapeuticClass:
+          type: string
+        dosageForm:
+          type: string
+        strength:
+          type: string
+        generalUse:
+          type: string
+        adultDosage:
+          type: string
+        pediatricDosage:
+          type: string
+        isPrescriptionRequired:
+          type: boolean
+          default: false
+        isControlledSubstance:
+          type: boolean
+          default: false
+      required:
+        - code
+        - name
+        - pharmaceuticsId
+    UpdateGenericProductDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        pharmaceuticsId:
+          type: string
+        therapeuticClass:
+          type: string
+        dosageForm:
+          type: string
+        strength:
+          type: string
+        generalUse:
+          type: string
+        adultDosage:
+          type: string
+        pediatricDosage:
+          type: string
+        isPrescriptionRequired:
+          type: boolean
+        isControlledSubstance:
+          type: boolean
+    CreatePharmaceuticsDto:
+      type: object
+      properties:
+        code:
+          type: string
+        commonBrandName:
+          type: string
+        commonGenericName:
+          type: string
+        clinicalName:
+          type: string
+        drugClass:
+          type: string
+        chemicalConstituents:
+          type: string
+        pharmaceutics:
+          type: string
+        indications:
+          type: string
+        contraindications:
+          type: string
+        mechanism:
+          type: string
+        missedDose:
+          type: string
+        drugInteractions:
+          type: string
+        dosage:
+          type: string
+        drugComponentIds:
+          type: array
+          items:
+            type: string
+      required:
+        - code
+    UpdatePharmaceuticsDto:
+      type: object
+      properties:
+        code:
+          type: string
+        commonBrandName:
+          type: string
+        commonGenericName:
+          type: string
+        clinicalName:
+          type: string
+        drugClass:
+          type: string
+        chemicalConstituents:
+          type: string
+        pharmaceutics:
+          type: string
+        indications:
+          type: string
+        contraindications:
+          type: string
+        mechanism:
+          type: string
+        missedDose:
+          type: string
+        drugInteractions:
+          type: string
+        dosage:
+          type: string
+        drugComponentIds:
+          type: array
+          items:
+            type: string
+      required:
+        - code
+    CreateDrugComponentDto:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    UpdateDrugComponentDto:
+      type: object
+      properties:
+        name:
+          type: string
+    CreateStockAdjustmentDto:
+      type: object
+      properties:
+        stockBalanceId:
+          type: string
+        deltaQuantity:
+          type: number
+          description: Can be positive or negative
+        reason:
+          type: string
+      required:
+        - stockBalanceId
+        - deltaQuantity
+        - reason
+    AdjustStockByReferenceDto:
+      type: object
+      properties:
+        productId:
+          type: string
+        locationId:
+          type: string
+        lotId:
+          type: string
+        deltaQuantity:
+          type: number
+        reason:
+          type: string
+        reorderMinQty:
+          type: number
+        reorderMaxQty:
+          type: number
+      required:
+        - productId
+        - locationId
+        - deltaQuantity
+        - reason
+    CreateStockLocationDto:
+      type: object
+      properties:
+        warehouseId:
+          type: string
+        parentId:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        locationType:
+          type: string
+          enum:
+            - internal
+            - supplier
+            - customer
+            - inventory
+            - scrap
+            - transit
+        isActive:
+          type: boolean
+          default: true
+      required:
+        - name
+    UpdateStockLocationDto:
+      type: object
+      properties:
+        warehouseId:
+          type: string
+        parentId:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        locationType:
+          type: string
+          enum:
+            - internal
+            - supplier
+            - customer
+            - inventory
+            - scrap
+            - transit
+        isActive:
+          type: boolean
+    CreatePriceListItemDto:
+      type: object
+      properties:
+        priceListId:
+          type: string
+        productId:
+          type: string
+        locationId:
+          type: string
+        currencyCode:
+          type: string
+          example: NGN
+        unitPrice:
+          type: number
+        startsAt:
+          type: string
+        endsAt:
+          type: string
+      required:
+        - productId
+        - unitPrice
+    CreatePriceListDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        isDefault:
+          type: boolean
+          default: false
+        isActive:
+          type: boolean
+          default: true
+      required:
+        - code
+        - name
+    UpdatePriceListDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        isDefault:
+          type: boolean
+        isActive:
+          type: boolean
+    UpdatePriceListItemDto:
+      type: object
+      properties:
+        productId:
+          type: string
+        locationId:
+          type: string
+        currencyCode:
+          type: string
+        unitPrice:
+          type: number
+        startsAt:
+          format: date-time
+          type: string
+        endsAt:
+          type: string
+    AdjustProductPriceDto:
+      type: object
+      properties:
+        priceListId:
+          type: string
+        productId:
+          type: string
+        locationId:
+          type: string
+        currencyCode:
+          type: string
+          example: USD
+        unitPrice:
+          type: number
+        startsAt:
+          type: string
+        endsAt:
+          type: string
+      required:
+        - priceListId
+        - productId
+        - unitPrice
+    CreateCategoryDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        parentId:
+          type: string
+      required:
+        - code
+        - name
+    UpdateCategoryDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        parentId:
+          type: string
+    CreateCustomerDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+      required:
+        - name
+    UpdateCustomerDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+    CreateSaleLineDto:
+      type: object
+      properties:
+        productId:
+          type: string
+        uomId:
+          type: string
+        lotId:
+          type: object
+          nullable: true
+        quantity:
+          type: number
+          minimum: 0.001
+        unitPrice:
+          type: number
+          minimum: 0
+      required:
+        - productId
+        - uomId
+        - quantity
+        - unitPrice
+    CreateSalePaymentDto:
+      type: object
+      properties:
+        paymentMethodId:
+          type: string
+        amount:
+          type: number
+          minimum: 0
+        paymentReference:
+          type: object
+          nullable: true
+      required:
+        - paymentMethodId
+        - amount
+    CreateSaleDto:
+      type: object
+      properties:
+        saleNumber:
+          type: string
+        saleChannel:
+          type: string
+          enum:
+            - pos
+            - invoice
+            - mobile
+          default: pos
+        storeId:
+          type: string
+        customerId:
+          type: object
+          nullable: true
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateSaleLineDto'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateSalePaymentDto'
+      required:
+        - saleNumber
+        - saleChannel
+        - storeId
+        - lines
+        - payments
+    CreateSaleResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        saleNumber:
+          type: string
+        saleChannel:
+          type: string
+          enum:
+            - pos
+            - invoice
+            - mobile
+        status:
+          type: string
+          enum:
+            - draft
+            - posted
+            - voided
+            - refunded
+        totalAmount:
+          type: number
+        paidAmount:
+          type: number
+        changeAmount:
+          type: number
+        saleDate:
+          type: string
+        receivableCreated:
+          type: boolean
+        receivableId:
+          type: object
+          nullable: true
+        outstandingAmount:
+          type: number
+      required:
+        - id
+        - saleNumber
+        - saleChannel
+        - status
+        - totalAmount
+        - paidAmount
+        - changeAmount
+        - saleDate
+        - receivableCreated
+        - receivableId
+        - outstandingAmount
+    CreateSaleRefundLineDto:
+      type: object
+      properties:
+        saleLineId:
+          type: string
+        quantity:
+          type: number
+      required:
+        - saleLineId
+        - quantity
+    CreateSaleRefundDto:
+      type: object
+      properties:
+        reason:
+          type: string
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateSaleRefundLineDto'
+      required:
+        - lines
+    CreateSaleRefundResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        saleId:
+          type: string
+        refundNumber:
+          type: string
+        status:
+          type: string
+          enum:
+            - posted
+            - voided
+        totalAmount:
+          type: number
+        refundDate:
+          type: string
+      required:
+        - id
+        - saleId
+        - refundNumber
+        - status
+        - totalAmount
+        - refundDate
+    CreateUomDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: UNIT
+        name:
+          type: string
+          example: Unit
+        categoryId:
+          type: string
+          example: cat-uuid
+        uomType:
+          type: string
+          enum:
+            - reference
+            - bigger
+            - smaller
+          default: reference
+        factor:
+          type: number
+          default: 1
+        rounding:
+          type: number
+          default: 0.01
+        isActive:
+          type: boolean
+          default: true
+      required:
+        - name
+    UpdateUomDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: UNIT
+        name:
+          type: string
+          example: Unit
+        categoryId:
+          type: object
+          example: cat-uuid
+        uomType:
+          type: string
+          enum:
+            - reference
+            - bigger
+            - smaller
+        factor:
+          type: number
+        rounding:
+          type: number
+        isActive:
+          type: boolean
+    CreateUomCategoryDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: UNITS
+        name:
+          type: string
+          example: Units
+      required:
+        - name
+    UpdateUomCategoryDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: UNITS
+        name:
+          type: string
+          example: Units
+    CreatePaymentMethodDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        methodType:
+          type: string
+          enum:
+            - cash
+            - card
+            - transfer
+            - wallet
+            - insurance
+        isActive:
+          type: boolean
+      required:
+        - code
+        - name
+        - methodType
+    UpdatePaymentMethodDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        methodType:
+          type: string
+          enum:
+            - cash
+            - card
+            - transfer
+            - wallet
+            - insurance
+        isActive:
+          type: boolean
+    CollectReceivablePaymentDto:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        paymentMethodId:
+          type: string
+        referenceNumber:
+          type: object
+          nullable: true
+        note:
+          type: object
+          nullable: true
+      required:
+        - amount
+        - paymentMethodId
+    ApplyReceivableAdjustmentDto:
+      type: object
+      properties:
+        amount:
+          type: number
+          description: >-
+            Signed adjustment amount. Positive increases outstanding, negative
+            decreases outstanding.
+        referenceNumber:
+          type: string
+        note:
+          type: string
+      required:
+        - amount
+    WriteOffReceivableDto:
+      type: object
+      properties:
+        note:
+          type: string
+    PurchaseLineDto:
+      type: object
+      properties:
+        productId:
+          type: string
+        orderedQty:
+          type: number
+        receivedQty:
+          type: number
+        uomId:
+          type: string
+        unitCost:
+          type: number
+        discountPercent:
+          type: number
+        taxPercent:
+          type: number
+      required:
+        - productId
+        - orderedQty
+        - uomId
+        - unitCost
+    CreatePurchaseDto:
+      type: object
+      properties:
+        supplierId:
+          type: string
+        warehouseId:
+          type: string
+        branchId:
+          type: string
+        purchaseOrderNumber:
+          type: string
+        currencyCode:
+          type: string
+          example: USD
+        orderDate:
+          type: string
+        expectedDate:
+          type: string
+        status:
+          type: string
+          enum: &ref_41
+            - draft
+            - approved
+            - partially_received
+            - received
+            - cancelled
+        note:
+          type: string
+        invoiceNumber:
+          type: string
+        productId:
+          type: string
+        quantity:
+          type: number
+        unitCost:
+          type: number
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseLineDto'
+      required:
+        - supplierId
+        - warehouseId
+    UpdatePurchaseDto:
+      type: object
+      properties:
+        supplierId:
+          type: string
+        warehouseId:
+          type: string
+        branchId:
+          type: string
+        purchaseOrderNumber:
+          type: string
+        currencyCode:
+          type: string
+          example: USD
+        orderDate:
+          type: string
+        expectedDate:
+          type: string
+        status:
+          type: string
+          enum: *ref_41
+        note:
+          type: string
+        invoiceNumber:
+          type: string
+        productId:
+          type: string
+        quantity:
+          type: number
+        unitCost:
+          type: number
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseLineDto'
+      required:
+        - supplierId
+        - warehouseId
+    CreateOrganizationDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        isActive:
+          type: boolean
+      required:
+        - code
+        - name
+    UpdateOrganizationDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        isActive:
+          type: boolean
+    CreateManufacturerDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - name
+    UpdateManufacturerDto:
+      type: object
+      properties:
+        code:
+          type: object
+        name:
+          type: string
+    CreateJournalDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        journalType:
+          type: string
+          enum:
+            - sale
+            - purchase
+            - cash
+            - bank
+            - general
+        defaultDebitAccountId:
+          type: string
+        defaultCreditAccountId:
+          type: string
+        isActive:
+          type: boolean
+      required:
+        - code
+        - name
+        - journalType
+    UpdateJournalDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        journalType:
+          type: string
+          enum:
+            - sale
+            - purchase
+            - cash
+            - bank
+            - general
+        defaultDebitAccountId:
+          type: object
+        defaultCreditAccountId:
+          type: object
+        isActive:
+          type: boolean
+    CreateJournalEntryLineDto:
+      type: object
+      properties:
+        lineNumber:
+          type: number
+        glAccountId:
+          type: string
+        partyId:
+          type: string
+        productId:
+          type: string
+        debitAmount:
+          type: number
+        creditAmount:
+          type: number
+        description:
+          type: string
+      required:
+        - lineNumber
+        - glAccountId
+    CreateJournalEntryDto:
+      type: object
+      properties:
+        journalId:
+          type: string
+        entryNumber:
+          type: string
+        entryDate:
+          type: string
+        reference:
+          type: string
+        sourceType:
+          type: string
+        sourceId:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - posted
+            - reversed
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateJournalEntryLineDto'
+      required:
+        - journalId
+        - entryNumber
+        - entryDate
+    UpdateJournalEntryDto:
+      type: object
+      properties:
+        journalId:
+          type: string
+        entryNumber:
+          type: string
+        entryDate:
+          type: string
+        reference:
+          type: object
+        sourceType:
+          type: object
+        sourceId:
+          type: object
+        status:
+          type: string
+          enum:
+            - draft
+            - posted
+            - reversed
+    UpdateJournalEntryLineDto:
+      type: object
+      properties:
+        lineNumber:
+          type: number
+        glAccountId:
+          type: string
+        partyId:
+          type: object
+        productId:
+          type: object
+        debitAmount:
+          type: number
+        creditAmount:
+          type: number
+        description:
+          type: object

@@ -1,6 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class ForeignProperty {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  code: string | null;
+
+  @ApiProperty()
+  name!: string;
+}
+
+
 class ProductCategoryResponse {
+  @ApiProperty()
+  id!: string;
+
   @ApiProperty()
   code!: string;
 
@@ -23,6 +38,9 @@ class PharmaceuticsResponse {
 }
 
 class GenericProductResponse {
+  @ApiProperty()
+  id!: string;
+
   @ApiProperty()
   code!: string;
 
@@ -70,6 +88,15 @@ export class ProductResponseDto {
 
   @ApiProperty({ nullable: true })
   saleUomId!: string | null;
+
+  @ApiProperty({ nullable: true })
+  saleUom!: ForeignProperty | null;
+
+  @ApiProperty({ nullable: true })
+  baseUom!: ForeignProperty | null;
+
+  @ApiProperty({ nullable: true })
+  purchaseUom!: ForeignProperty | null;
 
   @ApiProperty()
   trackLot!: boolean;

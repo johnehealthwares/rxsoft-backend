@@ -32,7 +32,6 @@ export class ListProductsUseCase {
     if (cached) {
       return cached;
     }
-
     const result = await this.productRepository.list({
       organizationId,
       offset: payload.offset,
@@ -42,6 +41,7 @@ export class ListProductsUseCase {
       sortBy: payload.sortBy,
       sortOrder: payload.sortOrder,
     });
+    
 
     await this.cacheService?.set(key, result, 60);
     return result;

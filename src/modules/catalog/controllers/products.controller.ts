@@ -33,12 +33,14 @@ function toResponse(product: Product): ProductResponseDto {
     code: product.code,
     name: product.name,
     category: {
+      id: product.category.id,
       code: product.category.code,
       name: product.category.name,
     },
     genericProductId: product.genericProductId,
     categoryId: product.categoryId,
     genericProduct: {
+      id: product.genericProduct.id,
       code: product.genericProduct.code,
       name: product.genericProduct.name,
       pharmaceutics: product.genericProduct.pharmaceutics && {
@@ -53,6 +55,9 @@ function toResponse(product: Product): ProductResponseDto {
     baseUomId: product.baseUomId,
     purchaseUomId: product.purchaseUomId,
     saleUomId: product.saleUomId,
+    baseUom: product.baseUom,
+    purchaseUom: product.purchaseUom,
+    saleUom: product.saleUom,
     barcode: product.barcode,
     trackLot: product.trackLot,
     trackExpiry: product.trackExpiry,
@@ -79,7 +84,6 @@ export class ProductsController {
   @ApiOperation({ summary: 'List products with pagination, filtering and sorting' })
   async list(@Query() query: ListProductsDto, @CurrentUser() currentUser: RequestUser): Promise<ProductListResponse> {
     const result = await this.listProductsUseCase.execute(query, currentUser.organizationId);
-
     return {
       data: result.items.map(toResponse),
       meta: {

@@ -23,6 +23,11 @@ export class ListProductsDto {
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({ description: 'Search by product name/code' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @ApiPropertyOptional({ example: 'ANALGESICS' })
   @IsOptional()
   @IsString()

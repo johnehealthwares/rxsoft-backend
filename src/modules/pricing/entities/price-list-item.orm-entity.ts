@@ -20,7 +20,7 @@ export class PriceListItemOrmEntity {
   @Column({ name: 'currency_code', type: 'text', default: 'USD' })
   currencyCode!: string;
 
-  @Column({ name: 'unit_price', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'unit_price', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   unitPrice!: number;
 
   @Column({ name: 'starts_at', nullable: true })

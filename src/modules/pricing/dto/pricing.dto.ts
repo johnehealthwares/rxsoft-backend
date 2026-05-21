@@ -69,10 +69,9 @@ export class CreatePriceListItemDto {
   @IsString()
   priceListId?: string;
 
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  productId?: string;
+  @ApiProperty()
+  @IsString({message: "Provide product id"})
+  productId: string;
 
   @ApiPropertyOptional()
   @IsOptional()

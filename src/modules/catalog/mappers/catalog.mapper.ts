@@ -6,10 +6,19 @@ import { GenericProductOrmEntity } from '../entities/generic-product.orm-entity'
 import { PharmaceuticsOrmEntity } from '../entities/pharmaceutics.orm-entity';
 import { ProductOrmEntity } from '../entities/product.orm-entity';
 import { ProductCategoryOrmEntity } from '../entities/product-category.orm-entity';
+import { ForeignProperty } from '../dto/product-response.dto';
 
 export class CatalogMapper {
   static toDomainCategory(orm: ProductCategoryOrmEntity): ProductCategory {
     return new ProductCategory(orm.id, orm.code, orm.name);
+  }
+
+  static toForeignProperty(orm: {id: string, code: string | null, name: string}): ForeignProperty {
+    return {
+      id: orm.id,
+      code: orm.code,
+      name: orm.name,
+    };
   }
 
   static toDomainPharmaceutics(orm: PharmaceuticsOrmEntity): Pharmaceutics {
@@ -38,7 +47,7 @@ export class CatalogMapper {
       orm.pharmaceutics && this.toDomainPharmaceutics(orm.pharmaceutics),
     );
   }
-
+  
   static toDomainProduct(orm: ProductOrmEntity): Product {
     return new Product(
       orm.id,
@@ -51,7 +60,10 @@ export class CatalogMapper {
       orm.genericProduct && this.toDomainGenericProduct(orm.genericProduct),
       orm.baseUomId,
       orm.purchaseUomId,
-      orm.saleUomId,
+      orm.saleUomId,  
+      orm.baseUom && this.toForeignProperty(orm.baseUom),
+      orm.purchaseUom && this.toForeignProperty(orm.baseUom),
+      orm.saleUom && this.toForeignProperty(orm.baseUom),
       orm.barcode,
       orm.trackLot,
       orm.trackExpiry,

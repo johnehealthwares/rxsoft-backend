@@ -13,6 +13,7 @@ import { ProductCategoryOrmEntity } from '../entities/product-category.orm-entit
 import { GenericProductOrmEntity } from '../entities/generic-product.orm-entity';
 import { CatalogMapper } from '../mappers/catalog.mapper';
 import { UomOrmEntity } from '../../sales/entities';
+import { applyFilters } from 'src/database/list';
 
 const SEARCH_MAP: Record<string, string> = {
   name: 'product.name',
@@ -44,47 +45,25 @@ export class TypeormProductRepository implements ProductRepository {
     const qb = this.repository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.baseUom', 'baseUom')
+      .leftJoinAndSelect('product.purchaseUom', 'purchaseUom')
+      .leftJoinAndSelect('product.saleUom', 'saleUom')
       .leftJoinAndSelect('product.genericProduct', 'genericProduct')
       .leftJoinAndSelect('genericProduct.pharmaceutics', 'pharmaceutics')
       .where('product.organization_id = :organizationId', { organizationId: query.organizationId })
+
+    if (query.search) {
+      const filters = JSON.parse(query.search);
+     await applyFilters(qb, 'product', filters)
+    }
+    qb
       .skip(query.offset)
       .take(query.limit)
       .orderBy(
         `product.${query.sortBy === 'createdAt' ? 'createdAt' : query.sortBy}`,
         query.sortOrder.toUpperCase() as 'ASC' | 'DESC',
       );
-    console.log({ query })
-    const searchObj = query.search ? JSON.parse(query.search) : {};
-    console.log({ searchObj })
-    if (Object.keys(searchObj).length > 0) {
-  qb.andWhere(
-    new Brackets((qbInner) => {
-      Object.entries(searchObj).forEach(([key, value], index) => {
-        const column = SEARCH_MAP[key];
-        if (!column || !value) return;
-
-        // handle dates separately if needed
-        const isDate = key === 'date';
-
-        if (index === 0) {
-          qbInner.where(
-            isDate
-              ? `${column}::date = :${key}`
-              : `${column} ILIKE :${key}`,
-            { [key]: isDate ? value : `%${value}%` },
-          );
-        } else {
-          qbInner.orWhere(
-            isDate
-              ? `${column}::date = :${key}`
-              : `${column} ILIKE :${key}`,
-            { [key]: isDate ? value : `%${value}%` },
-          );
-        }
-      });
-    }),
-  );
-}
+   
     if (query.categoryCode) {
       qb.andWhere('LOWER(category.code) = LOWER(:categoryCode)', {
         categoryCode: query.categoryCode,

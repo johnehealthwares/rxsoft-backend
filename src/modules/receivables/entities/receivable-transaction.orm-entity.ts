@@ -17,7 +17,7 @@ export class ReceivableTransactionOrmEntity {
   @Column({ name: 'transaction_type', type: 'text' })
   transactionType!: 'charge' | 'payment' | 'adjustment' | 'write_off';
 
-  @Column({ type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   amount!: number;
 
   @CreateDateColumn({ name: 'transaction_date'/* timestamptzz */ })

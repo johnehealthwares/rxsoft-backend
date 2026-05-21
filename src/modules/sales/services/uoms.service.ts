@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
 import { Repository } from 'typeorm';
@@ -8,11 +8,14 @@ import { CreateUomDto } from '../dto/create-uom.dto';
 import { ListUomsDto } from '../dto/list-uoms.dto';
 import { UpdateUomDto } from '../dto/update-uom.dto';
 import { UomOrmEntity } from '../entities/uom.orm-entity';
+import { ForeignProperty } from 'src/modules/catalog/dto/product-response.dto';
+import { applyFilters } from 'src/database/list';
 
 type UomRecord = {
   id: string;
   organizationId: string;
   categoryId: string | null;
+  category: ForeignProperty | null;
   code: string | null;
   name: string;
   uomType: 'reference' | 'bigger' | 'smaller';
@@ -31,7 +34,7 @@ export class UomsService {
     @Optional()
     @InjectRepository(UomOrmEntity)
     private readonly uomRepository?: Repository<UomOrmEntity>,
-  ) {}
+  ) { }
 
   async list(query: ListUomsDto, organizationId: string): Promise<{ data: UomType[]; total: number }> {
     if (!this.uomRepository) {
@@ -56,16 +59,22 @@ export class UomsService {
 
     const qb = this.uomRepository
       .createQueryBuilder('uom')
+      .leftJoinAndSelect('uom.category', 'category')
       .where('uom.organization_id = :organizationId', { organizationId })
-      //.orderBy('uom.name', 'ASC')
-      .skip(query.offset)
-      .take(query.limit);
+    //.orderBy('uom.name', 'ASC')
 
     if (query.search) {
-      qb.andWhere('(uom.name ILIKE :search OR uom.code ILIKE :search)', {
-        search: `%${query.search}%`,
-      });
+      try {
+        const filters = JSON.parse(query.search);
+        await applyFilters(qb, 'uom', filters)
+      } catch {
+        qb.andWhere('(uom.code ILIKE :search OR uom.name ILIKE :search)', { search: `%${query.search}%` });
+      }
     }
+
+    qb
+      .skip(query.offset)
+      .take(query.limit);
 
     if (query.uomType) {
       qb.andWhere('uom.uom_type = :uomType', { uomType: query.uomType });
@@ -103,6 +112,7 @@ export class UomsService {
         id: randomUUID(),
         organizationId,
         categoryId: payload.categoryId ?? null,
+        category: null,
         code: payload.code ?? null,
         name: payload.name,
         uomType: payload.uomType ?? 'reference',
@@ -126,6 +136,8 @@ export class UomsService {
       rounding: payload.rounding ?? 0.01,
       isActive: payload.isActive ?? true,
     });
+
+    await this.validateReferenceUnit(entity.categoryId, entity.uomType, entity.id);
 
     const savedEntity = await this.uomRepository.save(entity);
     return toUomType(savedEntity);
@@ -166,7 +178,46 @@ export class UomsService {
     if (payload.rounding !== undefined) existing.rounding = payload.rounding;
     if (payload.isActive !== undefined) existing.isActive = payload.isActive;
 
+    await this.validateReferenceUnit(payload.categoryId!, existing.uomType, existing.id);
+
     const savedEntity = await this.uomRepository.save(existing);
     return toUomType(savedEntity);
+  }
+
+  private async validateReferenceUnit(
+    categoryId: string | null,
+    uomType: 'reference' | 'bigger' | 'smaller',
+    currentUomId?: string,
+  ) {
+    if (!categoryId || !this.uomRepository) return;
+
+    const referenceUom = await this.uomRepository.findOne({
+      where: {
+        categoryId,
+        uomType: 'reference',
+      },
+    });
+
+    // Creating/updating a non-reference unit
+    if (uomType !== 'reference') {
+      if (!referenceUom) {
+        throw new BadRequestException(
+          'A reference unit must exist before creating conversion units.',
+        );
+      }
+
+      return;
+    }
+
+    console.log({referenceUom, currentUomId})
+    // Creating/updating a reference unit
+    if (
+      referenceUom &&
+      referenceUom.id !== currentUomId
+    ) {
+      throw new BadRequestException(
+        'Only one reference unit is allowed per category.',
+      );
+    }
   }
 }

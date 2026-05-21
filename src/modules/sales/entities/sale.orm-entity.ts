@@ -28,22 +28,22 @@ export class SaleOrmEntity {
   @Column({ type: 'text' })
   status!: 'draft' | 'posted' | 'voided' | 'refunded';
 
-  @Column({ name: 'subtotal_amount', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'subtotal_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   subtotalAmount!: number;
 
-  @Column({ name: 'discount_amount', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'discount_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   discountAmount!: number;
 
-  @Column({ name: 'tax_amount', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'tax_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   taxAmount!: number;
 
-  @Column({ name: 'total_amount', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'total_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   totalAmount!: number;
 
-  @Column({ name: 'paid_amount', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'paid_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   paidAmount!: number;
 
-  @Column({ name: 'change_amount', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'change_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   changeAmount!: number;
 
   @CreateDateColumn({ name: 'sale_date'/* timestamptzz */ })

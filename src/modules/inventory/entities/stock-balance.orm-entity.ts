@@ -32,19 +32,19 @@ export class StockBalanceOrmEntity {
   @JoinColumn({ name: 'lot_id' })
   lot!: StockLotOrmEntity | null;
 
-  @Column({ name: 'quantity_on_hand', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'quantity_on_hand', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   quantityOnHand!: number;
 
-  @Column({ name: 'quantity_reserved', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'quantity_reserved', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   quantityReserved!: number;
 
-  @Column({ name: 'average_cost', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'average_cost', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   averageCost!: number;
 
-  @Column({ name: 'reorder_min_qty', type: 'float', nullable: true, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'reorder_min_qty', type: 'decimal', nullable: true, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   reorderMinQty!: number | null;
 
-  @Column({ name: 'reorder_max_qty', type: 'float', nullable: true, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'reorder_max_qty', type: 'decimal', nullable: true, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   reorderMaxQty!: number | null;
 
   @OneToMany(() => StockAdjustmentOrmEntity, (adjustment) => adjustment.stockBalance)

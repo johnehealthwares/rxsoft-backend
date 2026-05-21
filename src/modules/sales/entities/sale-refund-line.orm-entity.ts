@@ -17,13 +17,13 @@ export class SaleRefundLineOrmEntity {
   @JoinColumn({ name: 'sale_line_id' })
   saleLine!: SaleLineOrmEntity;
 
-  @Column({ type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   quantity!: number;
 
-  @Column({ name: 'unit_price', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'unit_price', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   unitPrice!: number;
 
-  @Column({ name: 'line_total', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'line_total', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   lineTotal!: number;
 
   @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })

@@ -16,7 +16,7 @@ export class StockAdjustmentOrmEntity {
   @Column({ type: 'text' })
   reason!: string;
 
-  @Column({ name: 'delta_quantity', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'delta_quantity', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   deltaQuantity!: number;
 
   @Column({ name: 'performed_by_user_id', type: 'text' })

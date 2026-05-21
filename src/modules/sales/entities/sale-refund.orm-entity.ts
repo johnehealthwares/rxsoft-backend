@@ -34,7 +34,7 @@ export class SaleRefundOrmEntity {
   @Column({ type: 'text' })
   status!: 'posted' | 'voided';
 
-  @Column({ name: 'total_amount', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'total_amount', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   totalAmount!: number;
 
   @CreateDateColumn({ name: 'refund_date'/* timestamptzz */ })

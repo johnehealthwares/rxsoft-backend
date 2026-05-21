@@ -30,10 +30,10 @@ export class StockMovementOrmEntity {
   @Column({ name: 'movement_type', type: 'text' })
   movementType!: 'in' | 'out' | 'transfer' | 'adjustment';
 
-  @Column({ type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   quantity!: number;
 
-  @Column({ name: 'unit_cost', type: 'float', nullable: true, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'unit_cost', type: 'decimal', nullable: true, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   unitCost!: number | null;
 
   @CreateDateColumn({ name: 'occurred_at'/* timestamptzz */ })

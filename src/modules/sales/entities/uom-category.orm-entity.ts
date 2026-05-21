@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { UomOrmEntity } from './uom.orm-entity';
 
 @Entity('uom_categories')
 @Unique('uq_uom_categories_org_name', ['organizationId', 'name'])
@@ -20,4 +21,7 @@ export class UomCategoryOrmEntity {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @OneToMany(() => UomOrmEntity, (uom) => uom.category)
+  uoms!: UomOrmEntity[];
 }

@@ -75,6 +75,9 @@ export class UpdateProductUseCase {
       payload.baseUomId,
       payload.purchaseUomId ?? null,
       payload.saleUomId ?? null,
+      baseUom ?? null,
+      purchaseUom ?? null,
+      saleUom ?? null,
       payload.barcode ?? null,
       payload.trackLot ?? true,
       payload.trackExpiry ?? true,
@@ -91,9 +94,9 @@ export class UpdateProductUseCase {
       }
 
       await this.pricingService?.createPriceListItem(
-        item.priceListId,
         {
           ...item,
+          priceListId:item.priceListId,
           productId: created.id,
         },
         organizationId,

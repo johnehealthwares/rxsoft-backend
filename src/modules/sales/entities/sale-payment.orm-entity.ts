@@ -18,7 +18,7 @@ export class SalePaymentOrmEntity {
   @JoinColumn({ name: 'payment_method_id' })
   paymentMethod!: PaymentMethodOrmEntity;
 
-  @Column({ type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   amount!: number;
 
   @Column({ name: 'payment_reference', type: 'text', nullable: true })

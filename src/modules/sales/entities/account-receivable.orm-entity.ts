@@ -20,10 +20,10 @@ export class AccountReceivableOrmEntity {
   @Column({ name: 'receivable_number', type: 'text' })
   receivableNumber!: string;
 
-  @Column({ name: 'original_amount', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'original_amount', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   originalAmount!: number;
 
-  @Column({ name: 'outstanding_amount', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'outstanding_amount', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   outstandingAmount!: number;
 
   @Column({ type: 'text' })

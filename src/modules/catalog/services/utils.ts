@@ -14,7 +14,6 @@ export function validateUoms({ purchaseUom, saleUom, baseUom }) {
   });
 
   // 2. Base UOM must be reference
-  console.log({baseUom})
   if (baseUom.uomType !== "reference" || baseUom.factor !== 1) {
     throw new BadRequestException(`Base UoM (${baseUom.name}) must be a uomType reference with factor = 1, current uomType - ${baseUom.uomType}, factor - ${baseUom.factor}}`);
   }

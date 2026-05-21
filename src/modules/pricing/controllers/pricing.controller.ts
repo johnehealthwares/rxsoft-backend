@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -54,6 +54,28 @@ export class PricingController {
     return { data: result.data.map((item) => ({ id: item.id, code: item.code, name: item.name })) };
   }
 
+    @Post('/items')
+  @Roles('admin', 'super_admin', 'pharmacist')
+  @AuditAction('pricing.price_list_item.create')
+  async createItem(
+    @Body() payload: CreatePriceListItemDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<PriceListItemType> {
+    return this.pricingService.createPriceListItem(payload, currentUser.organizationId);
+  }
+
+
+
+   @Get('/items')
+  @Roles('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk')
+  async listAllItems(
+    @Query() query: ListPriceListItemsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<PriceListItemResponse> {
+    const result = await this.pricingService.listPriceListItems(null, query, currentUser.organizationId);
+    return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
+  }
+
   @Get(':priceListId')
   @Roles('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk')
   async get(@Param('priceListId') priceListId: string, @CurrentUser() currentUser: RequestUser): Promise<PriceListType> {
@@ -67,6 +89,7 @@ export class PricingController {
     return this.pricingService.createPriceList(payload, currentUser.organizationId);
   }
 
+  @Put(':priceListId')
   @Patch(':priceListId')
   @Roles('admin', 'super_admin', 'pharmacist')
   @AuditAction('pricing.price_list.update')
@@ -80,7 +103,7 @@ export class PricingController {
 
   @Get(':priceListId/items')
   @Roles('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk')
-  async listItems(
+  async listPriceListItems(
     @Param('priceListId') priceListId: string,
     @Query() query: ListPriceListItemsDto,
     @CurrentUser() currentUser: RequestUser,
@@ -89,16 +112,7 @@ export class PricingController {
     return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
   }
 
-  @Post(':priceListId/items')
-  @Roles('admin', 'super_admin', 'pharmacist')
-  @AuditAction('pricing.price_list_item.create')
-  async createItem(
-    @Param('priceListId') priceListId: string,
-    @Body() payload: CreatePriceListItemDto,
-    @CurrentUser() currentUser: RequestUser,
-  ): Promise<PriceListItemType> {
-    return this.pricingService.createPriceListItem(priceListId, payload, currentUser.organizationId);
-  }
+
 
   @Patch(':priceListId/items/:itemId')
   @Roles('admin', 'super_admin', 'pharmacist')

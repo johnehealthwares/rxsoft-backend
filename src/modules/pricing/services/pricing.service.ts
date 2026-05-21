@@ -16,6 +16,7 @@ import {
   UpdatePriceListItemDto,
 } from '../dto/pricing.dto';
 import { PriceListItemOrmEntity, PriceListOrmEntity } from '../entities';
+import { applyFilters } from 'src/database/list';
 
 @Injectable()
 export class PricingService {
@@ -28,19 +29,21 @@ export class PricingService {
     private readonly productRepository: Repository<ProductOrmEntity>,
     @InjectRepository(StockLocationOrmEntity)
     private readonly stockLocationRepository: Repository<StockLocationOrmEntity>,
-  ) {}
+  ) { }
 
   async listPriceLists(
     query: ListPriceListsDto,
     organizationId = DEFAULT_ORGANIZATION_ID,
   ): Promise<{ data: PriceListType[]; total: number }> {
+
+
     const qb = this.priceListRepository
       .createQueryBuilder('price_list')
       .where('price_list.organization_id = :organizationId', { organizationId })
+
       .orderBy('price_list.updated_at', 'DESC')
       .skip(query.offset)
       .take(query.limit);
-
     if (query.search) {
       qb.andWhere('(price_list.code ILIKE :search OR price_list.name ILIKE :search)', {
         search: `%${query.search}%`,
@@ -105,37 +108,46 @@ export class PricingService {
   }
 
   async listPriceListItems(
-    priceListId: string,
+    priceListId: string | null,
     query: ListPriceListItemsDto,
     organizationId = DEFAULT_ORGANIZATION_ID,
   ): Promise<{ data: PriceListItemType[]; total: number }> {
-    await this.getPriceList(priceListId, organizationId);
+    if (priceListId) await this.getPriceList(priceListId, organizationId);
     const qb = this.priceListItemRepository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.product', 'product')
       //.leftJoinAndSelect('item.location', 'location')
       .leftJoinAndSelect('item.priceList', 'priceList')
-      .where('priceList.id = :priceListId', { priceListId })
-      //.orderBy('item.updated_at', 'DESC')
-      .skip(query.offset)
+
+    if (query.search) {
+      try {
+        const filters = JSON.parse(query.search);
+        await applyFilters(qb, 'price_list', filters)
+      } catch {
+        qb.andWhere('(product.code ILIKE :search OR product.name ILIKE :search)', { search: `%${query.search}%` });
+      }
+    }
+
+    if (priceListId) qb.andWhere('priceList.id = :priceListId', { priceListId });
+
+    // .where('priceList.id = :priceListId', { priceListId })
+    //.orderBy('item.updated_at', 'DESC')
+    qb.skip(query.offset)
       .take(query.limit);
 
     if (query.productId) qb.andWhere('product.id = :productId', { productId: query.productId });
     if (query.locationId) qb.andWhere('location.id = :locationId', { locationId: query.locationId });
-    if (query.search) {
-      qb.andWhere('(product.code ILIKE :search OR product.name ILIKE :search)', { search: `%${query.search}%` });
-    }
 
+    console.log(qb.getSql())
     const [data, total] = await qb.getManyAndCount();
     return { data: data.map(toPriceListItemType), total };
   }
 
   async createPriceListItem(
-    priceListId: string,
     payload: CreatePriceListItemDto,
     organizationId = DEFAULT_ORGANIZATION_ID,
   ): Promise<PriceListItemType> {
-    const priceList = await this.priceListRepository.findOne({ where: { id: priceListId, organizationId } });
+    const priceList = await this.priceListRepository.findOne({ where: { id: payload.priceListId, organizationId } });
     if (!priceList) throw new NotFoundException('Price list not found');
     const product = await this.productRepository.findOne({ where: { id: payload.productId, organizationId } });
     if (!product) throw new BadRequestException('Product not found');
@@ -144,6 +156,51 @@ export class PricingService {
       ? await this.stockLocationRepository.findOne({ where: { id: payload.locationId, organizationId } })
       : null;
     if (payload.locationId && !location) throw new BadRequestException('Stock location not found');
+
+    const startsAt = payload.startsAt
+      ? new Date(payload.startsAt)
+      : null;
+
+    const endsAt = payload.endsAt
+      ? new Date(payload.endsAt)
+      : null;
+    if (startsAt && endsAt && startsAt > endsAt) {
+      throw new BadRequestException(
+        'startsAt cannot be greater than endsAt',
+      );
+    }
+    const overlapQuery = this.priceListItemRepository
+      .createQueryBuilder('item')
+      .where('price_list_id = :priceListId', { priceListId: payload.priceListId })
+      .andWhere('product_id = :productId', {
+        productId: payload.productId,
+      });
+
+    // if (payload.locationId) {
+    //   overlapQuery.andWhere('item.locationId = :locationId', {
+    //     locationId: payload.locationId,
+    //   });
+    // } else {
+    //   overlapQuery.andWhere('item.locationId IS NULL');
+    // }
+
+    overlapQuery.andWhere(`
+    (
+      (item.startsAt IS NULL OR item.startsAt <= :newEndsAt)
+      AND
+      (item.endsAt IS NULL OR item.endsAt >= :newStartsAt)
+    )
+  `, {
+      newStartsAt: startsAt ?? new Date('1970-01-01'),
+      newEndsAt: endsAt ?? new Date('9999-12-31'),
+    });
+    const overlappingItem = await overlapQuery.getOne();
+
+    if (overlappingItem) {
+      throw new BadRequestException(
+        'A price list item already exists for this product and date range',
+      );
+    }
 
     const entity = this.priceListItemRepository.create({
       priceList,
@@ -173,6 +230,7 @@ export class PricingService {
       where: { id: itemId, priceList: { id: priceListId } },
       relations: { priceList: true, product: true },
     });
+    console.log({item, payload, priceListId})
     if (!item || item.priceList.organizationId !== organizationId) {
       throw new NotFoundException('Price list item not found');
     }
@@ -198,7 +256,7 @@ export class PricingService {
     const savedItem = await this.priceListItemRepository.save(item);
     const fullEntity = await this.priceListItemRepository.findOneOrFail({
       where: { id: savedItem.id },
-      relations: { priceList: true, product: true},
+      relations: { priceList: true, product: true },
     });
     return toPriceListItemType(fullEntity);
   }

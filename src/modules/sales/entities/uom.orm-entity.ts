@@ -1,5 +1,6 @@
 import { ColumnNumericTransformer } from 'src/shared/utils/column-transformer';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { UomCategoryOrmEntity } from './uom-category.orm-entity';
 
 @Entity('uoms')
 export class UomOrmEntity {
@@ -9,8 +10,12 @@ export class UomOrmEntity {
   @Column({ name: 'organization_id', type: 'text' })
   organizationId!: string;
 
-  @Column({ name: 'category_id', type: 'text', nullable: true })
+  @Column({ name: 'category_id', type: 'uuid', nullable: true })
   categoryId!: string | null;
+
+  @ManyToOne(() => UomCategoryOrmEntity, { nullable: false })
+  @JoinColumn({ name: 'category_id' })
+  category!: UomCategoryOrmEntity | null;
 
   @Column({ type: 'text', nullable: true })
   code!: string | null;
@@ -21,12 +26,12 @@ export class UomOrmEntity {
   @Column({ name: 'uom_type', type: 'text', default: 'reference' })
   uomType!: 'reference' | 'bigger' | 'smaller';
 
-  @Column({ type: 'float', default: 1, precision: 10, 
+  @Column({ type: 'decimal', default: 1, precision: 10, 
     scale: 2, 
     transformer: new ColumnNumericTransformer()  })
   factor!: number;
 
-  @Column({ type: 'float', default: 0.01, precision: 10, 
+  @Column({ type: 'decimal', default: 0.01, precision: 10, 
     scale: 2, 
     transformer: new ColumnNumericTransformer()  })
   rounding!: number;

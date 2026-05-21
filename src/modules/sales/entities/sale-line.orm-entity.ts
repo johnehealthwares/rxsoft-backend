@@ -30,22 +30,22 @@ export class SaleLineOrmEntity {
   @JoinColumn({ name: 'uom_id' })
   uom!: UomOrmEntity;
 
-  @Column({ type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   quantity!: number;
 
-  @Column({ name: 'unit_price', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'unit_price', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   unitPrice!: number;
 
-  @Column({ name: 'discount_percent', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'discount_percent', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   discountPercent!: number;
 
-  @Column({ name: 'tax_percent', type: 'float', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'tax_percent', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   taxPercent!: number;
 
-  @Column({ name: 'line_subtotal', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'line_subtotal', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   lineSubtotal!: number;
 
-  @Column({ name: 'line_total', type: 'float', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  @Column({ name: 'line_total', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   lineTotal!: number;
 
   @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })

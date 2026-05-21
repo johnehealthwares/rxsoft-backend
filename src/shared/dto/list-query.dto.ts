@@ -38,6 +38,7 @@ export class ListQueryDto {
   @IsOptional()
   filter?: string;
 
+
   get offset(): number {
     return (this.page - 1) * this.limit;
   }

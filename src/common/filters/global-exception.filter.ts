@@ -28,7 +28,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       this.logger.error(exception);
     }
 
+    console.log(message)
     response.status(status).json({
+      success: false,
       statusCode: status,
       path: request.url,
       timestamp: new Date().toISOString(),
