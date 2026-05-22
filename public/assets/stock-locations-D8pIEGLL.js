@@ -1,0 +1,1 @@
+import{T as e}from"./index-HQ34LvTc.js";var t=e;export{t as component};

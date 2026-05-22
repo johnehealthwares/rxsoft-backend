@@ -1,0 +1,1 @@
+import{t as e}from"./authenticated-layout-CbgVVlSt.js";var t=e;export{t as component};

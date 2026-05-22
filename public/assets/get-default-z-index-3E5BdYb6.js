@@ -1,0 +1,1 @@
+var e={app:100,modal:200,popover:300,overlay:400,max:9999};function t(t){return e[t]}export{t};

@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-m7G7yzlP.js";import{E as t,Rr as n}from"./index-HQ34LvTc.js";var r=e();function i(){let{redirect:e}=n({from:`/(auth)/sign-in`});return(0,r.jsx)(t,{redirectTo:e})}var a=i;export{a as component};

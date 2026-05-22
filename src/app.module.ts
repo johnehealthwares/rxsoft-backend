@@ -22,6 +22,8 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 const appConfigService = new ConfigService();
 
@@ -101,6 +103,9 @@ const applicationModules = useInMemoryRepos
       isGlobal: true, // Makes ConfigModule available everywhere
     }),
     ...infrastructureImports,
+     ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // or 'public'
+    }),
     CacheModule,
     AuditModule,
     ...applicationModules,

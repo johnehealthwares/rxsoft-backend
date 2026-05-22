@@ -1,6 +1,6 @@
 openapi: 3.0.0
 paths:
-  /health:
+  /api/health:
     get:
       operationId: HealthController_ping
       parameters: []
@@ -10,7 +10,7 @@ paths:
       summary: Health check
       tags:
         - health
-  /auth/login:
+  /api/auth/login:
     post:
       operationId: AuthController_login
       parameters: []
@@ -30,7 +30,7 @@ paths:
       summary: Authenticate and issue access/refresh tokens
       tags: &ref_0
         - auth
-  /auth/refresh-token:
+  /api/auth/refresh-token:
     post:
       operationId: AuthController_refreshToken
       parameters: []
@@ -49,7 +49,7 @@ paths:
                 $ref: '#/components/schemas/AuthResponseDto'
       summary: Rotate refresh token and issue a new token pair
       tags: *ref_0
-  /users:
+  /api/users:
     post:
       operationId: UsersController_create
       parameters: []
@@ -90,7 +90,7 @@ paths:
       security: *ref_1
       summary: List users with pagination
       tags: *ref_2
-  /users/{userId}/roles:
+  /api/users/{userId}/roles:
     patch:
       operationId: UsersController_assignRole
       parameters:
@@ -115,7 +115,7 @@ paths:
       security: *ref_1
       summary: Assign role to user
       tags: *ref_2
-  /products:
+  /api/products:
     get:
       operationId: ProductsController_list
       parameters:
@@ -193,7 +193,7 @@ paths:
       security: *ref_3
       summary: Create a catalog product
       tags: *ref_4
-  /products/dependencies/categories:
+  /api/products/dependencies/categories:
     get:
       operationId: ProductsController_listCategories
       parameters:
@@ -219,7 +219,7 @@ paths:
       security: *ref_3
       summary: Search product categories by name or code
       tags: *ref_4
-  /products/dependencies/generic-products:
+  /api/products/dependencies/generic-products:
     get:
       operationId: ProductsController_listGenericProducts
       parameters:
@@ -245,7 +245,7 @@ paths:
       security: *ref_3
       summary: Search generic products by name or code
       tags: *ref_4
-  /products/dependencies/uoms:
+  /api/products/dependencies/uoms:
     get:
       operationId: ProductsController_listUoms
       parameters:
@@ -271,7 +271,7 @@ paths:
       security: *ref_3
       summary: Search UOMs by name or code
       tags: *ref_4
-  /products/{productId}:
+  /api/products/{productId}:
     get:
       operationId: ProductsController_get
       parameters:
@@ -338,7 +338,7 @@ paths:
       security: *ref_3
       summary: Patch a catalog product
       tags: *ref_4
-  /generic-products:
+  /api/generic-products:
     get:
       operationId: GenericProductsController_list
       parameters:
@@ -400,7 +400,7 @@ paths:
           description: ''
       security: *ref_5
       tags: *ref_6
-  /generic-products/search:
+  /api/generic-products/search:
     get:
       operationId: GenericProductsController_search
       parameters:
@@ -445,7 +445,7 @@ paths:
           description: ''
       security: *ref_5
       tags: *ref_6
-  /generic-products/{genericProductId}:
+  /api/generic-products/{genericProductId}:
     get:
       operationId: GenericProductsController_get
       parameters:
@@ -497,7 +497,7 @@ paths:
           description: ''
       security: *ref_5
       tags: *ref_6
-  /pharmaceutics:
+  /api/pharmaceutics:
     get:
       operationId: PharmaceuticsController_list
       parameters:
@@ -558,7 +558,7 @@ paths:
           description: ''
       security: *ref_7
       tags: *ref_8
-  /pharmaceutics/{pharmaceuticsId}:
+  /api/pharmaceutics/{pharmaceuticsId}:
     get:
       operationId: PharmaceuticsController_get
       parameters:
@@ -623,7 +623,7 @@ paths:
           description: ''
       security: *ref_7
       tags: *ref_8
-  /drug-components:
+  /api/drug-components:
     get:
       operationId: DrugComponentsController_list
       parameters:
@@ -684,7 +684,7 @@ paths:
           description: ''
       security: *ref_9
       tags: *ref_10
-  /drug-components/{drugComponentId}:
+  /api/drug-components/{drugComponentId}:
     get:
       operationId: DrugComponentsController_get
       parameters:
@@ -749,7 +749,7 @@ paths:
           description: ''
       security: *ref_9
       tags: *ref_10
-  /inventory/stock-balances:
+  /api/inventory/stock-balances:
     get:
       operationId: InventoryController_listStockBalances
       parameters:
@@ -781,7 +781,7 @@ paths:
       summary: List stock balances with pagination and filters
       tags: &ref_12
         - inventory
-  /inventory/stock-movements:
+  /api/inventory/stock-movements:
     get:
       operationId: InventoryController_listStockMovements
       parameters:
@@ -811,7 +811,7 @@ paths:
       security: *ref_11
       summary: List stock movements with pagination and optional movement type filter
       tags: *ref_12
-  /inventory/adjustments:
+  /api/inventory/adjustments:
     post:
       operationId: InventoryController_createAdjustment
       parameters: []
@@ -827,7 +827,7 @@ paths:
       security: *ref_11
       summary: Apply stock adjustment to an existing stock balance record
       tags: *ref_12
-  /inventory/adjust-quantity:
+  /api/inventory/adjust-quantity:
     post:
       operationId: InventoryController_adjustQuantity
       parameters: []
@@ -845,7 +845,7 @@ paths:
         Adjust stock quantity by product and location, creating balance if
         needed
       tags: *ref_12
-  /stock-locations:
+  /api/stock-locations:
     get:
       operationId: StockLocationsController_list
       parameters:
@@ -912,7 +912,7 @@ paths:
           description: ''
       security: *ref_13
       tags: *ref_14
-  /stock-locations/search:
+  /api/stock-locations/search:
     get:
       operationId: StockLocationsController_search
       parameters:
@@ -962,7 +962,7 @@ paths:
           description: ''
       security: *ref_13
       tags: *ref_14
-  /stock-locations/{stockLocationId}:
+  /api/stock-locations/{stockLocationId}:
     get:
       operationId: StockLocationsController_get
       parameters:
@@ -1014,7 +1014,7 @@ paths:
           description: ''
       security: *ref_13
       tags: *ref_14
-  /price-lists:
+  /api/price-lists:
     get:
       operationId: PricingController_list
       parameters:
@@ -1076,7 +1076,7 @@ paths:
           description: ''
       security: *ref_15
       tags: *ref_16
-  /price-lists/search:
+  /api/price-lists/search:
     get:
       operationId: PricingController_search
       parameters:
@@ -1121,7 +1121,7 @@ paths:
           description: ''
       security: *ref_15
       tags: *ref_16
-  /price-lists/items:
+  /api/price-lists/items:
     post:
       operationId: PricingController_createItem
       parameters: []
@@ -1190,7 +1190,7 @@ paths:
           description: ''
       security: *ref_15
       tags: *ref_16
-  /price-lists/{priceListId}:
+  /api/price-lists/{priceListId}:
     get:
       operationId: PricingController_get
       parameters:
@@ -1236,7 +1236,7 @@ paths:
           description: ''
       security: *ref_15
       tags: *ref_16
-  /price-lists/{priceListId}/items:
+  /api/price-lists/{priceListId}/items:
     get:
       operationId: PricingController_listPriceListItems
       parameters:
@@ -1296,7 +1296,7 @@ paths:
           description: ''
       security: *ref_15
       tags: *ref_16
-  /price-lists/{priceListId}/items/{itemId}:
+  /api/price-lists/{priceListId}/items/{itemId}:
     patch:
       operationId: PricingController_updateItem
       parameters:
@@ -1339,7 +1339,7 @@ paths:
           description: ''
       security: *ref_15
       tags: *ref_16
-  /price-lists/adjust-price:
+  /api/price-lists/adjust-price:
     post:
       operationId: PricingController_adjustPrice
       parameters: []
@@ -1354,7 +1354,7 @@ paths:
           description: ''
       security: *ref_15
       tags: *ref_16
-  /categories:
+  /api/categories:
     get:
       operationId: CategoriesController_list
       parameters:
@@ -1416,7 +1416,7 @@ paths:
           description: ''
       security: *ref_17
       tags: *ref_18
-  /categories/export:
+  /api/categories/export:
     get:
       operationId: CategoriesController_export
       parameters:
@@ -1461,7 +1461,7 @@ paths:
           description: ''
       security: *ref_17
       tags: *ref_18
-  /categories/{categoryId}:
+  /api/categories/{categoryId}:
     put:
       operationId: CategoriesController_replace
       parameters:
@@ -1526,7 +1526,7 @@ paths:
           description: ''
       security: *ref_17
       tags: *ref_18
-  /customers:
+  /api/customers:
     get:
       operationId: CustomersController_list
       parameters:
@@ -1587,7 +1587,7 @@ paths:
           description: ''
       security: *ref_19
       tags: *ref_20
-  /customers/export:
+  /api/customers/export:
     get:
       operationId: CustomersController_export
       parameters:
@@ -1632,7 +1632,7 @@ paths:
           description: ''
       security: *ref_19
       tags: *ref_20
-  /customers/{customerId}:
+  /api/customers/{customerId}:
     put:
       operationId: CustomersController_replace
       parameters:
@@ -1684,7 +1684,7 @@ paths:
           description: ''
       security: *ref_19
       tags: *ref_20
-  /sales:
+  /api/sales:
     get:
       operationId: SalesController_listSales
       parameters:
@@ -1735,7 +1735,7 @@ paths:
       security: *ref_21
       summary: Create posted sale and receivable on underpayment
       tags: *ref_22
-  /sales/{saleId}/refunds:
+  /api/sales/{saleId}/refunds:
     post:
       operationId: SalesController_createRefund
       parameters:
@@ -1760,7 +1760,7 @@ paths:
       security: *ref_21
       summary: Create sale refund with quantity validation against original sale lines
       tags: *ref_22
-  /uoms:
+  /api/uoms:
     get:
       operationId: UomsController_list
       parameters:
@@ -1836,7 +1836,7 @@ paths:
       security: *ref_23
       summary: Create UOM
       tags: *ref_24
-  /uoms/{uomId}:
+  /api/uoms/{uomId}:
     get:
       operationId: UomsController_getById
       parameters:
@@ -1891,7 +1891,7 @@ paths:
       security: *ref_23
       summary: Patch UOM
       tags: *ref_24
-  /uom-categories:
+  /api/uom-categories:
     get:
       operationId: UomCategoriesController_list
       parameters:
@@ -1932,7 +1932,7 @@ paths:
           description: ''
       security: *ref_25
       tags: *ref_26
-  /uom-categories/{categoryId}:
+  /api/uom-categories/{categoryId}:
     get:
       operationId: UomCategoriesController_get
       parameters:
@@ -1984,7 +1984,7 @@ paths:
           description: ''
       security: *ref_25
       tags: *ref_26
-  /payment-methods:
+  /api/payment-methods:
     get:
       operationId: PaymentMethodsController_list
       parameters:
@@ -2045,7 +2045,7 @@ paths:
           description: ''
       security: *ref_27
       tags: *ref_28
-  /payment-methods/{paymentMethodId}:
+  /api/payment-methods/{paymentMethodId}:
     get:
       operationId: PaymentMethodsController_get
       parameters:
@@ -2110,7 +2110,7 @@ paths:
           description: ''
       security: *ref_27
       tags: *ref_28
-  /receivables:
+  /api/receivables:
     get:
       operationId: ReceivablesController_list
       parameters:
@@ -2147,7 +2147,7 @@ paths:
       summary: List receivables with pagination and filters
       tags: &ref_30
         - receivables
-  /receivables/{receivableId}/transactions:
+  /api/receivables/{receivableId}/transactions:
     get:
       operationId: ReceivablesController_listTransactions
       parameters:
@@ -2182,7 +2182,7 @@ paths:
       security: *ref_29
       summary: List receivable transactions with pagination and optional type filter
       tags: *ref_30
-  /receivables/{receivableId}/payments:
+  /api/receivables/{receivableId}/payments:
     post:
       operationId: ReceivablesController_collectPayment
       parameters:
@@ -2203,7 +2203,7 @@ paths:
       security: *ref_29
       summary: Collect payment against an open receivable
       tags: *ref_30
-  /receivables/{receivableId}/adjustments:
+  /api/receivables/{receivableId}/adjustments:
     post:
       operationId: ReceivablesController_applyAdjustment
       parameters:
@@ -2224,7 +2224,7 @@ paths:
       security: *ref_29
       summary: Apply signed adjustment to a receivable and record ledger entry
       tags: *ref_30
-  /receivables/{receivableId}/write-off:
+  /api/receivables/{receivableId}/write-off:
     post:
       operationId: ReceivablesController_writeOff
       parameters:
@@ -2245,7 +2245,7 @@ paths:
       security: *ref_29
       summary: Write off receivable outstanding amount and close it
       tags: *ref_30
-  /purchases:
+  /api/purchases:
     get:
       operationId: PurchasesController_list
       parameters:
@@ -2306,7 +2306,7 @@ paths:
           description: ''
       security: *ref_31
       tags: *ref_32
-  /purchases/{purchaseId}:
+  /api/purchases/{purchaseId}:
     get:
       operationId: PurchasesController_getById
       parameters:
@@ -2371,7 +2371,7 @@ paths:
           description: ''
       security: *ref_31
       tags: *ref_32
-  /organizations:
+  /api/organizations:
     get:
       operationId: OrganizationsController_list
       parameters:
@@ -2432,7 +2432,7 @@ paths:
           description: ''
       security: *ref_33
       tags: *ref_34
-  /organizations/{organizationId}:
+  /api/organizations/{organizationId}:
     get:
       operationId: OrganizationsController_get
       parameters:
@@ -2497,7 +2497,7 @@ paths:
           description: ''
       security: *ref_33
       tags: *ref_34
-  /manufacturers:
+  /api/manufacturers:
     get:
       operationId: ManufacturersController_list
       parameters:
@@ -2558,7 +2558,7 @@ paths:
           description: ''
       security: *ref_35
       tags: *ref_36
-  /manufacturers/{manufacturerId}:
+  /api/manufacturers/{manufacturerId}:
     get:
       operationId: ManufacturersController_get
       parameters:
@@ -2623,7 +2623,7 @@ paths:
           description: ''
       security: *ref_35
       tags: *ref_36
-  /journals:
+  /api/journals:
     get:
       operationId: AccountingController_listJournals
       parameters:
@@ -2684,7 +2684,7 @@ paths:
           description: ''
       security: *ref_37
       tags: *ref_38
-  /journals/{journalId}:
+  /api/journals/{journalId}:
     get:
       operationId: AccountingController_getJournal
       parameters:
@@ -2730,7 +2730,7 @@ paths:
           description: ''
       security: *ref_37
       tags: *ref_38
-  /journal-entries:
+  /api/journal-entries:
     get:
       operationId: AccountingController_listJournalEntries
       parameters:
@@ -2789,7 +2789,7 @@ paths:
           description: ''
       security: *ref_37
       tags: *ref_38
-  /journal-entries/{entryId}:
+  /api/journal-entries/{entryId}:
     get:
       operationId: AccountingController_getJournalEntry
       parameters:
@@ -2835,7 +2835,7 @@ paths:
           description: ''
       security: *ref_37
       tags: *ref_38
-  /journal-entries/{entryId}/lines:
+  /api/journal-entries/{entryId}/lines:
     get:
       operationId: AccountingController_listJournalEntryLines
       parameters:
@@ -2904,7 +2904,7 @@ paths:
           description: ''
       security: *ref_37
       tags: *ref_38
-  /journal-entries/{entryId}/lines/{lineId}:
+  /api/journal-entries/{entryId}/lines/{lineId}:
     patch:
       operationId: AccountingController_updateJournalEntryLine
       parameters:
@@ -2947,7 +2947,7 @@ paths:
           description: ''
       security: *ref_37
       tags: *ref_38
-  /reports/daily-sales:
+  /api/reports/daily-sales:
     get:
       operationId: ReportsController_dailySales
       parameters: []
@@ -2958,7 +2958,7 @@ paths:
         - bearer: []
       tags: &ref_40
         - reports
-  /reports/inventory-valuation:
+  /api/reports/inventory-valuation:
     get:
       operationId: ReportsController_inventoryValuation
       parameters: []
@@ -2967,7 +2967,7 @@ paths:
           description: ''
       security: *ref_39
       tags: *ref_40
-  /reports/top-selling-products:
+  /api/reports/top-selling-products:
     get:
       operationId: ReportsController_topSellingProducts
       parameters: []
@@ -2976,7 +2976,7 @@ paths:
           description: ''
       security: *ref_39
       tags: *ref_40
-  /reports/export:
+  /api/reports/export:
     get:
       operationId: ReportsController_exportSummary
       parameters:
@@ -3021,7 +3021,7 @@ paths:
           description: ''
       security: *ref_39
       tags: *ref_40
-  /audit-logs:
+  /api/audit-logs:
     get:
       operationId: AuditController_list
       parameters:

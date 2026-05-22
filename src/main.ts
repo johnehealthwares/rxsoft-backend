@@ -22,6 +22,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
+  app.setGlobalPrefix('api'); // All routes now start with /api
   app.enableCors();
 
   const swaggerConfig = new DocumentBuilder()
@@ -32,7 +33,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('/api/docs', app, document);
   const yamlString = yaml.dump(document);
   fs.writeFileSync('./swagger.yml', yamlString);
   await app.listen(Number(configService.get<string>('PORT', '3000')));
