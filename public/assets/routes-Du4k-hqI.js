@@ -1,0 +1,1 @@
+import{t as e}from"./page-CfxXLLir.js";var t=e;export{t as component};
