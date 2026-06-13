@@ -4,10 +4,10 @@ import { DeepPartial, Repository } from 'typeorm';
 import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import { toPriceListItemType, toPriceListType } from '../../../shared/domain/mappers';
 import type { PriceListItemType, PriceListType } from '../../../shared/domain';
-import { ProductOrmEntity } from '../../catalog/entities/product.orm-entity';
+import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLocationOrmEntity } from '../../inventory/entities/stock-location.orm-entity';
 import {
-  AdjustProductPriceDto,
+  AdjustItemPriceDto,
   CreatePriceListDto,
   CreatePriceListItemDto,
   ListPriceListItemsDto,
@@ -25,8 +25,8 @@ export class PricingService {
     private readonly priceListRepository: Repository<PriceListOrmEntity>,
     @InjectRepository(PriceListItemOrmEntity)
     private readonly priceListItemRepository: Repository<PriceListItemOrmEntity>,
-    @InjectRepository(ProductOrmEntity)
-    private readonly productRepository: Repository<ProductOrmEntity>,
+    @InjectRepository(ItemOrmEntity)
+    private readonly itemRepository: Repository<ItemOrmEntity>,
     @InjectRepository(StockLocationOrmEntity)
     private readonly stockLocationRepository: Repository<StockLocationOrmEntity>,
   ) { }
@@ -40,6 +40,7 @@ export class PricingService {
     const qb = this.priceListRepository
       .createQueryBuilder('price_list')
       .where('price_list.organization_id = :organizationId', { organizationId })
+      .where('price_list.is_active = :is_active', { is_active: true })
 
       .orderBy('price_list.updated_at', 'DESC')
       .skip(query.offset)
@@ -47,6 +48,7 @@ export class PricingService {
     if (query.search) {
       qb.andWhere('(price_list.code ILIKE :search OR price_list.name ILIKE :search)', {
         search: `%${query.search}%`,
+
       });
     }
 
@@ -115,7 +117,7 @@ export class PricingService {
     if (priceListId) await this.getPriceList(priceListId, organizationId);
     const qb = this.priceListItemRepository
       .createQueryBuilder('item')
-      .leftJoinAndSelect('item.product', 'product')
+      .leftJoinAndSelect('item.item', 'itemRef')
       //.leftJoinAndSelect('item.location', 'location')
       .leftJoinAndSelect('item.priceList', 'priceList')
 
@@ -124,7 +126,7 @@ export class PricingService {
         const filters = JSON.parse(query.search);
         await applyFilters(qb, 'price_list', filters)
       } catch {
-        qb.andWhere('(product.code ILIKE :search OR product.name ILIKE :search)', { search: `%${query.search}%` });
+        qb.andWhere('(itemRef.code ILIKE :search OR itemRef.name ILIKE :search)', { search: `%${query.search}%` });
       }
     }
 
@@ -135,7 +137,7 @@ export class PricingService {
     qb.skip(query.offset)
       .take(query.limit);
 
-    if (query.productId) qb.andWhere('product.id = :productId', { productId: query.productId });
+    if (query.itemId) qb.andWhere('itemRef.id = :itemId', { itemId: query.itemId });
     if (query.locationId) qb.andWhere('location.id = :locationId', { locationId: query.locationId });
 
     console.log(qb.getSql())
@@ -149,8 +151,8 @@ export class PricingService {
   ): Promise<PriceListItemType> {
     const priceList = await this.priceListRepository.findOne({ where: { id: payload.priceListId, organizationId } });
     if (!priceList) throw new NotFoundException('Price list not found');
-    const product = await this.productRepository.findOne({ where: { id: payload.productId, organizationId } });
-    if (!product) throw new BadRequestException('Product not found');
+    const item = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId } });
+    if (!item) throw new BadRequestException('Item not found');
 
     const location = payload.locationId
       ? await this.stockLocationRepository.findOne({ where: { id: payload.locationId, organizationId } })
@@ -172,8 +174,8 @@ export class PricingService {
     const overlapQuery = this.priceListItemRepository
       .createQueryBuilder('item')
       .where('price_list_id = :priceListId', { priceListId: payload.priceListId })
-      .andWhere('product_id = :productId', {
-        productId: payload.productId,
+      .andWhere('item_id = :itemId', {
+        itemId: payload.itemId,
       });
 
     // if (payload.locationId) {
@@ -204,7 +206,7 @@ export class PricingService {
 
     const entity = this.priceListItemRepository.create({
       priceList,
-      product,
+      item,
       location,
       currencyCode: payload.currencyCode ?? 'USD',
       unitPrice: payload.unitPrice,
@@ -214,31 +216,31 @@ export class PricingService {
     const savedEntity = await this.priceListItemRepository.save(entity);
     const fullEntity = await this.priceListItemRepository.findOneOrFail({
       where: { id: savedEntity.id },
-      relations: { priceList: true, product: true },
+      relations: { priceList: true, item: true },
     });
     return toPriceListItemType(fullEntity);
   }
 
   async updatePriceListItem(
     priceListId: string,
-    itemId: string,
+    priceListItemId: string,
     payload: UpdatePriceListItemDto,
     organizationId = DEFAULT_ORGANIZATION_ID,
   ): Promise<PriceListItemType> {
     await this.getPriceList(priceListId, organizationId);
     const item = await this.priceListItemRepository.findOne({
-      where: { id: itemId, priceList: { id: priceListId } },
-      relations: { priceList: true, product: true },
+      where: { id: priceListItemId, priceList: { id: priceListId } },
+      relations: { priceList: true, item: true },
     });
-    console.log({item, payload, priceListId})
+    console.log({item, payload, priceListId, priceListItemId})
     if (!item || item.priceList.organizationId !== organizationId) {
       throw new NotFoundException('Price list item not found');
     }
 
-    if (payload.productId) {
-      const product = await this.productRepository.findOne({ where: { id: payload.productId, organizationId } });
-      if (!product) throw new BadRequestException('Product not found');
-      item.product = product;
+    if (payload.itemId) {
+      const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId } });
+      if (!itemRef) throw new BadRequestException('Item not found');
+      item.item = itemRef;
     }
 
     if (payload.locationId !== undefined) {
@@ -256,21 +258,21 @@ export class PricingService {
     const savedItem = await this.priceListItemRepository.save(item);
     const fullEntity = await this.priceListItemRepository.findOneOrFail({
       where: { id: savedItem.id },
-      relations: { priceList: true, product: true },
+      relations: { priceList: true, item: true },
     });
     return toPriceListItemType(fullEntity);
   }
 
-  async adjustProductPrice(
-    payload: AdjustProductPriceDto,
+  async adjustItemPrice(
+    payload: AdjustItemPriceDto,
     organizationId = DEFAULT_ORGANIZATION_ID,
   ): Promise<PriceListItemType> {
     const priceList = await this.priceListRepository.findOne({
       where: { id: payload.priceListId, organizationId },
     });
     if (!priceList) throw new NotFoundException('Price list not found');
-    const product = await this.productRepository.findOne({ where: { id: payload.productId, organizationId } });
-    if (!product) throw new BadRequestException('Product not found');
+    const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId } });
+    if (!itemRef) throw new BadRequestException('Item not found');
 
     const location = payload.locationId
       ? await this.stockLocationRepository.findOne({ where: { id: payload.locationId, organizationId } })
@@ -280,17 +282,17 @@ export class PricingService {
     let item = await this.priceListItemRepository.findOne({
       where: {
         priceList: { id: priceList.id },
-        product: { id: product.id },
+        item: { id: itemRef.id },
         currencyCode: payload.currencyCode ?? 'NGN',
       },
-      relations: { priceList: true, product: true },
+      relations: { priceList: true, item: true },
       order: { updatedAt: 'DESC' },
     });
 
     if (!item) {
       item = this.priceListItemRepository.create({
         priceList,
-        product,
+        item: itemRef,
         location,
         currencyCode: payload.currencyCode ?? 'USD',
         unitPrice: payload.unitPrice,
@@ -307,7 +309,7 @@ export class PricingService {
     const savedItem = await this.priceListItemRepository.save(item);
     const fullEntity = await this.priceListItemRepository.findOneOrFail({
       where: { id: savedItem.id },
-      relations: { priceList: true, product: true },
+      relations: { priceList: true, item: true },
     });
     return toPriceListItemType(fullEntity);
   }

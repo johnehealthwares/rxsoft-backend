@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductOrmEntity } from '../catalog/entities/product.orm-entity';
+import { ItemOrmEntity } from '../catalog/entities/item.orm-entity';
 import { InventoryController } from './controllers/inventory.controller';
 import { StockLocationsController } from './controllers/stock-locations.controller';
 import { InMemoryInventoryRepository } from './repositories/in-memory-inventory.repository';
@@ -36,7 +36,7 @@ const inventoryPersistenceImports = useInMemoryRepos
         StockMovementOrmEntity,
         StoreStockLocationOrmEntity,
         WarehouseOrmEntity,
-        ProductOrmEntity,
+        ItemOrmEntity,
       ]),
     ];
 const inventoryRepositoryProviders = useInMemoryRepos

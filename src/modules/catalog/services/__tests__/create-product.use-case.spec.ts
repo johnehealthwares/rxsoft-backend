@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { CreateProductUseCase } from '../create-product.use-case';
-import type { ProductRepository } from '../../repositories/product.repository';
+import { CreateItemUseCase } from '../create-item.use-case';
+import type { ItemRepository } from '../../repositories/item.repository';
 import type { PricingService } from '../../../pricing/services/pricing.service';
 import type { InventoryService } from '../../../inventory/services/inventory.service';
 
-describe('CreateProductUseCase', () => {
-  const productRepository: jest.Mocked<ProductRepository> = {
+describe('CreateItemUseCase', () => {
+  const itemRepository: jest.Mocked<ItemRepository> = {
     list: jest.fn(),
     findById: jest.fn(),
     findByCode: jest.fn(),
@@ -15,7 +15,7 @@ describe('CreateProductUseCase', () => {
     listCategories: jest.fn(),
     listGenericProducts: jest.fn(),
     listUoms: jest.fn(),
-    create: jest.fn(),
+    save: jest.fn(),
   };
 
   const pricingService = {
@@ -26,20 +26,20 @@ describe('CreateProductUseCase', () => {
     adjustByReference: jest.fn(),
   } as unknown as jest.Mocked<InventoryService>;
 
-  const useCase = new CreateProductUseCase(productRepository, pricingService, inventoryService);
+  const useCase = new CreateItemUseCase(itemRepository, pricingService, inventoryService);
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('creates product when code does not exist', async () => {
-    productRepository.findByCode.mockResolvedValue(null);
-    productRepository.findCategoryById.mockResolvedValue({
+  it('creates item when code does not exist', async () => {
+    itemRepository.findByCode.mockResolvedValue(null);
+    itemRepository.findCategoryById.mockResolvedValue({
       id: 'c1',
       code: 'ANALGESICS',
       name: 'Analgesics',
     });
-    productRepository.findGenericProductById.mockResolvedValue({
+    itemRepository.findGenericProductById.mockResolvedValue({
       id: 'g1',
       code: 'GEN001',
       name: 'Paracetamol',
@@ -59,8 +59,8 @@ describe('CreateProductUseCase', () => {
         mechanism: '',
       },
     });
-    productRepository.create.mockImplementation(async (product) => product);
-    productRepository.findUomById.mockResolvedValue({ id: 'u1', code: 'UNIT', name: 'Unit' });
+    itemRepository.save.mockImplementation(async (item) => item);
+    itemRepository.findUomById.mockResolvedValue({ id: 'u1', code: 'UNIT', name: 'Unit' });
     pricingService.createPriceListItem.mockResolvedValue({} as never);
     inventoryService.adjustByReference.mockResolvedValue({} as never);
 
@@ -84,7 +84,7 @@ describe('CreateProductUseCase', () => {
           locationId: 'loc1',
           deltaQuantity: 10,
           reason: 'Initial stock',
-          productId: 'ignored',
+          itemId: 'ignored',
         },
       ],
     }, 'org1', 'user1');
@@ -93,23 +93,23 @@ describe('CreateProductUseCase', () => {
     expect(result.organizationId).toBe('org1');
     expect(result.category.code).toBe('ANALGESICS');
     expect(result.genericProduct.code).toBe('GEN001');
-    expect(productRepository.create).toHaveBeenCalled();
-    expect(productRepository.findByCode).toHaveBeenCalledWith('PCM001', 'org1');
-    expect(productRepository.findCategoryById).toHaveBeenCalledWith('c1', 'org1');
-    expect(productRepository.findGenericProductById).toHaveBeenCalledWith('g1', 'org1');
-    expect(productRepository.findUomById).toHaveBeenCalledWith('u1', 'org1');
+    expect(itemRepository.save).toHaveBeenCalled();
+    expect(itemRepository.findByCode).toHaveBeenCalledWith('PCM001', 'org1');
+    expect(itemRepository.findCategoryById).toHaveBeenCalledWith('c1', 'org1');
+    expect(itemRepository.findGenericProductById).toHaveBeenCalledWith('g1', 'org1');
+    expect(itemRepository.findUomById).toHaveBeenCalledWith('u1', 'org1');
     expect(pricingService.createPriceListItem).toHaveBeenCalledWith(
       'pl1',
       expect.objectContaining({
         priceListId: 'pl1',
-        productId: result.id,
+        itemId: result.id,
         unitPrice: 100,
       }),
       'org1',
     );
     expect(inventoryService.adjustByReference).toHaveBeenCalledWith(
       expect.objectContaining({
-        productId: result.id,
+        itemId: result.id,
         locationId: 'loc1',
         deltaQuantity: 10,
       }),
@@ -119,7 +119,7 @@ describe('CreateProductUseCase', () => {
   });
 
   it('throws when code already exists', async () => {
-    productRepository.findByCode.mockResolvedValue({
+    itemRepository.findByCode.mockResolvedValue({
       id: 'p1',
       organizationId: 'org1',
       code: 'PCM001',
@@ -171,13 +171,13 @@ describe('CreateProductUseCase', () => {
   });
 
   it('throws when a nested price list item is missing priceListId', async () => {
-    productRepository.findByCode.mockResolvedValue(null);
-    productRepository.findCategoryById.mockResolvedValue({
+    itemRepository.findByCode.mockResolvedValue(null);
+    itemRepository.findCategoryById.mockResolvedValue({
       id: 'c1',
       code: 'ANALGESICS',
       name: 'Analgesics',
     });
-    productRepository.findGenericProductById.mockResolvedValue({
+    itemRepository.findGenericProductById.mockResolvedValue({
       id: 'g1',
       code: 'GEN001',
       name: 'Paracetamol',
@@ -197,8 +197,8 @@ describe('CreateProductUseCase', () => {
         mechanism: '',
       },
     });
-    productRepository.create.mockImplementation(async (product) => product);
-    productRepository.findUomById.mockResolvedValue({ id: 'u1', code: 'UNIT', name: 'Unit' });
+    itemRepository.save.mockImplementation(async (item) => item);
+    itemRepository.findUomById.mockResolvedValue({ id: 'u1', code: 'UNIT', name: 'Unit' });
 
     await expect(
       useCase.execute(

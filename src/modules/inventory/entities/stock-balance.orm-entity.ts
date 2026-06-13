@@ -1,12 +1,12 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { ProductOrmEntity } from '../../catalog/entities/product.orm-entity';
+import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockAdjustmentOrmEntity } from './stock-adjustment.orm-entity';
 import { StockLocationOrmEntity } from './stock-location.orm-entity';
 import { StockLotOrmEntity } from './stock-lot.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
 @Entity('stock_balances')
-@Unique('uq_stock_balances_org_location_product_lot', ['organizationId', 'location', 'product', 'lot'])
+@Unique('uq_stock_balances_org_location_item_lot', ['organizationId', 'location', 'item', 'lot'])
 export class StockBalanceOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -14,11 +14,11 @@ export class StockBalanceOrmEntity {
   @Column({ name: 'organization_id', type: 'text' })
   organizationId!: string;
 
-  @ManyToOne(() => ProductOrmEntity, {
+  @ManyToOne(() => ItemOrmEntity, {
     nullable: false,
   })
-  @JoinColumn({ name: 'product_id' })
-  product!: ProductOrmEntity;
+  @JoinColumn({ name: 'item_id' })
+  item!: ItemOrmEntity;
 
   @ManyToOne(() => StockLocationOrmEntity, (location) => location.stockBalances, {
     nullable: false,

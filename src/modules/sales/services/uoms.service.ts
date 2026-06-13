@@ -8,7 +8,7 @@ import { CreateUomDto } from '../dto/create-uom.dto';
 import { ListUomsDto } from '../dto/list-uoms.dto';
 import { UpdateUomDto } from '../dto/update-uom.dto';
 import { UomOrmEntity } from '../entities/uom.orm-entity';
-import { ForeignProperty } from '../../../modules/catalog/dto/product-response.dto';
+import { ForeignProperty } from '../../../modules/catalog/dto/item-response.dto';
 import { applyFilters } from '../../../database/list';
 
 type UomRecord = {
@@ -209,7 +209,6 @@ export class UomsService {
       return;
     }
 
-    console.log({referenceUom, currentUomId})
     // Creating/updating a reference unit
     if (
       referenceUom &&

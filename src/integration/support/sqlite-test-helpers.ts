@@ -5,8 +5,8 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import request from 'supertest';
 import { Repository } from 'typeorm';
-import { ProductCategoryOrmEntity } from '../../modules/catalog/entities/product-category.orm-entity';
-import { ProductOrmEntity } from '../../modules/catalog/entities/product.orm-entity';
+import { ItemCategoryOrmEntity } from '../../modules/catalog/entities/item-category.orm-entity';
+import { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 import { GenericProductOrmEntity } from '../../modules/catalog/entities/generic-product.orm-entity';
 import { PharmaceuticsOrmEntity } from '../../modules/catalog/entities/pharmaceutics.orm-entity';
 import { PartyOrmEntity } from '../../modules/customers/entities/party.orm-entity';
@@ -68,7 +68,7 @@ type SeededIds = {
   categoryId: string;
   genericProductId: string;
   baseUomId: string;
-  seedProductId: string;
+  seedItemId: string;
   locationId: string;
   stockBalanceId: string;
   priceListId: string;
@@ -77,7 +77,7 @@ type SeededIds = {
 };
 
 type Repositories = {
-  productRepository: Repository<ProductOrmEntity>;
+  itemRepository: Repository<ItemOrmEntity>;
   priceListItemRepository: Repository<PriceListItemOrmEntity>;
   stockBalanceRepository: Repository<StockBalanceOrmEntity>;
   stockMovementRepository: Repository<StockMovementOrmEntity>;
@@ -99,10 +99,10 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
   const roleRepo = moduleFixture.get<Repository<RoleOrmEntity>>(getRepositoryToken(RoleOrmEntity));
   const userRepo = moduleFixture.get<Repository<UserOrmEntity>>(getRepositoryToken(UserOrmEntity));
   const permissionRepo = moduleFixture.get<Repository<PermissionOrmEntity>>(getRepositoryToken(PermissionOrmEntity));
-  const categoryRepo = moduleFixture.get<Repository<ProductCategoryOrmEntity>>(getRepositoryToken(ProductCategoryOrmEntity));
+  const categoryRepo = moduleFixture.get<Repository<ItemCategoryOrmEntity>>(getRepositoryToken(ItemCategoryOrmEntity));
   const pharmRepo = moduleFixture.get<Repository<PharmaceuticsOrmEntity>>(getRepositoryToken(PharmaceuticsOrmEntity));
   const genericRepo = moduleFixture.get<Repository<GenericProductOrmEntity>>(getRepositoryToken(GenericProductOrmEntity));
-  const productRepo = moduleFixture.get<Repository<ProductOrmEntity>>(getRepositoryToken(ProductOrmEntity));
+  const itemRepo = moduleFixture.get<Repository<ItemOrmEntity>>(getRepositoryToken(ItemOrmEntity));
   const stockLocationRepo = moduleFixture.get<Repository<StockLocationOrmEntity>>(getRepositoryToken(StockLocationOrmEntity));
   const stockLotRepo = moduleFixture.get<Repository<StockLotOrmEntity>>(getRepositoryToken(StockLotOrmEntity));
   const stockBalanceRepo = moduleFixture.get<Repository<StockBalanceOrmEntity>>(getRepositoryToken(StockBalanceOrmEntity));
@@ -216,8 +216,8 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     }),
   );
 
-  const seedProduct = await productRepo.save(
-    productRepo.create({
+  const seedItem = await itemRepo.save(
+    itemRepo.create({
       organizationId,
       code: 'PCM-SEED-001',
       name: 'Paracetamol 500mg Tablet (Seed)',
@@ -257,7 +257,7 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
   const stockBalance = await stockBalanceRepo.save(
     stockBalanceRepo.create({
       organizationId,
-      product: seedProduct,
+      item: seedItem,
       location,
       lot,
       quantityOnHand: 20,
@@ -308,7 +308,7 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
       categoryId: category.id,
       genericProductId: generic.id,
       baseUomId: baseUom.id,
-      seedProductId: seedProduct.id,
+      seedItemId: seedItem.id,
       locationId: location.id,
       stockBalanceId: stockBalance.id,
       priceListId: priceList.id,
@@ -316,7 +316,7 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
       customerId: customer.id,
     },
     repositories: {
-      productRepository: productRepo,
+      itemRepository: itemRepo,
       priceListItemRepository: priceListItemRepo,
       stockBalanceRepository: stockBalanceRepo,
       stockMovementRepository: stockMovementRepo,

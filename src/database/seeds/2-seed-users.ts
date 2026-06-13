@@ -11,6 +11,13 @@ const users = [
   { username: 'cashier', roleCodes: ['cashier'] },
   { username: 'auditor', roleCodes: ['auditor'] },
   { username: 'customer', roleCodes: ['customer'] },
+  { username: 'conversation_operator', roleCodes: ['conversation_operator'] },
+  { username: 'communication_manager', roleCodes: ['communication_manager'] },
+  { username: 'coding_concept_editor', roleCodes: ['coding_concept_editor'] },
+  { username: 'lis_technician', roleCodes: ['lis_technician'] },
+  { username: 'admin_operator', roleCodes: ['admin_operator'] },
+  { username: 'website_manager', roleCodes: ['website_manager'] },
+  { username: 'website_user', roleCodes: ['website_user'] },
 ];
 
 function hashPassword(password: string): string {
@@ -32,10 +39,10 @@ export async function seedUsers(dataSource: DataSource) {
     if (!existingUser) {
       // Get roles for this user
       const userRoles = await roleRepository.find({
-        where: {
+        where: userData.roleCodes.map((code) => ({
           organizationId,
-          code: userData.roleCodes[0],
-        },
+          code,
+        })),
       });
 
       const user = userRepository.create({

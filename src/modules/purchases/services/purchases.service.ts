@@ -22,7 +22,7 @@ type PurchaseSummaryType = {
   note: string | null;
   lines: Array<{
     id: string;
-    productId: string;
+    itemId: string;
     orderedQty: number;
     receivedQty: number;
     uomId: string;
@@ -133,7 +133,7 @@ export class PurchasesService {
         linesPayload.map((line) =>
           purchaseOrderLineRepo.create({
             purchaseOrder,
-            productId: line.productId,
+      itemId: line.itemId,
             orderedQty: line.orderedQty,
             receivedQty: line.receivedQty ?? 0,
             uomId: line.uomId,
@@ -249,7 +249,7 @@ export class PurchasesService {
       }
       if (payload.note !== undefined) order.note = payload.note ?? null;
 
-      if (payload.lines || payload.productId || payload.quantity || payload.unitCost) {
+      if (payload.lines || payload.itemId || payload.quantity || payload.unitCost) {
         await purchaseOrderLineRepo.delete({ purchaseOrder: { id: order.id } });
         const linesPayload = this.normalizeLines(payload);
         const totals = this.calculateTotals(linesPayload);
@@ -260,7 +260,7 @@ export class PurchasesService {
           linesPayload.map((line) =>
             purchaseOrderLineRepo.create({
               purchaseOrder: order,
-              productId: line.productId,
+            itemId: line.itemId,
               orderedQty: line.orderedQty,
               receivedQty: line.receivedQty ?? 0,
               uomId: line.uomId,
@@ -301,13 +301,13 @@ export class PurchasesService {
       return payload.lines;
     }
 
-    if (!payload.productId || !payload.quantity || payload.unitCost === undefined) {
-      throw new BadRequestException('Either lines or productId/quantity/unitCost must be provided');
+    if (!payload.itemId || !payload.quantity || payload.unitCost === undefined) {
+      throw new BadRequestException('Either lines or itemId/quantity/unitCost must be provided');
     }
 
     return [
       {
-        productId: payload.productId,
+        itemId: payload.itemId,
         orderedQty: payload.quantity,
         receivedQty: payload.quantity,
         uomId: DEFAULT_UOM_ID,
@@ -343,7 +343,7 @@ export class PurchasesService {
   private mapLine(line: PurchaseOrderLineOrmEntity) {
     return {
       id: line.id,
-      productId: line.productId,
+      itemId: line.itemId,
       orderedQty: Number(line.orderedQty),
       receivedQty: Number(line.receivedQty),
       uomId: line.uomId,

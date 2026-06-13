@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
@@ -11,6 +11,11 @@ export class CreateUserDto {
   @IsString()
   @MinLength(6)
   password!: string;
+
+  @ApiPropertyOptional({ example: '+1234567890' })
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
   @ApiProperty({ example: ['cashier'], required: false })
   @IsOptional()

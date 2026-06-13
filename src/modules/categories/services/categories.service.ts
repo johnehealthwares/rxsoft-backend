@@ -3,19 +3,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
-import type { ProductCategoryType } from '../../../shared/domain';
-import { toProductCategoryType } from '../../../shared/domain/mappers';
+import type { ItemCategoryType } from '../../../shared/domain';
+import { toItemCategoryType } from '../../../shared/domain/mappers';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto/categories.dto';
-import { ProductCategoryOrmEntity } from '../entities';
+import { ItemCategoryOrmEntity } from 'src/modules/catalog/entities';
+// import { ItemCategoryOrmEntity } from '../entities';
 
 @Injectable()
 export class CategoriesService {
   constructor(
-    @InjectRepository(ProductCategoryOrmEntity)
-    private readonly categoryRepository: Repository<ProductCategoryOrmEntity>,
+    @InjectRepository(ItemCategoryOrmEntity)
+    private readonly categoryRepository: Repository<ItemCategoryOrmEntity>,
   ) {}
 
-  async list(query: ListQueryDto): Promise<{ data: ProductCategoryType[]; total: number }> {
+  async list(query: ListQueryDto): Promise<{ data: ItemCategoryType[]; total: number }> {
     const qb = this.categoryRepository
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.parent', 'parent')
@@ -37,10 +38,10 @@ export class CategoriesService {
     //   .take(query.limit);
 
     const [data, total] = await qb.getManyAndCount();
-    return { data: data.map(toProductCategoryType), total };
+    return { data: data.map(toItemCategoryType), total };
   }
 
-  async createCategory(payload: CreateCategoryDto): Promise<ProductCategoryType> {
+  async createCategory(payload: CreateCategoryDto): Promise<ItemCategoryType> {
     const duplicate = await this.categoryRepository.findOne({
       where: { code: payload.code, organizationId: DEFAULT_ORGANIZATION_ID, deletedAt: IsNull() },
     });
@@ -49,7 +50,7 @@ export class CategoriesService {
       throw new BadRequestException('Category code already exists');
     }
 
-    let parent: ProductCategoryOrmEntity | null = null;
+    let parent: ItemCategoryOrmEntity | null = null;
     if (payload.parentId) {
       parent = await this.categoryRepository.findOne({
         where: { id: payload.parentId, organizationId: DEFAULT_ORGANIZATION_ID, deletedAt: IsNull() },
@@ -71,20 +72,20 @@ export class CategoriesService {
       where: { id: savedCategory.id, organizationId: DEFAULT_ORGANIZATION_ID, deletedAt: IsNull() },
       relations: ['parent'],
     });
-    return toProductCategoryType(fullCategory);
+    return toItemCategoryType(fullCategory);
   }
 
-  async findById(id: string): Promise<ProductCategoryType> {
+  async findById(id: string): Promise<ItemCategoryType> {
         
       const category = await this.categoryRepository.findOne({where:{id},   relations: ['parent']});
       if (!category) {
         throw new NotFoundException('Category not found');
       }
   
-      return toProductCategoryType(category);
+      return toItemCategoryType(category);
     }
 
-  async updateCategory(id: string, payload: UpdateCategoryDto): Promise<ProductCategoryType> {
+  async updateCategory(id: string, payload: UpdateCategoryDto): Promise<ItemCategoryType> {
     const category = await this.categoryRepository.findOne({
       where: { id, organizationId: DEFAULT_ORGANIZATION_ID, deletedAt: IsNull() },
       relations: ['parent'],
@@ -127,7 +128,7 @@ export class CategoriesService {
       where: { id: savedCategory.id, organizationId: DEFAULT_ORGANIZATION_ID, deletedAt: IsNull() },
       relations: ['parent'],
     });
-    return toProductCategoryType(fullCategory);
+    return toItemCategoryType(fullCategory);
   }
 
   async archive(id: string): Promise<void> {

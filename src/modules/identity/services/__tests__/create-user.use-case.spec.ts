@@ -10,6 +10,7 @@ describe('CreateUserUseCase', () => {
     findById: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
     list: jest.fn(),
   };
 
@@ -17,6 +18,10 @@ describe('CreateUserUseCase', () => {
     findByCode: jest.fn(),
     listByCodes: jest.fn(),
     listAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    findById: jest.fn(),
   };
 
   const passwordHasher: jest.Mocked<PasswordHasherPort> = {
@@ -33,7 +38,7 @@ describe('CreateUserUseCase', () => {
   it('creates user when username and roles are valid', async () => {
     userRepository.findByUsername.mockResolvedValue(null);
     roleRepository.listByCodes.mockResolvedValue([
-      { id: 'r1', code: 'cashier', name: 'Cashier', permissionCodes: [] },
+      { id: 'r1', organizationId: 'org1', code: 'cashier', name: 'Cashier', description: null, permissionCodes: [] },
     ]);
     passwordHasher.hash.mockResolvedValue('hashed');
     userRepository.create.mockImplementation(async (user) => user);
@@ -67,7 +72,7 @@ describe('CreateUserUseCase', () => {
 
   it('throws when one or more roles are invalid', async () => {
     userRepository.findByUsername.mockResolvedValue(null);
-    roleRepository.listByCodes.mockResolvedValue([{ id: 'r1', code: 'cashier', name: 'Cashier', permissionCodes: [] }]);
+    roleRepository.listByCodes.mockResolvedValue([{ id: 'r1', organizationId: 'org1', code: 'cashier', name: 'Cashier', description: null, permissionCodes: [] }]);
 
     await expect(
       useCase.execute({ username: 'x', password: 'secret123', roleCodes: ['cashier', 'admin'] }, 'org1'),

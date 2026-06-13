@@ -23,7 +23,7 @@ describe('CreateStockAdjustmentUseCase', () => {
     inventoryRepository.findStockBalanceById.mockResolvedValue({
       id: 'b1',
       organizationId: 'org1',
-      product: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
+      item: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
       location: { id: 'l1', name: 'Main Store' },
       lot: null,
       quantityOnHand: 20,
@@ -34,7 +34,7 @@ describe('CreateStockAdjustmentUseCase', () => {
     inventoryRepository.applyStockAdjustment.mockResolvedValue({
       id: 'b1',
       organizationId: 'org1',
-      product: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
+      item: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
       location: { id: 'l1', name: 'Main Store' },
       lot: null,
       quantityOnHand: 25,
@@ -94,7 +94,7 @@ describe('CreateStockAdjustmentUseCase', () => {
     inventoryRepository.findStockBalanceById.mockResolvedValue({
       id: 'b1',
       organizationId: 'org1',
-      product: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
+      item: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
       location: { id: 'l1', name: 'Main Store' },
       lot: null,
       quantityOnHand: 2,

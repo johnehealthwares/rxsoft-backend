@@ -3,14 +3,14 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
-import type { ProductCategoryType } from '../../../shared/domain';
+import type { ItemCategoryType } from '../../../shared/domain';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import { toCsv } from '../../../shared/utils/csv';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto/categories.dto';
 import { CategoriesService } from '../services/categories.service';
 
 type CategoryListResponse = {
-  data: ProductCategoryType[];
+  data: ItemCategoryType[];
   meta: { page: number; limit: number; total: number };
 };
 
@@ -38,25 +38,25 @@ export class CategoriesController {
 
   @Post()
   @Roles('super_admin', 'admin')
-  create(@Body() payload: CreateCategoryDto): Promise<ProductCategoryType> {
+  create(@Body() payload: CreateCategoryDto): Promise<ItemCategoryType> {
     return this.categoriesService.createCategory(payload);
   }
 
   @Put(':categoryId')
   @Roles('super_admin', 'admin')
-  replace(@Param('categoryId') categoryId: string, @Body() payload: UpdateCategoryDto): Promise<ProductCategoryType> {
+  replace(@Param('categoryId') categoryId: string, @Body() payload: UpdateCategoryDto): Promise<ItemCategoryType> {
     return this.categoriesService.updateCategory(categoryId, payload);
   }
 
   @Patch(':categoryId')
   @Roles('super_admin', 'admin')
-  patch(@Param('categoryId') categoryId: string, @Body() payload: UpdateCategoryDto): Promise<ProductCategoryType> {
+  patch(@Param('categoryId') categoryId: string, @Body() payload: UpdateCategoryDto): Promise<ItemCategoryType> {
     return this.categoriesService.updateCategory(categoryId, payload);
   }
   
   @Get(':categoryId')
   @Roles('super_admin', 'admin')
-  get(@Param('categoryId') categoryId: string): Promise<ProductCategoryType> {
+  get(@Param('categoryId') categoryId: string): Promise<ItemCategoryType> {
     return this.categoriesService.findById(categoryId,);
   }
 

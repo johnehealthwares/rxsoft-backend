@@ -1,9 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
-import { GetProductUseCase } from '../get-product.use-case';
-import type { ProductRepository } from '../../repositories/product.repository';
+import { GetItemUseCase } from '../get-item.use-case';
+import type { ItemRepository } from '../../repositories/item.repository';
 
-describe('GetProductUseCase', () => {
-  const productRepository: jest.Mocked<ProductRepository> = {
+describe('GetItemUseCase', () => {
+  const itemRepository: jest.Mocked<ItemRepository> = {
     list: jest.fn(),
     findById: jest.fn(),
     findByCode: jest.fn(),
@@ -13,17 +13,17 @@ describe('GetProductUseCase', () => {
     listCategories: jest.fn(),
     listGenericProducts: jest.fn(),
     listUoms: jest.fn(),
-    create: jest.fn(),
+    save: jest.fn(),
   };
 
-  const useCase = new GetProductUseCase(productRepository);
+  const useCase = new GetItemUseCase(itemRepository);
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('returns product when found', async () => {
-    productRepository.findById.mockResolvedValue({
+  it('returns item when found', async () => {
+    itemRepository.findById.mockResolvedValue({
       id: 'p1',
       organizationId: 'org1',
       code: 'PCM001',
@@ -66,11 +66,11 @@ describe('GetProductUseCase', () => {
     const result = await useCase.execute('p1', 'org1');
 
     expect(result.id).toBe('p1');
-    expect(productRepository.findById).toHaveBeenCalledWith('p1', 'org1');
+    expect(itemRepository.findById).toHaveBeenCalledWith('p1', 'org1');
   });
 
   it('throws NotFoundException when missing', async () => {
-    productRepository.findById.mockResolvedValue(null);
+    itemRepository.findById.mockResolvedValue(null);
 
     await expect(useCase.execute('missing', 'org1')).rejects.toBeInstanceOf(NotFoundException);
   });

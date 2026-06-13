@@ -1,8 +1,8 @@
-import { ListProductsUseCase } from '../list-products.use-case';
-import type { ProductRepository } from '../../repositories/product.repository';
+import { ListItemsUseCase } from '../list-items.use-case';
+import type { ItemRepository } from '../../repositories/item.repository';
 
-describe('ListProductsUseCase', () => {
-  const productRepository: jest.Mocked<ProductRepository> = {
+describe('ListItemsUseCase', () => {
+  const itemRepository: jest.Mocked<ItemRepository> = {
     list: jest.fn(),
     findById: jest.fn(),
     findByCode: jest.fn(),
@@ -12,17 +12,17 @@ describe('ListProductsUseCase', () => {
     listCategories: jest.fn(),
     listGenericProducts: jest.fn(),
     listUoms: jest.fn(),
-    create: jest.fn(),
+    save: jest.fn(),
   };
 
-  const useCase = new ListProductsUseCase(productRepository);
+  const useCase = new ListItemsUseCase(itemRepository);
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('forwards pagination/filter/sort parameters to repository', async () => {
-    productRepository.list.mockResolvedValue({ items: [], total: 0 });
+    itemRepository.list.mockResolvedValue({ items: [], total: 0 });
 
     await useCase.execute({
       page: 2,
@@ -36,7 +36,7 @@ describe('ListProductsUseCase', () => {
       },
     }, 'org1');
 
-    expect(productRepository.list).toHaveBeenCalledWith({
+    expect(itemRepository.list).toHaveBeenCalledWith({
       organizationId: 'org1',
       offset: 10,
       limit: 10,

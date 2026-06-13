@@ -5,10 +5,11 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { CategoriesController } from './controllers/categories.controller';
 import { CategoriesService } from './services/categories.service';
-import { ProductCategoryOrmEntity } from './entities';
+import { ItemCategoryOrmEntity } from '../catalog/entities';
+// import { ItemCategoryOrmEntity } from './entities';
 
 @Module({
-  imports: [JwtModule.register({}), TypeOrmModule.forFeature([ProductCategoryOrmEntity])],
+  imports: [JwtModule.register({}), TypeOrmModule.forFeature([ItemCategoryOrmEntity])],
   controllers: [CategoriesController],
   providers: [CategoriesService, JwtAuthGuard, RolesGuard],
   exports: [CategoriesService],

@@ -48,6 +48,7 @@ export class LoginUseCase {
       username: user.username,
       roles: user.roleCodes,
       permissions,
+      phone: user.phone,
     });
 
     const refreshTokenHash = await this.passwordHasher.hash(tokenPair.refreshToken);

@@ -22,17 +22,24 @@
     "db:reset-and-seed": "ts-node -r tsconfig-paths/register src/database/reset-and-seed.ts"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.1",
-    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-express": "^11.1.26",
     "@nestjs/serve-static": "^5.0.5",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/typeorm": "^11.0.0",
+    "@types/multer": "^2.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cloudinary": "^2.10.0",
+    "cross-fetch": "^4.1.0",
+    "exceljs": "^4.4.0",
+    "googleapis": "^173.0.0",
     "lodash": "^4.17.23",
+    "multer": "^2.1.1",
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -40,7 +47,8 @@
     "sqlite": "^5.1.1",
     "sqlite3": "5.1.7",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

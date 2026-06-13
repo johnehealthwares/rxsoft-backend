@@ -32,7 +32,7 @@ export class UomOrmEntity {
   factor!: number;
 
   @Column({ type: 'decimal', default: 0.01, precision: 10, 
-    scale: 2, 
+    scale: 3, 
     transformer: new ColumnNumericTransformer()  })
   rounding!: number;
 

@@ -86,7 +86,7 @@ export class CreateJournalEntryLineDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  productId?: string;
+  itemId?: string;
 
   @ApiPropertyOptional()
   @Type(() => Number)
@@ -126,7 +126,7 @@ export class UpdateJournalEntryLineDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  productId?: string | null;
+  itemId?: string | null;
 
   @ApiPropertyOptional()
   @Type(() => Number)

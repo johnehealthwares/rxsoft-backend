@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { PharmaceuticsOrmEntity } from './pharmaceutics.orm-entity';
-import { ProductOrmEntity } from './product.orm-entity';
+import { ItemOrmEntity } from './item.orm-entity';
 
 @Entity('generic_products')
 @Unique('uq_generic_products_org_code', ['organizationId', 'code'])
@@ -47,8 +47,8 @@ export class GenericProductOrmEntity {
   @JoinColumn({ name: 'pharmaceutics_id' })
   pharmaceutics!: PharmaceuticsOrmEntity;
 
-  @OneToMany(() => ProductOrmEntity, (product) => product.genericProduct)
-  products!: ProductOrmEntity[];
+  @OneToMany(() => ItemOrmEntity, (item) => item.genericProduct)
+  items!: ItemOrmEntity[];
 
   @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })
   createdAt!: Date;

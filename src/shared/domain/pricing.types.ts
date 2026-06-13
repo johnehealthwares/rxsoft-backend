@@ -1,4 +1,4 @@
-import type { ProductSummaryType } from './catalog.types';
+import type { ItemSummaryType } from './catalog.types';
 import type { StockLocationType } from './inventory.types';
 
 export type PriceListType = {
@@ -16,7 +16,7 @@ export type PriceListItemType = {
   id: string;
   priceListId: string;
   priceList: PriceListType;
-  product: ProductSummaryType;
+  item: ItemSummaryType;
   currencyCode: string;
   unitPrice: number;
   startsAt: string | null;
@@ -49,7 +49,7 @@ export type PurchaseOrderType = {
 export type PurchaseOrderLineType = {
   id: string;
   purchaseOrderId: string;
-  productId: string;
+  itemId: string;
   orderedQty: number;
   receivedQty: number;
   uomId: string;

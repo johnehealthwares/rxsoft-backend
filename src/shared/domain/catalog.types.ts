@@ -38,7 +38,7 @@ export type GenericProductType = {
   deletedAt: string | null;
 };
 
-export type ProductSummaryType = {
+export type ItemSummaryType = {
   id: string;
   organizationId: string;
   code: string;
@@ -56,7 +56,7 @@ export type ProductSummaryType = {
   deletedAt: string | null;
 };
 
-export type ProductCategoryType = {
+export type ItemCategoryType = {
   id: string;
   organizationId: string;
   parentId: string | null;

@@ -19,7 +19,7 @@ describe('InMemorySalesRepository', () => {
       lines: [
         {
           lineNumber: 1,
-          productId: 'p1',
+          itemId: 'p1',
           uomId: 'u1',
           lotId: null,
           quantity: 2,

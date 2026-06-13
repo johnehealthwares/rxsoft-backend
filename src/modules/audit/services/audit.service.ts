@@ -14,6 +14,8 @@ export class AuditService {
   ) {}
 
   async log(entry: Omit<AuditLog, 'id' | 'createdAt'>): Promise<void> {
+    throw new Error('Method not implemented.');
+
     const row = this.auditLogRepository.create({
       organizationId: DEFAULT_ORGANIZATION_ID,
       actorUserId: entry.userId,

@@ -1,16 +1,16 @@
 import { GenericProduct } from '../domains/generic-product.entity';
 import { Pharmaceutics } from '../domains/pharmaceutics.entity';
-import { Product } from '../domains/product.entity';
-import { ProductCategory } from '../domains/product-category.entity';
+import { Item } from '../domains/item.entity';
+import { ItemCategory } from '../domains/item-category.entity';
 import { GenericProductOrmEntity } from '../entities/generic-product.orm-entity';
 import { PharmaceuticsOrmEntity } from '../entities/pharmaceutics.orm-entity';
-import { ProductOrmEntity } from '../entities/product.orm-entity';
-import { ProductCategoryOrmEntity } from '../entities/product-category.orm-entity';
-import { ForeignProperty } from '../dto/product-response.dto';
+import { ItemOrmEntity } from '../entities/item.orm-entity';
+import { ItemCategoryOrmEntity } from '../entities/item-category.orm-entity';
+import { ForeignProperty } from '../dto/item-response.dto';
 
 export class CatalogMapper {
-  static toDomainCategory(orm: ProductCategoryOrmEntity): ProductCategory {
-    return new ProductCategory(orm.id, orm.code, orm.name);
+  static toDomainItemCategory(orm: ItemCategoryOrmEntity): ItemCategory {
+    return new ItemCategory(orm.id, orm.code, orm.name);
   }
 
   static toForeignProperty(orm: {id: string, code: string | null, name: string}): ForeignProperty {
@@ -48,15 +48,15 @@ export class CatalogMapper {
     );
   }
   
-  static toDomainProduct(orm: ProductOrmEntity): Product {
-    return new Product(
+  static toDomainItem(orm: ItemOrmEntity): Item {
+    return new Item(
       orm.id,
       orm.organizationId,
       orm.code,
       orm.name,
       orm.genericProduct?.id,
       orm.category?.id,
-      orm.category && this.toDomainCategory(orm.category),
+      orm.category && this.toDomainItemCategory(orm.category),
       orm.genericProduct && this.toDomainGenericProduct(orm.genericProduct),
       orm.baseUomId,
       orm.purchaseUomId,
@@ -69,6 +69,10 @@ export class CatalogMapper {
       orm.trackExpiry,
       orm.shelfLifeDays,
       orm.isActive,
+      orm.imageUrl ?? null,
+      orm.smallImageUrl ?? null,
+      orm.mediumImageUrl ?? null,
+      orm.largeImageUrl ?? null,
     );
   }
 }

@@ -44,8 +44,8 @@ export class InMemoryInventoryRepository implements InventoryRepository {
   async listStockBalances(query: StockBalanceQuery): Promise<{ items: StockBalance[]; total: number }> {
     let items = [...this.stockBalances.values()].filter((item) => item.organizationId === query.organizationId);
 
-    if (query.productId) {
-      items = items.filter((item) => item.product.id === query.productId);
+    if (query.itemId) {
+      items = items.filter((item) => item.item.id === query.itemId);
     }
 
     if (query.locationId) {
@@ -102,7 +102,7 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     const movement: StockMovement = {
       id: `sm-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
       organizationId,
-      productId: stockBalance.product.id,
+      itemId: stockBalance.item.id,
       lotId: stockBalance.lot?.id ?? null,
       fromLocationId: adjustment.deltaQuantity < 0 ? stockBalance.location.id : null,
       toLocationId: adjustment.deltaQuantity > 0 ? stockBalance.location.id : null,
@@ -180,7 +180,7 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     const existing = [...this.stockBalances.values()].find(
       (item) =>
         item.organizationId === payload.organizationId &&
-        item.product.id === payload.productId &&
+        item.item.id === payload.itemId &&
         item.location.id === payload.locationId &&
         (item.lot?.id ?? null) === (payload.lotId ?? null),
     );
@@ -191,7 +191,7 @@ export class InMemoryInventoryRepository implements InventoryRepository {
         `b-${Date.now()}`,
         payload.organizationId,
         {
-          id: payload.productId,
+          id: payload.itemId,
           code: 'UNKNOWN',
           name: 'Unknown Product',
         },

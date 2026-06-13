@@ -24,7 +24,7 @@ describe('ListStockBalancesUseCase', () => {
     await useCase.execute({
       page: 2,
       limit: 10,
-      productId: 'p1',
+      itemId: 'p1',
       locationId: 'l1',
       get offset() {
         return 10;
@@ -35,7 +35,7 @@ describe('ListStockBalancesUseCase', () => {
       organizationId: 'org1',
       offset: 10,
       limit: 10,
-      productId: 'p1',
+      itemId: 'p1',
       locationId: 'l1',
     });
   });

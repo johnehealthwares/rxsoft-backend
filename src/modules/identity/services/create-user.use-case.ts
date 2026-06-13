@@ -31,7 +31,7 @@ export class CreateUserUseCase {
     }
 
     const passwordHash = await this.passwordHasher.hash(payload.password);
-    const user = new User(randomUUID(), organizationId, payload.username, passwordHash, true, roleCodes);
+    const user = new User(randomUUID(), organizationId, payload.username, passwordHash, true, roleCodes, payload.phone);
 
     return this.userRepository.create(user);
   }

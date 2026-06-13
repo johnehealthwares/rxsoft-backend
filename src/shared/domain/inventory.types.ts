@@ -37,7 +37,7 @@ export type StockLocationType = {
 export type StockBalanceType = {
   id: string;
   organizationId: string;
-  product: {
+  item: {
     id: string;
     code: string;
     name: string;
@@ -70,7 +70,7 @@ export type StockAdjustmentType = {
 export type StockLotType = {
   id: string;
   organizationId: string;
-  productId: string;
+  itemId: string;
   lotCode: string;
   manufacturingDate: string | null;
   expiryDate: string | null;
@@ -85,7 +85,7 @@ export type StockMovementType = {
   organizationId: string;
   inventoryDocumentId: string | null;
   inventoryDocumentLineId: string | null;
-  productId: string;
+  itemId: string;
   lotId: string | null;
   fromLocationId: string | null;
   toLocationId: string | null;

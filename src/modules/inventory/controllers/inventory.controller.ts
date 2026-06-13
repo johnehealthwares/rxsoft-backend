@@ -23,7 +23,7 @@ type InventoryListResponse<T> = {
 
 function mapBalance(balance: {
   id: string;
-  product: { id: string; code: string; name: string };
+  item: { id: string; code: string; name: string };
   location: { id: string; name: string };
   lot: { id: string; code: string } | null;
   quantityOnHand: number;
@@ -34,10 +34,10 @@ function mapBalance(balance: {
 }): StockBalanceResponseDto {
   return {
     id: balance.id,
-    product: balance.product,
+    item: balance.item,
     location: balance.location,
     lot: balance.lot,
-    productId: balance.product.id,
+    itemId: balance.item.id,
     locationId: balance.location.id,
     lotId: balance.lot?.id ?? null,
     quantityOnHand: balance.quantityOnHand,

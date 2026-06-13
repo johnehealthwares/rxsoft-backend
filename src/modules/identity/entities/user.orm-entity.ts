@@ -20,6 +20,9 @@ export class UserOrmEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
+  @Column({ type: 'text', nullable: true })
+  phone?: string;
+
   @ManyToMany(() => RoleOrmEntity, (role) => role.users)
   @JoinTable({
     name: 'user_roles',

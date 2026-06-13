@@ -21,7 +21,7 @@ export type CreateSaleRepositoryPayload = {
   changeAmount: number;
   lines: Array<{
     lineNumber: number;
-    productId: string;
+    itemId: string;
     uomId: string;
     lotId: string | null;
     quantity: number;
@@ -36,6 +36,7 @@ export type CreateSaleRepositoryPayload = {
     paidAt: Date;
     receivedByUserId: string;
   }>;
+  status?: 'draft' | 'posted';
   receivable: {
     customerId: string;
     receivableNumber: string;

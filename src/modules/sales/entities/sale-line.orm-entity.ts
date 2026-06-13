@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { ProductOrmEntity } from '../../catalog/entities/product.orm-entity';
+import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLotOrmEntity } from '../../inventory/entities/stock-lot.orm-entity';
 import { SaleOrmEntity } from './sale.orm-entity';
 import { UomOrmEntity } from './uom.orm-entity';
@@ -18,9 +18,9 @@ export class SaleLineOrmEntity {
   @Column({ name: 'line_number', type: 'int' })
   lineNumber!: number;
 
-  @ManyToOne(() => ProductOrmEntity, { nullable: false })
-  @JoinColumn({ name: 'product_id' })
-  product!: ProductOrmEntity;
+  @ManyToOne(() => ItemOrmEntity, { nullable: false })
+  @JoinColumn({ name: 'item_id' })
+  item!: ItemOrmEntity;
 
   @ManyToOne(() => StockLotOrmEntity, { nullable: true })
   @JoinColumn({ name: 'lot_id' })

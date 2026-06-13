@@ -9,6 +9,7 @@ describe('AssignRoleUseCase', () => {
     findById: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
     list: jest.fn(),
   };
 
@@ -16,6 +17,10 @@ describe('AssignRoleUseCase', () => {
     findByCode: jest.fn(),
     listByCodes: jest.fn(),
     listAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    findById: jest.fn(),
   };
 
   const useCase = new AssignRoleUseCase(userRepository, roleRepository);
@@ -35,8 +40,10 @@ describe('AssignRoleUseCase', () => {
     });
     roleRepository.findByCode.mockResolvedValue({
       id: 'r1',
+      organizationId: 'org1',
       code: 'pharmacist',
       name: 'Pharmacist',
+      description: null,
       permissionCodes: [],
     });
     userRepository.update.mockImplementation(async (user) => user);
@@ -59,8 +66,10 @@ describe('AssignRoleUseCase', () => {
     });
     roleRepository.findByCode.mockResolvedValue({
       id: 'r1',
+      organizationId: 'org1',
       code: 'cashier',
       name: 'Cashier',
+      description: null,
       permissionCodes: [],
     });
 

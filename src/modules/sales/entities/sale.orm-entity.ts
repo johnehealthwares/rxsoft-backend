@@ -3,6 +3,7 @@ import { SaleLineOrmEntity } from './sale-line.orm-entity';
 import { SalePaymentOrmEntity } from './sale-payment.orm-entity';
 import { SaleRefundOrmEntity } from './sale-refund.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
+import { DEFAULT_SYSTEM_USER_ID } from 'src/shared/constants/persistence-scope';
 
 @Entity('sales')
 // Transaction header for a posted POS/invoice/mobile sale.
@@ -51,6 +52,9 @@ export class SaleOrmEntity {
 
   @Column({ name: 'sold_by_user_id', type: 'text' })
   soldByUserId!: string;
+
+  @Column({ name: 'created_by_user_id', type: 'text', default: DEFAULT_SYSTEM_USER_ID })
+  createdBy!: string;
 
   @OneToMany(() => SaleLineOrmEntity, (line) => line.sale)
   lines!: SaleLineOrmEntity[];

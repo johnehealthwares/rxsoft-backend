@@ -1,1 +1,1 @@
-export * from './product-category.orm-entity';
+export * from './item-category.orm-entity';

@@ -1,1 +1,0 @@
-import{W as e}from"./index-RhQvoRtF.js";var t=e;export{t as component};

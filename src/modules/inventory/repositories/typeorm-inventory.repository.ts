@@ -1,7 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { ProductOrmEntity } from '../../catalog/entities/product.orm-entity';
+import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLocationOrmEntity } from '../entities/stock-location.orm-entity';
 import { StockAdjustment } from '../domains/stock-adjustment.entity';
 import { StockBalance } from '../domains/stock-balance.entity';
@@ -32,8 +32,8 @@ export class TypeormInventoryRepository implements InventoryRepository {
     private readonly storeStockLocationRepository: Repository<StoreStockLocationOrmEntity>,
     @InjectRepository(StockMovementOrmEntity)
     private readonly stockMovementRepository: Repository<StockMovementOrmEntity>,
-    @InjectRepository(ProductOrmEntity)
-    private readonly productRepository: Repository<ProductOrmEntity>,
+    @InjectRepository(ItemOrmEntity)
+    private readonly itemRepository: Repository<ItemOrmEntity>,
     @InjectRepository(StockLocationOrmEntity)
     private readonly stockLocationRepository: Repository<StockLocationOrmEntity>,
     private readonly dataSource: DataSource,
@@ -42,7 +42,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
   async listStockBalances(query: StockBalanceQuery): Promise<{ items: StockBalance[]; total: number }> {
     const qb = this.stockBalanceRepository
       .createQueryBuilder('stock_balance')
-      .leftJoinAndSelect('stock_balance.product', 'product')
+      .leftJoinAndSelect('stock_balance.item', 'item')
       .leftJoinAndSelect('stock_balance.location', 'location')
       .leftJoinAndSelect('stock_balance.lot', 'lot')
       .where('stock_balance.organization_id = :organizationId', {
@@ -52,9 +52,9 @@ export class TypeormInventoryRepository implements InventoryRepository {
       .skip(query.offset)
       .take(query.limit);
 
-    if (query.productId) {
-      qb.andWhere('product.id = :productId', {
-        productId: query.productId,
+    if (query.itemId) {
+      qb.andWhere('item.id = :itemId', {
+        itemId: query.itemId,
       });
     }
 
@@ -76,7 +76,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
     const item = await this.stockBalanceRepository.findOne({
       where: { id, organizationId },
       relations: {
-        product: true,
+        item: true,
         location: true,
         lot: true,
       },
@@ -103,7 +103,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       items: items.map((item) => ({
         id: item.id,
         organizationId: item.organizationId,
-        productId: item.productId,
+        itemId: item.itemId,
         lotId: item.lotId,
         fromLocationId: item.fromLocationId,
         toLocationId: item.toLocationId,
@@ -126,7 +126,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const stockBalance = await stockBalanceRepo.findOne({
         where: { id: adjustment.stockBalanceId, organizationId },
         relations: {
-          product: true,
+          item: true,
           location: true,
           lot: true,
         },
@@ -157,7 +157,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
         organizationId,
         inventoryDocumentId: adjustmentEntity.id,
         inventoryDocumentLineId: null,
-        productId: stockBalance.product.id,
+        itemId: stockBalance.item.id,
         lotId: stockBalance.lot?.id ?? null,
         fromLocationId: adjustment.deltaQuantity < 0 ? stockBalance.location.id : null,
         toLocationId: adjustment.deltaQuantity > 0 ? stockBalance.location.id : null,
@@ -178,13 +178,13 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
       const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
       const stockMovementRepo = manager.getRepository(StockMovementOrmEntity);
-      const productRepo = manager.getRepository(ProductOrmEntity);
+      const itemRepo = manager.getRepository(ItemOrmEntity);
       const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
 
-      const product = await productRepo.findOne({
-        where: { id: payload.productId, organizationId: payload.organizationId },
+      const item = await itemRepo.findOne({
+        where: { id: payload.itemId, organizationId: payload.organizationId },
       });
-      if (!product) throw new NotFoundException('Product not found');
+      if (!item) throw new NotFoundException('Item not found');
 
       const location = await stockLocationRepo.findOne({
         where: { id: payload.locationId, organizationId: payload.organizationId },
@@ -194,17 +194,17 @@ export class TypeormInventoryRepository implements InventoryRepository {
       let stockBalance = await stockBalanceRepo.findOne({
         where: {
           organizationId: payload.organizationId,
-          product: { id: payload.productId },
+          item: { id: payload.itemId },
           location: { id: payload.locationId },
           lot: payload.lotId ? { id: payload.lotId } : undefined,
         },
-        relations: { product: true, location: true, lot: true },
+        relations: { item: true, location: true, lot: true },
       });
 
       if (!stockBalance) {
         stockBalance = stockBalanceRepo.create({
           organizationId: payload.organizationId,
-          product,
+          item,
           location,
           lot: payload.lotId ? ({ id: payload.lotId } as any) : null,
           quantityOnHand: 0,
@@ -238,7 +238,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
         organizationId: payload.organizationId,
         inventoryDocumentId: savedAdjustment.id,
         inventoryDocumentLineId: null,
-        productId: product.id,
+        itemId: item.id,
         lotId: savedBalance.lot?.id ?? null,
         fromLocationId: payload.deltaQuantity < 0 ? location.id : null,
         toLocationId: payload.deltaQuantity > 0 ? location.id : null,
@@ -252,7 +252,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
 
       const reloaded = await stockBalanceRepo.findOneOrFail({
         where: { id: savedBalance.id, organizationId: payload.organizationId },
-        relations: { product: true, location: true, lot: true },
+        relations: { item: true, location: true, lot: true },
       });
       return InventoryMapper.toDomainStockBalance(reloaded);
     });

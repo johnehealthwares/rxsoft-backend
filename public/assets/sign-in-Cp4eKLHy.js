@@ -1,0 +1,1 @@
+import{_ as e}from"./pages-DPmUigOr.js";import{Ei as t,cr as n}from"./index-BtmlBlD7.js";var r=t();function i(){let{redirect:t}=n({from:`/(auth)/sign-in`});return(0,r.jsx)(e,{redirectTo:t})}var a=i;export{a as component};

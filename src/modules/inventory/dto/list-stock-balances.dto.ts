@@ -21,7 +21,7 @@ export class ListStockBalancesDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  productId?: string;
+  itemId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -11,7 +11,7 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
 
   let context: IntegrationTestContext;
   let accessToken = '';
-  let createdProductId = '';
+  let createdItemId = '';
 
   beforeAll(async () => {
     context = await createIntegrationTestContext();
@@ -23,9 +23,9 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
     await destroyIntegrationTestContext(context);
   });
 
-  it('creates a product together with price list items and stock items', async () => {
+  it('creates an item together with price list items and stock items', async () => {
     const response = await request(context.httpApp())
-      .post('/products')
+      .post('/items')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         code: 'PCM001',
@@ -54,34 +54,34 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
     expect(response.status).toBe(201);
     expect(response.body.code).toBe('PCM001');
 
-    const createdProduct = await context.repositories.productRepository.findOneOrFail({
+    const createdItem = await context.repositories.itemRepository.findOneOrFail({
       where: { code: 'PCM001', organizationId: context.ids.organizationId },
     });
-    createdProductId = createdProduct.id;
+    createdItemId = createdItem.id;
 
     const priceListItem = await context.repositories.priceListItemRepository.findOne({
       where: {
-        product: { id: createdProduct.id },
+        item: { id: createdItem.id },
         priceList: { id: context.ids.priceListId },
       },
-      relations: { product: true, priceList: true, location: true },
+      relations: { item: true, priceList: true, location: true },
     });
     expect(priceListItem?.unitPrice).toBe(150);
     expect(priceListItem?.location?.id).toBe(context.ids.locationId);
 
     const stockBalance = await context.repositories.stockBalanceRepository.findOne({
       where: {
-        product: { id: createdProduct.id },
+        item: { id: createdItem.id },
         location: { id: context.ids.locationId },
       },
-      relations: { product: true, location: true },
+      relations: { item: true, location: true },
     });
     expect(stockBalance?.quantityOnHand).toBe(12);
   });
 
-  it('lists products', async () => {
+  it('lists items', async () => {
     const response = await request(context.httpApp())
-      .get('/products')
+      .get('/items')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ page: 1, limit: 20 });
 
@@ -90,19 +90,19 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
     expect(response.body.data.some((item: { code: string }) => item.code === 'PCM001')).toBe(true);
   });
 
-  it('gets a product by id', async () => {
+  it('gets an item by id', async () => {
     const response = await request(context.httpApp())
-      .get(`/products/${createdProductId}`)
+      .get(`/items/${createdItemId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.id).toBe(createdProductId);
+    expect(response.body.id).toBe(createdItemId);
     expect(response.body.code).toBe('PCM001');
   });
 
-  it('lists product dependency categories', async () => {
+  it('lists item dependency categories', async () => {
     const response = await request(context.httpApp())
-      .get('/products/dependencies/categories')
+      .get('/items/dependencies/categories')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ page: 1, limit: 20 });
 
@@ -110,9 +110,9 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
     expect(response.body.data.some((item: { id: string }) => item.id === context.ids.categoryId)).toBe(true);
   });
 
-  it('lists product dependency generic products', async () => {
+  it('lists item dependency generic products', async () => {
     const response = await request(context.httpApp())
-      .get('/products/dependencies/generic-products')
+      .get('/items/dependencies/generic-products')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ page: 1, limit: 20 });
 
@@ -120,9 +120,9 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
     expect(response.body.data.some((item: { id: string }) => item.id === context.ids.genericProductId)).toBe(true);
   });
 
-  it('lists product dependency uoms', async () => {
+  it('lists item dependency uoms', async () => {
     const response = await request(context.httpApp())
-      .get('/products/dependencies/uoms')
+      .get('/items/dependencies/uoms')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ page: 1, limit: 20 });
 
@@ -135,12 +135,12 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
       .get('/inventory/stock-balances')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({
-        productId: context.ids.seedProductId,
+        itemId: context.ids.seedItemId,
         locationId: context.ids.locationId,
       });
 
     expect(response.status).toBe(200);
-    expect(response.body.data[0].productId).toBe(context.ids.seedProductId);
+    expect(response.body.data[0].itemId).toBe(context.ids.seedItemId);
     expect(response.body.data[0].locationId).toBe(context.ids.locationId);
   });
 

@@ -36,7 +36,7 @@ describeIfDbReady('Sales and Receivables Integration', () => {
         customerId: context.ids.customerId,
         lines: [
           {
-            productId: context.ids.seedProductId,
+            itemId: context.ids.seedItemId,
             uomId: context.ids.baseUomId,
             quantity: 2,
             unitPrice: 50,
@@ -78,7 +78,7 @@ describeIfDbReady('Sales and Receivables Integration', () => {
         storeId: context.ids.locationId,
         lines: [
           {
-            productId: context.ids.seedProductId,
+            itemId: context.ids.seedItemId,
             uomId: context.ids.baseUomId,
             quantity: 1,
             unitPrice: 25,

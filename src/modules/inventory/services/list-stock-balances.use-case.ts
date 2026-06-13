@@ -22,7 +22,7 @@ export class ListStockBalancesUseCase {
       organizationId,
       query.page,
       query.limit,
-      query.productId ?? '',
+      query.itemId ?? '',
       query.locationId ?? '',
     ].join(':');
     const cached = await this.cacheService?.get<Awaited<ReturnType<InventoryRepository['listStockBalances']>>>(key);
@@ -34,7 +34,7 @@ export class ListStockBalancesUseCase {
       organizationId,
       offset: query.offset,
       limit: query.limit,
-      productId: query.productId,
+      itemId: query.itemId,
       locationId: query.locationId,
     });
 

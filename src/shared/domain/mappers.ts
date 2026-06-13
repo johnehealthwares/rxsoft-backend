@@ -1,9 +1,9 @@
 import type { GenericProductOrmEntity } from '../../modules/catalog/entities/generic-product.orm-entity';
 import type { PharmaceuticsOrmEntity } from '../../modules/catalog/entities/pharmaceutics.orm-entity';
-import type { ProductOrmEntity } from '../../modules/catalog/entities/product.orm-entity';
+import type { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 import type { ManufacturerOrmEntity } from '../../modules/manufacturers/entities/manufacturer.orm-entity';
 import type { OrganizationOrmEntity } from '../../modules/organizations/entities/organization.orm-entity';
-import type { ProductCategoryOrmEntity } from '../../modules/categories/entities/product-category.orm-entity';
+// import type { ItemCategoryOrmEntity } from '../../modules/categories/entities/item-category.orm-entity';
 import type { GlAccountOrmEntity, JournalEntryLineOrmEntity, JournalEntryOrmEntity, JournalOrmEntity } from '../../modules/accounting/entities';
 import type { PartyOrmEntity } from '../../modules/customers/entities/party.orm-entity';
 import type { StockBalance } from '../../modules/inventory/domains/stock-balance.entity';
@@ -20,8 +20,8 @@ import type {
   PartyType,
   PriceListItemType,
   PriceListType,
-  ProductSummaryType,
-  ProductCategoryType,
+  ItemSummaryType,
+  ItemCategoryType,
   PurchaseOrderType,
   StockBalanceType,
   StockLocationType,
@@ -29,6 +29,7 @@ import type {
   UomCategoryType,
   WarehouseType,
 } from './index';
+import { ItemCategoryOrmEntity } from 'src/modules/catalog/entities';
 
 const toIsoString = (value: Date | null | undefined): string | null => value ? value.toISOString() : null;
 
@@ -82,7 +83,7 @@ export const toGenericProductType = (entity: GenericProductOrmEntity): GenericPr
   deletedAt: toIsoString(entity.deletedAt),
 });
 
-export const toProductSummaryType = (entity: ProductOrmEntity): ProductSummaryType => ({
+export const toItemSummaryType = (entity: ItemOrmEntity): ItemSummaryType => ({
   id: entity.id,
   organizationId: entity.organizationId,
   code: entity.code,
@@ -100,7 +101,7 @@ export const toProductSummaryType = (entity: ProductOrmEntity): ProductSummaryTy
   deletedAt: toIsoString(entity.deletedAt),
 });
 
-export const toProductCategoryType = (entity: ProductCategoryOrmEntity): ProductCategoryType => ({
+export const toItemCategoryType = (entity: ItemCategoryOrmEntity): ItemCategoryType => ({
   id: entity.id,
   organizationId: entity.organizationId,
   parentId: entity.parent?.id ?? null,
@@ -251,7 +252,7 @@ export const toPriceListItemType = (entity: PriceListItemOrmEntity): PriceListIt
   id: entity.id,
   priceListId: entity.priceList.id,
   priceList: toPriceListType(entity.priceList),
-  product: toProductSummaryType(entity.product),
+  item: toItemSummaryType(entity.item),
   currencyCode: entity.currencyCode,
   unitPrice: entity.unitPrice,
   startsAt: toIsoString(entity.startsAt),
@@ -312,7 +313,7 @@ export const toJournalEntryLineType = (entity: JournalEntryLineOrmEntity) => ({
   lineNumber: entity.lineNumber,
   glAccountId: entity.glAccountId,
   partyId: entity.partyId,
-  productId: entity.productId,
+  itemId: entity.itemId,
   debitAmount: Number(entity.debitAmount),
   creditAmount: Number(entity.creditAmount),
   description: entity.description,
@@ -339,10 +340,10 @@ export const toJournalEntryType = (entity: JournalEntryOrmEntity) => ({
 export const toStockBalanceType = (entity: StockBalance): StockBalanceType => ({
   id: entity.id,
   organizationId: entity.organizationId,
-  product: {
-    id: entity.product.id,
-    code: entity.product.code,
-    name: entity.product.name,
+  item: {
+    id: entity.item.id,
+    code: entity.item.code,
+    name: entity.item.name,
   },
   location: {
     id: entity.location.id,

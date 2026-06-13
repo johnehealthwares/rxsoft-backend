@@ -24,7 +24,7 @@ export class InventoryService {
     return {
       data: result.items.map((item) => ({
         id: item.id,
-        productId: item.product.id,
+        itemId: item.item.id,
         branchId: item.location.id,
         quantity: item.quantityOnHand,
         reorderLevel: 0,
@@ -55,7 +55,7 @@ export class InventoryService {
   ): Promise<StockBalanceType> {
     const stockBalance = await this.inventoryRepository.adjustStockByReference({
       organizationId,
-      productId: payload.productId,
+      itemId: payload.itemId,
       locationId: payload.locationId,
       lotId: payload.lotId ?? null,
       deltaQuantity: payload.deltaQuantity,

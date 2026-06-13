@@ -1,20 +1,68 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { InflowController } from './controllers/inflow.controller';
 import { PurchasesController } from './controllers/purchases.controller';
+import { GoodsReceiptLineOrmEntity, GoodsReceiptOrmEntity, PurchaseOrderLineOrmEntity, PurchaseOrderOrmEntity } from './entities';
+import { InMemoryPurchasesRepository } from './repositories/in-memory-purchases.repository';
+import { TypeormPurchasesRepository } from './repositories/typeorm-purchases.repository';
+import { PURCHASES_REPOSITORY } from './services/purchases.di-tokens';
 import { PurchasesService } from './services/purchases.service';
-import { PurchaseOrderLineOrmEntity, PurchaseOrderOrmEntity } from './entities';
-import { WarehouseOrmEntity } from '../inventory/entities';
+import { ReceiveGoodsUseCase } from './services/receive-goods.use-case';
+import {
+  StockAdjustmentOrmEntity,
+  StockBalanceOrmEntity,
+  StockLocationOrmEntity,
+  StockMovementOrmEntity,
+  WarehouseOrmEntity,
+} from '../inventory/entities';
+
+const purchasesConfigService = new ConfigService();
+const useInMemoryRepos = purchasesConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
+const purchasesPersistenceImports = useInMemoryRepos
+  ? []
+  : [
+      TypeOrmModule.forFeature([
+        PurchaseOrderOrmEntity,
+        PurchaseOrderLineOrmEntity,
+        GoodsReceiptOrmEntity,
+        GoodsReceiptLineOrmEntity,
+        StockMovementOrmEntity,
+        StockBalanceOrmEntity,
+        StockLocationOrmEntity,
+        StockAdjustmentOrmEntity,
+        WarehouseOrmEntity,
+      ]),
+    ];
+const purchasesRepositoryProviders = useInMemoryRepos
+  ? [
+      InMemoryPurchasesRepository,
+      {
+        provide: PURCHASES_REPOSITORY,
+        useExisting: InMemoryPurchasesRepository,
+      },
+    ]
+  : [
+      TypeormPurchasesRepository,
+      {
+        provide: PURCHASES_REPOSITORY,
+        useExisting: TypeormPurchasesRepository,
+      },
+    ];
 
 @Module({
-  imports: [
-    JwtModule.register({}),
-    TypeOrmModule.forFeature([PurchaseOrderOrmEntity, PurchaseOrderLineOrmEntity, WarehouseOrmEntity]),
+  imports: [JwtModule.register({}), ...purchasesPersistenceImports],
+  controllers: [PurchasesController, InflowController],
+  providers: [
+    PurchasesService,
+    ReceiveGoodsUseCase,
+    JwtAuthGuard,
+    RolesGuard,
+    ...purchasesRepositoryProviders,
   ],
-  controllers: [PurchasesController],
-  providers: [PurchasesService, JwtAuthGuard, RolesGuard],
   exports: [PurchasesService],
 })
 export class PurchasesModule {}

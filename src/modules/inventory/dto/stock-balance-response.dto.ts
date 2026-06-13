@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class StockBalanceProductRefDto {
+export class StockBalanceItemRefDto {
   @ApiProperty()
   id!: string;
 
@@ -31,8 +31,8 @@ export class StockBalanceResponseDto {
   @ApiProperty()
   id!: string;
 
-  @ApiProperty({ type: StockBalanceProductRefDto })
-  product!: StockBalanceProductRefDto;
+  @ApiProperty({ type: StockBalanceItemRefDto })
+  item!: StockBalanceItemRefDto;
 
   @ApiProperty({ type: StockBalanceLocationRefDto })
   location!: StockBalanceLocationRefDto;
@@ -42,7 +42,7 @@ export class StockBalanceResponseDto {
 
   // Backward-compatible flattened ids.
   @ApiProperty()
-  productId!: string;
+  itemId!: string;
 
   @ApiProperty()
   locationId!: string;

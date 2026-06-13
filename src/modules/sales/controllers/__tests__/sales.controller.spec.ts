@@ -88,7 +88,7 @@ describe('SalesController', () => {
         saleChannel: 'pos',
         storeId: 'store1',
         customerId: 'cust1',
-        lines: [{ productId: 'p1', uomId: 'u1', quantity: 2, unitPrice: 50 }],
+        lines: [{ itemId: 'p1', uomId: 'u1', quantity: 2, unitPrice: 50 }],
         payments: [{ paymentMethodId: 'pm1', amount: 60 }],
       },
       { sub: 'u1', organizationId: 'org1', username: 'cashier', roles: ['cashier'], permissions: [] },

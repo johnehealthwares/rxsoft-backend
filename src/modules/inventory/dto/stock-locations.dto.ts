@@ -79,7 +79,7 @@ export class AdjustStockByReferenceDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  productId!: string;
+  itemId!: string;
 
   @ApiProperty()
   @IsString()

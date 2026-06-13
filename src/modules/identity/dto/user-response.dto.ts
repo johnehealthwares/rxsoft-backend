@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserResponseDto {
   @ApiProperty()
@@ -6,6 +6,9 @@ export class UserResponseDto {
 
   @ApiProperty()
   username!: string;
+
+  @ApiPropertyOptional()
+  phone?: string;
 
   @ApiProperty({ isArray: true })
   roles!: string[];

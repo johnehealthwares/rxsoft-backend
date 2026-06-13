@@ -25,14 +25,14 @@ describe('AppCacheService', () => {
 
   it('invalidates values by prefix', async () => {
     const cacheService = new AppCacheService();
-    await cacheService.set('products:list:1', { id: 1 }, 60);
-    await cacheService.set('products:list:2', { id: 2 }, 60);
+    await cacheService.set('items:list:1', { id: 1 }, 60);
+    await cacheService.set('items:list:2', { id: 2 }, 60);
     await cacheService.set('sales:list:1', { id: 3 }, 60);
 
-    await cacheService.invalidateByPrefix('products:list:');
+    await cacheService.invalidateByPrefix('items:list:');
 
-    expect(await cacheService.get('products:list:1')).toBeNull();
-    expect(await cacheService.get('products:list:2')).toBeNull();
+    expect(await cacheService.get('items:list:1')).toBeNull();
+    expect(await cacheService.get('items:list:2')).toBeNull();
     expect(await cacheService.get('sales:list:1')).toEqual({ id: 3 });
   });
 });

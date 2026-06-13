@@ -14,7 +14,8 @@ export class AuditLogOrmEntity {
   @Column({ type: 'varchar', length: 120, nullable: true, name: 'actor_username' })
   actorUsername!: string | null;
 
-  @Column({ type: 'varchar', length: 160 })
+  // @Column({ type: 'varchar', length: 160 })
+  @Column({ type: 'text' })
   action!: string;
 
   @Column({ type: 'varchar', length: 10, name: 'http_method' })

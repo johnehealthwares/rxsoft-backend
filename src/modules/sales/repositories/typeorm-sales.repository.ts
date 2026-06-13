@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, IsNull, Repository } from 'typeorm';
-import { ProductOrmEntity } from '../../catalog/entities/product.orm-entity';
+import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import {
   StockAdjustmentOrmEntity,
@@ -77,7 +77,7 @@ export class TypeormSalesRepository implements SalesRepository {
       const saleLineRepo = manager.getRepository(SaleLineOrmEntity);
       const salePaymentRepo = manager.getRepository(SalePaymentOrmEntity);
       const receivableRepo = manager.getRepository(AccountReceivableOrmEntity);
-      const productRepo = manager.getRepository(ProductOrmEntity);
+      const itemRepo = manager.getRepository(ItemOrmEntity);
       const lotRepo = manager.getRepository(StockLotOrmEntity);
       const uomRepo = manager.getRepository(UomOrmEntity);
       const paymentMethodRepo = manager.getRepository(PaymentMethodOrmEntity);
@@ -91,17 +91,18 @@ export class TypeormSalesRepository implements SalesRepository {
         throw new Error('Sold-by user is not valid for this organization');
       }
 
-      const productIds = [...new Set(payload.lines.map((line) => line.productId))];
-      if (productIds.length) {
-        const products = await productRepo.find({
+      const itemIds = [...new Set(payload.lines.map((line) => line.itemId))];
+      if (itemIds.length) {
+        const items = await itemRepo.find({
           where: {
-            id: In(productIds),
+            id: In(itemIds),
             organizationId: payload.organizationId,
           },
           select: ['id'],
         });
-        if (products.length !== productIds.length) {
-          throw new Error('One or more product references are invalid');
+        console.log({items, itemIds})
+        if (items.length !== itemIds.length) {
+          throw new Error('One or more item references are invalid');
         }
       }
 
@@ -173,7 +174,7 @@ export class TypeormSalesRepository implements SalesRepository {
         saleChannel: payload.saleChannel,
         storeId: payload.storeId,
         customerId: payload.customerId,
-        status: 'posted',
+        status: payload.status ?? 'posted',
         subtotalAmount: payload.subtotalAmount,
         discountAmount: 0,
         taxAmount: 0,
@@ -191,7 +192,7 @@ export class TypeormSalesRepository implements SalesRepository {
           saleLineRepo.create({
             sale: savedSale,
             lineNumber: line.lineNumber,
-            product: { id: line.productId },
+            item: { id: line.itemId },
             lot: line.lotId ? { id: line.lotId } : null,
             uom: { id: line.uomId },
             quantity: line.quantity,
@@ -286,7 +287,7 @@ export class TypeormSalesRepository implements SalesRepository {
           id: In(requestedLineIds),
           sale: { id: sale.id },
         },
-        relations: ['sale', 'product', 'lot'],
+        relations: ['sale', 'item', 'lot'],
       });
       if (saleLines.length !== requestedLineIds.length) {
         throw new BadRequestException('One or more sale lines are invalid for this sale');
@@ -377,18 +378,18 @@ export class TypeormSalesRepository implements SalesRepository {
         const stockBalance = await stockBalanceRepo.findOne({
           where: {
             organizationId: payload.organizationId,
-            product: { id: sourceLine.product.id },
+            item: { id: sourceLine.item.id },
             location: { id: saleReturnLocation.stockLocation.id },
             lot: sourceLine.lot ? { id: sourceLine.lot.id } : IsNull(),
           },
-          relations: ['product', 'location', 'lot'],
+          relations: ['item', 'location', 'lot'],
         });
 
         const upsertBalance =
           stockBalance ??
           stockBalanceRepo.create({
             organizationId: payload.organizationId,
-            product: { id: sourceLine.product.id },
+            item: { id: sourceLine.item.id },
             location: { id: saleReturnLocation.stockLocation.id },
             lot: sourceLine.lot ? { id: sourceLine.lot.id } : null,
             quantityOnHand: 0,

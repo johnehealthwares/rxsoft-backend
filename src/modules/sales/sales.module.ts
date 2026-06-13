@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductOrmEntity } from '../catalog/entities/product.orm-entity';
+import { ItemOrmEntity } from '../catalog/entities/item.orm-entity';
 import { UserOrmEntity } from '../identity/entities/user.orm-entity';
 import { StockLotOrmEntity } from '../inventory/entities/stock-lot.orm-entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -48,7 +48,7 @@ const salesPersistenceImports = useInMemoryRepos
         PaymentMethodOrmEntity,
         UomCategoryOrmEntity,
         UomOrmEntity,
-        ProductOrmEntity,
+        ItemOrmEntity,
         StockLotOrmEntity,
         UserOrmEntity,
       ]),

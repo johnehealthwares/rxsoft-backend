@@ -46,12 +46,12 @@ export class ReportsController {
     };
   }
 
-  @Get('top-selling-products')
+  @Get('top-selling-items')
   @Roles('super_admin', 'admin', 'manager', 'auditor')
-  topSellingProducts(): Array<{ productCode: string; quantitySold: number; revenue: number }> {
+  topSellingProducts(): Array<{ itemCode: string; quantitySold: number; revenue: number }> {
     return [
-      { productCode: 'PCM-500', quantitySold: 120, revenue: 144 },
-      { productCode: 'AMX-250', quantitySold: 82, revenue: 205 },
+      { itemCode: 'PCM-500', quantitySold: 120, revenue: 144 },
+      { itemCode: 'AMX-250', quantitySold: 82, revenue: 205 },
     ];
   }
 

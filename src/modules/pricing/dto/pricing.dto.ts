@@ -55,7 +55,7 @@ export class ListPriceListItemsDto extends ListQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  productId?: string;
+  itemId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -70,8 +70,8 @@ export class CreatePriceListItemDto {
   priceListId?: string;
 
   @ApiProperty()
-  @IsString({message: "Provide product id"})
-  productId: string;
+  @IsString({message: "Provide item id"})
+  itemId: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -103,7 +103,7 @@ export class UpdatePriceListItemDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  productId?: string;
+  itemId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -132,7 +132,7 @@ export class UpdatePriceListItemDto {
   endsAt?: string;
 }
 
-export class AdjustProductPriceDto {
+export class AdjustItemPriceDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -141,7 +141,7 @@ export class AdjustProductPriceDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  productId!: string;
+  itemId!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

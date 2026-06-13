@@ -220,7 +220,7 @@ export class AccountingService {
       lineNumber: payload.lineNumber,
       glAccountId: payload.glAccountId,
       partyId: payload.partyId ?? null,
-      productId: payload.productId ?? null,
+      itemId: payload.itemId ?? null,
       debitAmount: payload.debitAmount ?? 0,
       creditAmount: payload.creditAmount ?? 0,
       description: payload.description ?? null,
@@ -240,7 +240,7 @@ export class AccountingService {
     }
     if (payload.lineNumber !== undefined) line.lineNumber = payload.lineNumber;
     if (payload.partyId !== undefined) line.partyId = payload.partyId;
-    if (payload.productId !== undefined) line.productId = payload.productId;
+    if (payload.itemId !== undefined) line.itemId = payload.itemId;
     if (payload.debitAmount !== undefined) line.debitAmount = payload.debitAmount;
     if (payload.creditAmount !== undefined) line.creditAmount = payload.creditAmount;
     if (payload.description !== undefined) line.description = payload.description;

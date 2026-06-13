@@ -1,0 +1,1 @@
+import{t as e}from"./schema-DO8trdbh.js";import{Ei as t}from"./index-BtmlBlD7.js";import{t as n}from"./data-page-form-bPU7usb2.js";var r=t();function i(){return(0,r.jsx)(n,{config:e})}export{i as component};

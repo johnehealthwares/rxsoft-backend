@@ -5,7 +5,7 @@ export type StockBalanceQuery = {
   organizationId: string;
   offset: number;
   limit: number;
-  productId?: string;
+  itemId?: string;
   locationId?: string;
 };
 
@@ -23,7 +23,7 @@ export type StoreStockLocation = {
 export type StockMovement = {
   id: string;
   organizationId: string;
-  productId: string;
+  itemId: string;
   lotId: string | null;
   fromLocationId: string | null;
   toLocationId: string | null;
@@ -60,7 +60,7 @@ export type CreateStoreStockLocationPayload = {
 
 export type AdjustStockByReferencePayload = {
   organizationId: string;
-  productId: string;
+  itemId: string;
   locationId: string;
   lotId?: string | null;
   deltaQuantity: number;

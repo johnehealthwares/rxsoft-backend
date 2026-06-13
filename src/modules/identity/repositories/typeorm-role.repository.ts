@@ -1,9 +1,10 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { In, Repository } from 'typeorm';
 import { RoleRepository } from './role.repository';
 import { Role } from '../domains/role.entity';
 import { RoleOrmEntity } from '../entities/role.orm-entity';
+import { PermissionOrmEntity } from '../entities/permission.orm-entity';
 import { IdentityMapper } from '../mappers/identity.mapper';
 
 @Injectable()
@@ -11,11 +12,22 @@ export class TypeormRoleRepository implements RoleRepository {
   constructor(
     @InjectRepository(RoleOrmEntity)
     private readonly roleRepository: Repository<RoleOrmEntity>,
+    @InjectRepository(PermissionOrmEntity)
+    private readonly permissionRepository: Repository<PermissionOrmEntity>,
   ) {}
 
   async findByCode(code: string, organizationId: string): Promise<Role | null> {
     const item = await this.roleRepository.findOne({
       where: { code, organizationId },
+      relations: { permissions: true },
+    });
+
+    return item ? IdentityMapper.toDomainRole(item) : null;
+  }
+
+  async findById(id: string, organizationId: string): Promise<Role | null> {
+    const item = await this.roleRepository.findOne({
+      where: { id, organizationId },
       relations: { permissions: true },
     });
 
@@ -43,5 +55,60 @@ export class TypeormRoleRepository implements RoleRepository {
     });
 
     return items.map(IdentityMapper.toDomainRole.bind(IdentityMapper));
+  }
+
+  async create(role: Role): Promise<Role> {
+    const permissions = role.permissionCodes.length
+      ? await this.permissionRepository.findBy({ code: In(role.permissionCodes) })
+      : [];
+
+    const orm = this.roleRepository.create({
+      id: role.id,
+      organizationId: role.organizationId,
+      code: role.code,
+      name: role.name,
+      description: role.description ?? null,
+      permissions,
+    });
+
+    const saved = await this.roleRepository.save(orm);
+    return IdentityMapper.toDomainRole(saved);
+  }
+
+  async update(role: Role): Promise<Role> {
+    const orm = await this.roleRepository.findOne({
+      where: { id: role.id },
+      relations: { permissions: true },
+    });
+
+    if (!orm) {
+      throw new NotFoundException('Role not found');
+    }
+
+    orm.code = role.code;
+    orm.name = role.name;
+    orm.description = role.description ?? null;
+
+    if (role.permissionCodes) {
+      const permissions = role.permissionCodes.length
+        ? await this.permissionRepository.findBy({ code: In(role.permissionCodes) })
+        : [];
+      orm.permissions = permissions;
+    }
+
+    const saved = await this.roleRepository.save(orm);
+    return IdentityMapper.toDomainRole(saved);
+  }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    const orm = await this.roleRepository.findOne({
+      where: { id, organizationId },
+    });
+
+    if (!orm) {
+      throw new NotFoundException('Role not found');
+    }
+
+    await this.roleRepository.remove(orm);
   }
 }

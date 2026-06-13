@@ -50,7 +50,7 @@ export class InMemorySalesRepository implements SalesRepository {
       payload.organizationId,
       payload.saleNumber,
       payload.saleChannel,
-      'posted',
+      payload.status ?? 'posted',
       payload.totalAmount,
       payload.paidAmount,
       payload.changeAmount,

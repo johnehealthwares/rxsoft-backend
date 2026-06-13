@@ -21,6 +21,8 @@ import { PricingModule } from './modules/pricing/pricing.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
+import { WebsiteModule } from './modules/website/website.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -79,7 +81,7 @@ const infrastructureImports = useInMemoryRepos
     ];
 
 const applicationModules = useInMemoryRepos
-  ? [IdentityModule, CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule]
+  ? [IdentityModule, CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule]
   : [
       IdentityModule,
       CatalogModule,
@@ -95,6 +97,8 @@ const applicationModules = useInMemoryRepos
       AccountingModule,
       ReportsModule,
       AdminAuditModule,
+      WebsiteModule,
+      UploadModule,
     ];
 
 @Module({

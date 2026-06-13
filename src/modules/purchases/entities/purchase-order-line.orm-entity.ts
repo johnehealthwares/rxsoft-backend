@@ -10,8 +10,8 @@ export class PurchaseOrderLineOrmEntity {
   @JoinColumn({ name: 'purchase_order_id' })
   purchaseOrder!: PurchaseOrderOrmEntity;
 
-  @Column({ name: 'product_id', type: 'uuid' })
-  productId!: string;
+  @Column({ name: 'item_id', type: 'uuid' })
+  itemId!: string;
 
   @Column({ name: 'ordered_qty', type: 'numeric', precision: 14, scale: 3 })
   orderedQty!: number;

@@ -6,7 +6,7 @@ class CreateSaleLineDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  productId!: string;
+  itemId!: string;
 
   @ApiProperty()
   @IsString()
@@ -77,6 +77,10 @@ export class CreateSaleDto {
   @ValidateNested({ each: true })
   @Type(() => CreateSalePaymentDto)
   payments!: CreateSalePaymentDto[];
+
+  @ApiProperty({ required: false, default: false })
+  @IsOptional()
+  hold?: boolean;
 }
 
 export type CreateSaleLineInput = CreateSaleLineDto;

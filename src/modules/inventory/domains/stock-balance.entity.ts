@@ -1,4 +1,4 @@
-export class ProductReference {
+export class ItemReference {
   constructor(
     public readonly id: string,
     public readonly code: string,
@@ -25,7 +25,7 @@ export class StockBalance {
   constructor(
     public readonly id: string,
     public readonly organizationId: string,
-    public readonly product: ProductReference,
+    public readonly item: ItemReference,
     public readonly location: StockLocationReference,
     public readonly lot: StockLotReference | null,
     public quantityOnHand: number,

@@ -14,6 +14,7 @@ export class InMemoryUserRepository implements UserRepository {
       '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
       true,
       ['super_admin'],
+      undefined,
     );
 
     this.users.set(bootstrapUser.id, bootstrapUser);
@@ -45,6 +46,13 @@ export class InMemoryUserRepository implements UserRepository {
     }
     this.users.set(user.id, user);
     return user;
+  }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    const user = this.users.get(id);
+    if (user && user.organizationId === organizationId) {
+      this.users.delete(id);
+    }
   }
 
   async list(offset: number, limit: number, organizationId: string): Promise<{ items: User[]; total: number }> {

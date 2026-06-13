@@ -12,6 +12,7 @@ describe('LoginUseCase', () => {
     findById: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
     list: jest.fn(),
   };
 
@@ -19,6 +20,10 @@ describe('LoginUseCase', () => {
     findByCode: jest.fn(),
     listByCodes: jest.fn(),
     listAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    findById: jest.fn(),
   };
 
   const passwordHasher: jest.Mocked<PasswordHasherPort> = {
@@ -60,7 +65,7 @@ describe('LoginUseCase', () => {
     });
     passwordHasher.verify.mockResolvedValue(true);
     roleRepository.listByCodes.mockResolvedValue([
-      { id: 'r1', code: 'admin', name: 'Admin', permissionCodes: ['users.read'] },
+      { id: 'r1', organizationId: 'org1', code: 'admin', name: 'Admin', description: null, permissionCodes: ['users.read'] },
     ]);
     tokenIssuer.issuePair.mockResolvedValue({
       accessToken: 'a',

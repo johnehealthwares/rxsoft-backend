@@ -47,6 +47,7 @@ export class TypeormUserRepository implements UserRepository {
       username: user.username,
       passwordHash: user.passwordHash,
       isActive: user.isActive,
+      phone: user.phone,
       roles,
     });
 
@@ -73,6 +74,7 @@ export class TypeormUserRepository implements UserRepository {
 
     existing.passwordHash = user.passwordHash;
     existing.isActive = user.isActive;
+    existing.phone = user.phone;
     existing.roles = roles;
 
     const saved = await this.userRepository.save(existing);
@@ -82,6 +84,15 @@ export class TypeormUserRepository implements UserRepository {
     });
 
     return IdentityMapper.toDomainUser(reloaded);
+  }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    const existing = await this.userRepository.findOne({
+      where: { id, organizationId },
+    });
+    if (existing) {
+      await this.userRepository.remove(existing);
+    }
   }
 
   async list(offset: number, limit: number, organizationId: string): Promise<{ items: User[]; total: number }> {

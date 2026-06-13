@@ -15,8 +15,8 @@ export class StockMovementOrmEntity {
   @Column({ name: 'inventory_document_line_id', type: 'text', nullable: true })
   inventoryDocumentLineId!: string | null;
 
-  @Column({ name: 'product_id', type: 'text' })
-  productId!: string;
+  @Column({ name: 'item_id', type: 'text' })
+  itemId!: string;
 
   @Column({ name: 'lot_id', type: 'text', nullable: true })
   lotId!: string | null;

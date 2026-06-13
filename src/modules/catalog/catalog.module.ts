@@ -5,19 +5,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { InventoryModule } from '../inventory/inventory.module';
 import { PricingModule } from '../pricing/pricing.module';
 
-import { PRODUCT_REPOSITORY } from './services/catalog.di-tokens';
-import { CreateProductUseCase } from './services/create-product.use-case';
-import { GetProductUseCase } from './services/get-product.use-case';
+import { ITEM_REPOSITORY } from './services/catalog.di-tokens';
+import { CreateItemUseCase } from './services/create-item.use-case';
+import { GetItemUseCase } from './services/get-item.use-case';
 import { GenericProductsService } from './services/generic-products.service';
 import { PharmaceuticsService } from './services/pharmaceutics.service';
 import { DrugComponentsService } from './services/drug-components.service';
-import { ListProductDependenciesUseCase } from './services/list-product-dependencies.use-case';
-import { ListProductsUseCase } from './services/list-products.use-case';
+import { ListItemDependenciesUseCase } from './services/list-item-dependencies.use-case';
+import { ListItemsUseCase } from './services/list-items.use-case';
 
-import { InMemoryProductRepository } from './repositories/in-memory-product.repository';
-import { TypeormProductRepository } from './repositories/typeorm-product.repository';
+import { InMemoryItemRepository } from './repositories/in-memory-item.repository';
+import { TypeormItemRepository } from './repositories/typeorm-item.repository';
 
-import { ProductsController } from './controllers/products.controller';
+import { ItemsController } from './controllers/items.controller';
 import { GenericProductsController } from './controllers/generic-products.controller';
 import { PharmaceuticsController } from './controllers/pharmaceutics.controller';
 import { DrugComponentsController } from './controllers/drug-components.controller';
@@ -26,12 +26,14 @@ import {
   DrugComponentOrmEntity,
   GenericProductOrmEntity,
   PharmaceuticsOrmEntity,
-  ProductCategoryOrmEntity,
-  ProductOrmEntity,
+  ItemCategoryOrmEntity,
+  ItemOrmEntity,
+  ClassificationOrmEntity,
 } from './entities';
 
 import { UomOrmEntity } from '../sales/entities';
-import { UpdateProductUseCase } from './services/update-product.use-case';
+import { UpdateItemUseCase } from './services/update-item.use-case';
+import { PatchItemUseCase } from './services/patch-item.use-case';
 
 const catalogConfigService = new ConfigService();
 const useInMemoryRepos = catalogConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -39,33 +41,34 @@ const catalogPersistenceImports = useInMemoryRepos
   ? []
   : [
       TypeOrmModule.forFeature([
-        ProductOrmEntity,
-        ProductCategoryOrmEntity,
+        ItemOrmEntity,
+        ItemCategoryOrmEntity,
         GenericProductOrmEntity,
         PharmaceuticsOrmEntity,
         DrugComponentOrmEntity,
         UomOrmEntity,
+        ClassificationOrmEntity,
       ]),
       PricingModule,
     ];
 const catalogRepositoryProviders = useInMemoryRepos
   ? [
-      InMemoryProductRepository,
+      InMemoryItemRepository,
       {
-        provide: PRODUCT_REPOSITORY,
-        useExisting: InMemoryProductRepository,
+        provide: ITEM_REPOSITORY,
+        useExisting: InMemoryItemRepository,
       },
     ]
   : [
-      TypeormProductRepository,
+      TypeormItemRepository,
       {
-        provide: PRODUCT_REPOSITORY,
-        useExisting: TypeormProductRepository,
+        provide: ITEM_REPOSITORY,
+        useExisting: TypeormItemRepository,
       },
     ];
 const catalogControllers = useInMemoryRepos
-  ? [ProductsController]
-  : [ProductsController, GenericProductsController, PharmaceuticsController, DrugComponentsController];
+  ? [ItemsController]
+  : [ItemsController, GenericProductsController, PharmaceuticsController, DrugComponentsController];
 const catalogExtraProviders = useInMemoryRepos ? [] : [GenericProductsService, PharmaceuticsService, DrugComponentsService];
 
 @Module({
@@ -84,14 +87,15 @@ const catalogExtraProviders = useInMemoryRepos ? [] : [GenericProductsService, P
   ],
   controllers: catalogControllers,
   providers: [
-    CreateProductUseCase,
-    UpdateProductUseCase,
-    GetProductUseCase,
-    ListProductsUseCase,
-    ListProductDependenciesUseCase,
+    CreateItemUseCase,
+    UpdateItemUseCase,
+    PatchItemUseCase,
+    GetItemUseCase,
+    ListItemsUseCase,
+    ListItemDependenciesUseCase,
     ...catalogExtraProviders,
     ...catalogRepositoryProviders,
   ],
-  exports: [PRODUCT_REPOSITORY],
+  exports: [ITEM_REPOSITORY],
 })
 export class CatalogModule { }

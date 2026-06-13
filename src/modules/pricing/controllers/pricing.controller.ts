@@ -8,7 +8,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import type { PriceListItemType, PriceListType } from '../../../shared/domain';
 import {
-  AdjustProductPriceDto,
+  AdjustItemPriceDto,
   CreatePriceListDto,
   CreatePriceListItemDto,
   ListPriceListItemsDto,
@@ -112,14 +112,12 @@ export class PricingController {
     return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
   }
 
-
-
-  @Patch(':priceListId/items/:itemId')
+  @Patch(':priceListId/items/:priceListItemId')
   @Roles('admin', 'super_admin', 'pharmacist')
   @AuditAction('pricing.price_list_item.update')
   async updateItem(
     @Param('priceListId') priceListId: string,
-    @Param('itemId') itemId: string,
+    @Param('priceListItemId') itemId: string,
     @Body() payload: UpdatePriceListItemDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<PriceListItemType> {
@@ -133,12 +131,12 @@ export class PricingController {
 
   @Post('adjust-price')
   @Roles('admin', 'super_admin', 'pharmacist')
-  @AuditAction('pricing.product_price.adjust')
+  @AuditAction('pricing.item_price.adjust')
   async adjustPrice(
-    @Body() payload: AdjustProductPriceDto,
+    @Body() payload: AdjustItemPriceDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<PriceListItemType> {
-    return this.pricingService.adjustProductPrice(payload, currentUser.organizationId);
+    return this.pricingService.adjustItemPrice(payload, currentUser.organizationId);
   }
 
   @Delete(':priceListId')

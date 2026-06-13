@@ -5,7 +5,7 @@ import { IsArray, IsDateString, IsIn, IsNumber, IsOptional, IsString, Min, Valid
 export class PurchaseLineDto {
   @ApiProperty()
   @IsString()
-  productId!: string;
+  itemId!: string;
 
   @ApiProperty()
   @Type(() => Number)
@@ -97,7 +97,7 @@ export class CreatePurchaseDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  productId?: string;
+  itemId?: string;
 
   @ApiPropertyOptional()
   @Type(() => Number)

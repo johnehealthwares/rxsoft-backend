@@ -22,12 +22,11 @@ export class CreateSaleUseCase {
       throw new BadRequestException('At least one sale line is required');
     }
 
-    // Price math is centralized here so persistence receives normalized amounts.
     const lines = payload.lines.map((line, index) => {
       const lineSubtotal = Number((line.quantity * line.unitPrice).toFixed(2));
       return {
         lineNumber: index + 1,
-        productId: line.productId,
+        itemId: line.itemId,
         uomId: line.uomId,
         lotId: line.lotId ?? null,
         quantity: line.quantity,
@@ -40,7 +39,6 @@ export class CreateSaleUseCase {
     const subtotalAmount = Number(lines.reduce((sum, line) => sum + line.lineTotal, 0).toFixed(2));
     const totalAmount = subtotalAmount;
 
-    // Payments are aggregated once to derive paid/change/outstanding consistently.
     const payments = payload.payments.map((payment) => ({
       paymentMethodId: payment.paymentMethodId,
       amount: payment.amount,
@@ -53,10 +51,11 @@ export class CreateSaleUseCase {
     const changeAmount = paidAmount > totalAmount ? Number((paidAmount - totalAmount).toFixed(2)) : 0;
     const outstandingAmount = paidAmount < totalAmount ? Number((totalAmount - paidAmount).toFixed(2)) : 0;
 
-    // Underpaid sales must be collectible from a known customer.
     if (outstandingAmount > 0 && !payload.customerId) {
       throw new BadRequestException('Customer is required when sale is underpaid');
     }
+
+    const isHold = payload.hold === true;
 
     const result = await this.salesRepository.createWithSettlement({
       organizationId,
@@ -71,9 +70,10 @@ export class CreateSaleUseCase {
       paidAmount,
       changeAmount,
       lines,
-      payments,
+      payments: isHold ? [] : payments,
+      status: isHold ? 'draft' : 'posted',
       receivable:
-        outstandingAmount > 0
+        !isHold && outstandingAmount > 0
           ? {
               customerId: payload.customerId!,
               receivableNumber: `AR-${payload.saleNumber}`,

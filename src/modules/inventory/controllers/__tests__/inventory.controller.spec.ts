@@ -58,10 +58,10 @@ describe('InventoryController', () => {
 
     expect(result.data[0]).toMatchObject({
       id: 'b1',
-      product: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
+      item: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
       location: { id: 'l1', name: 'Main Store' },
       lot: { id: 'lot1', code: 'LOT-001' },
-      productId: 'p1',
+      itemId: 'p1',
       locationId: 'l1',
       lotId: 'lot1',
       quantityOnHand: 20,
@@ -97,10 +97,10 @@ describe('InventoryController', () => {
 
     expect(result).toMatchObject({
       id: 'b1',
-      product: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
+      item: { id: 'p1', code: 'PARA-500', name: 'Paracetamol 500mg' },
       location: { id: 'l1', name: 'Main Store' },
       lot: null,
-      productId: 'p1',
+      itemId: 'p1',
       locationId: 'l1',
       lotId: null,
       quantityOnHand: 25,

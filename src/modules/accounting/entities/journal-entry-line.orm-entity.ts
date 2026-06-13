@@ -23,8 +23,8 @@ export class JournalEntryLineOrmEntity {
   @Column({ name: 'party_id', type: 'uuid', nullable: true })
   partyId!: string | null;
 
-  @Column({ name: 'product_id', type: 'uuid', nullable: true })
-  productId!: string | null;
+  @Column({ name: 'item_id', type: 'uuid', nullable: true })
+  itemId!: string | null;
 
   @Column({ name: 'debit_amount', type: 'numeric', precision: 14, scale: 2, default: 0 })
   debitAmount!: number;
