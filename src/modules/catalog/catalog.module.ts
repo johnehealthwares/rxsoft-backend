@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { InventoryModule } from '../inventory/inventory.module';
 import { PricingModule } from '../pricing/pricing.module';
+import { ServicesModule } from '../../services/services.module';
 
 import { ITEM_REPOSITORY } from './services/catalog.di-tokens';
 import { CreateItemUseCase } from './services/create-item.use-case';
@@ -23,9 +24,6 @@ import { PharmaceuticsController } from './controllers/pharmaceutics.controller'
 import { DrugComponentsController } from './controllers/drug-components.controller';
 
 import {
-  DrugComponentOrmEntity,
-  GenericProductOrmEntity,
-  PharmaceuticsOrmEntity,
   ItemCategoryOrmEntity,
   ItemOrmEntity,
   ClassificationOrmEntity,
@@ -43,9 +41,6 @@ const catalogPersistenceImports = useInMemoryRepos
       TypeOrmModule.forFeature([
         ItemOrmEntity,
         ItemCategoryOrmEntity,
-        GenericProductOrmEntity,
-        PharmaceuticsOrmEntity,
-        DrugComponentOrmEntity,
         UomOrmEntity,
         ClassificationOrmEntity,
       ]),
@@ -75,6 +70,7 @@ const catalogExtraProviders = useInMemoryRepos ? [] : [GenericProductsService, P
   imports: [
     ConfigModule,
     InventoryModule,
+    ServicesModule,
 
     JwtModule.registerAsync({
       inject: [ConfigService],

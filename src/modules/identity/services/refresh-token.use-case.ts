@@ -4,6 +4,8 @@ import type { RefreshTokenRepository } from '../repositories/refresh-token.repos
 import type { PasswordHasherPort } from './password-hasher.port';
 import type { TokenIssuerPort } from './token-issuer.port';
 import type { UserRepository } from '../repositories/user.repository';
+import { UserPosConfigService } from '../../user-pos-config/services/user-pos-config.service';
+import { OrganisationConfigService } from '../../organisation-config/services/organisation-config.service';
 import {
   PASSWORD_HASHER,
   REFRESH_TOKEN_REPOSITORY,
@@ -22,6 +24,8 @@ export class RefreshTokenUseCase {
     private readonly tokenIssuer: TokenIssuerPort,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
+    private readonly userPosConfigService: UserPosConfigService,
+    private readonly orgConfigService: OrganisationConfigService,
   ) {}
 
   async execute(payload: RefreshTokenDto): Promise<Awaited<ReturnType<TokenIssuerPort['issuePair']>>> {
@@ -40,12 +44,29 @@ export class RefreshTokenUseCase {
 
     await this.refreshTokenRepository.revoke(user.id, tokenHash);
 
+    // Resolve login timeout: user config → org config → 15 min fallback
+    let loginTimeoutMinutes: number | undefined;
+    try {
+      const userConfig = await this.userPosConfigService.getOrCreate(user.id, user.organizationId);
+      loginTimeoutMinutes = userConfig.loginTimeoutMinutes ?? undefined;
+    } catch {
+      // ignore
+    }
+    if (!loginTimeoutMinutes) {
+      try {
+        const orgConfig = await this.orgConfigService.getOrCreate(user.organizationId);
+        loginTimeoutMinutes = orgConfig.defaultLoginTimeoutMinutes;
+      } catch {
+        // ignore
+      }
+    }
+
     return this.tokenIssuer.issuePair({
       sub: decoded.sub,
       organizationId: user.organizationId,
       username: decoded.username,
       roles: decoded.roles,
       permissions: decoded.permissions,
-    });
+    }, loginTimeoutMinutes);
   }
 }

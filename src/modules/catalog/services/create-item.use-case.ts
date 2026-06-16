@@ -8,12 +8,14 @@ import type { ItemRepository } from '../repositories/item.repository';
 import { Item } from '../domains/item.entity';
 import { CreateItemDto } from '../dto/create-item.dto';
 import { validateUoms } from './utils';
+import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
 
 @Injectable()
 export class CreateItemUseCase {
   constructor(
     @Inject(ITEM_REPOSITORY)
     private readonly productRepository: ItemRepository,
+    private readonly cache: GenericDrugCacheService,
     @Optional()
     private readonly pricingService?: PricingService,
     @Optional()
@@ -40,12 +42,11 @@ export class CreateItemUseCase {
       throw new BadRequestException('Category does not exist');
     }
 
-    const genericProduct = await this.productRepository.findGenericProductById(
-      payload.genericProductId,
-      organizationId,
-    );
-    if (!genericProduct) {
-      throw new BadRequestException('Generic product does not exist');
+    if (payload.genericProductCode) {
+      const genericProduct = this.cache.getByCode(payload.genericProductCode);
+      if (!genericProduct) {
+        throw new BadRequestException('Generic product does not exist');
+      }
     }
 
     if (!payload.baseUomId || !payload.purchaseUomId || !payload.saleUomId) {
@@ -78,10 +79,9 @@ export class CreateItemUseCase {
       organizationId,
       payload.code,
       payload.name,
-      genericProduct.id,
+      payload.genericProductCode ?? null,
       category.id,
       category,
-      genericProduct,
       payload.baseUomId,
       payload.purchaseUomId ?? null,
       payload.saleUomId ?? null,

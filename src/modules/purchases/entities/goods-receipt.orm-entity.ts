@@ -17,7 +17,7 @@ export class GoodsReceiptOrmEntity {
   @JoinColumn({ name: 'purchase_order_id' })
   purchaseOrder!: PurchaseOrderOrmEntity;
 
-  @Column({ name: 'received_date', type: 'timestamp' })
+  @Column({ name: 'received_date' })
   receivedDate!: Date;
 
   @Column({ name: 'created_by_user_id', type: 'text' })

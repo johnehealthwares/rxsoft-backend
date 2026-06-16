@@ -70,6 +70,17 @@ export type AdjustStockByReferencePayload = {
   reorderMaxQty?: number | null;
 };
 
+export type TransferStockPayload = {
+  organizationId: string;
+  fromLocationId: string;
+  toLocationId: string;
+  itemId: string;
+  lotId?: string | null;
+  quantity: number;
+  reason: string;
+  performedByUserId: string;
+};
+
 export interface InventoryRepository {
   listStockBalances(query: StockBalanceQuery): Promise<{ items: StockBalance[]; total: number }>;
   listStockMovements(query: StockMovementQuery): Promise<{ items: StockMovement[]; total: number }>;
@@ -83,4 +94,5 @@ export interface InventoryRepository {
     isActive: boolean,
   ): Promise<StoreStockLocation>;
   adjustStockByReference(payload: AdjustStockByReferencePayload): Promise<StockBalance>;
+  transferStock(payload: TransferStockPayload): Promise<{ fromBalance: StockBalance; toBalance: StockBalance }>;
 }

@@ -1,1 +1,0 @@
-import{i as e}from"./pages-DPmUigOr.js";import{Ei as t,t as n}from"./index-BtmlBlD7.js";var r=t();function i(){let{uomId:t}=n.useParams();return(0,r.jsx)(e,{uomId:t})}export{i as component};

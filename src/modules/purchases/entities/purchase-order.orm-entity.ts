@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { WarehouseOrmEntity } from '../../inventory/entities/warehouse.orm-entity';
+import { PartyOrmEntity } from '../../customers/entities/party.orm-entity';
 import { PurchaseOrderLineOrmEntity } from './purchase-order-line.orm-entity';
 
 @Entity('purchase_orders')
@@ -19,7 +21,7 @@ export class PurchaseOrderOrmEntity {
   @Column({ name: 'warehouse_id', type: 'uuid' })
   warehouseId!: string;
 
-  @Column({ name: 'currency_code', type: 'text', default: 'USD' })
+  @Column({ name: 'currency_code', type: 'text', default: 'NGN' })
   currencyCode!: string;
 
   @Column({ name: 'order_date', type: 'date' })
@@ -51,6 +53,14 @@ export class PurchaseOrderOrmEntity {
 
   @Column({ name: 'note', type: 'text', nullable: true })
   note!: string | null;
+
+  @ManyToOne(() => WarehouseOrmEntity)
+  @JoinColumn({ name: 'warehouse_id' })
+  warehouse!: WarehouseOrmEntity | null;
+
+  @ManyToOne(() => PartyOrmEntity)
+  @JoinColumn({ name: 'supplier_id' })
+  supplier!: PartyOrmEntity | null;
 
   @OneToMany(() => PurchaseOrderLineOrmEntity, (line) => line.purchaseOrder)
   lines!: PurchaseOrderLineOrmEntity[];

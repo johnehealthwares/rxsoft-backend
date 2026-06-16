@@ -5,6 +5,7 @@ import { toStockBalanceType } from '../../../shared/domain/mappers';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import type { InventoryRepository } from '../repositories/inventory.repository';
 import { AdjustStockByReferenceDto } from '../dto/stock-locations.dto';
+import { CreateStockTransferDto } from '../dto/create-stock-transfer.dto';
 import { INVENTORY_REPOSITORY } from './inventory.di-tokens';
 
 @Injectable()
@@ -66,5 +67,27 @@ export class InventoryService {
     });
 
     return toStockBalanceType(stockBalance);
+  }
+
+  async transfer(
+    payload: CreateStockTransferDto,
+    performedByUserId: string,
+    organizationId: string,
+  ): Promise<{ fromBalance: StockBalanceType; toBalance: StockBalanceType }> {
+    const result = await this.inventoryRepository.transferStock({
+      organizationId,
+      fromLocationId: payload.fromLocationId,
+      toLocationId: payload.toLocationId,
+      itemId: payload.itemId,
+      lotId: payload.lotId ?? null,
+      quantity: payload.quantity,
+      reason: payload.reason ?? 'stock_transfer',
+      performedByUserId,
+    });
+
+    return {
+      fromBalance: toStockBalanceType(result.fromBalance),
+      toBalance: toStockBalanceType(result.toBalance),
+    };
   }
 }

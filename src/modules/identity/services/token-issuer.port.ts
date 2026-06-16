@@ -15,6 +15,6 @@ export interface TokenPayload {
 }
 
 export interface TokenIssuerPort {
-  issuePair(payload: TokenPayload): Promise<TokenPair>;
+  issuePair(payload: TokenPayload, loginTimeoutMinutes?: number): Promise<TokenPair>;
   verifyRefreshToken(token: string): Promise<TokenPayload>;
 }

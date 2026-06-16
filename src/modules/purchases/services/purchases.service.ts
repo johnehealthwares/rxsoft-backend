@@ -13,6 +13,8 @@ type PurchaseSummaryType = {
   supplierId: string;
   warehouseId: string;
   branchId: string;
+  supplier: { id: string; name: string } | null;
+  warehouse: { id: string; name: string } | null;
   currencyCode: string;
   orderDate: string;
   expectedDate: string | null;
@@ -53,6 +55,8 @@ export class PurchasesService {
     const qb = this.purchaseOrderRepository
       .createQueryBuilder('purchase')
       .leftJoinAndSelect('purchase.lines', 'line')
+      .leftJoinAndSelect('purchase.warehouse', 'warehouse')
+      .leftJoinAndSelect('purchase.supplier', 'supplier')
       .where('purchase.organization_id = :organizationId', { organizationId });
 
     if (query.search) {
@@ -66,10 +70,12 @@ export class PurchasesService {
         filter: `%${query.filter}%`,
       });
     }
-
-    qb.orderBy(this.resolveSortColumn(query.sortBy), query.sortOrder.toUpperCase() as 'ASC' | 'DESC')
+    console.log({query}, qb.getSql())
+    qb
+    .orderBy(this.resolveSortColumn(query.sortBy), query.sortOrder.toUpperCase() as 'ASC' | 'DESC')
       .skip(query.offset)
       .take(query.limit);
+          console.log({query}, qb.getSql())
 
     const [rows, total] = await qb.getManyAndCount();
 
@@ -81,6 +87,8 @@ export class PurchasesService {
           supplierId: row.supplierId,
           warehouseId: row.warehouseId,
           branchId: row.warehouseId,
+          supplier: row.supplier ? { id: row.supplier.id, name: row.supplier.name } : null,
+          warehouse: row.warehouse ? { id: row.warehouse.id, name: row.warehouse.name } : null,
           currencyCode: row.currencyCode,
           orderDate: row.orderDate,
           expectedDate: row.expectedDate,
@@ -115,7 +123,7 @@ export class PurchasesService {
           purchaseOrderNumber,
           supplierId: payload.supplierId,
           warehouseId: warehouse.id,
-          currencyCode: payload.currencyCode ?? 'USD',
+          currencyCode: payload.currencyCode ?? 'NGN',
           orderDate: payload.orderDate ?? new Date().toISOString().slice(0, 10),
           expectedDate: payload.expectedDate ?? null,
           status: payload.status ?? 'draft',
@@ -129,11 +137,11 @@ export class PurchasesService {
         }),
       );
 
-      const lines = await purchaseOrderLineRepo.save(
+      await purchaseOrderLineRepo.save(
         linesPayload.map((line) =>
           purchaseOrderLineRepo.create({
             purchaseOrder,
-      itemId: line.itemId,
+            itemId: line.itemId,
             orderedQty: line.orderedQty,
             receivedQty: line.receivedQty ?? 0,
             uomId: line.uomId,
@@ -146,23 +154,7 @@ export class PurchasesService {
         ),
       );
 
-      return {
-        id: purchaseOrder.id,
-        supplierId: purchaseOrder.supplierId,
-        warehouseId: purchaseOrder.warehouseId,
-        branchId: purchaseOrder.warehouseId,
-        currencyCode: purchaseOrder.currencyCode,
-        orderDate: purchaseOrder.orderDate,
-        expectedDate: purchaseOrder.expectedDate,
-        totalCost: Number(purchaseOrder.totalAmount),
-        invoiceNumber: purchaseOrder.purchaseOrderNumber,
-        status: purchaseOrder.status,
-        note: purchaseOrder.note,
-        lines: lines.map((line) => this.mapLine(line)),
-        createdAt: purchaseOrder.createdAt,
-        updatedAt: purchaseOrder.updatedAt,
-        archivedAt: null,
-      };
+      return this.getById(purchaseOrder.id, currentUser.organizationId);
     });
   }
 
@@ -192,7 +184,7 @@ export class PurchasesService {
   async getById(purchaseId: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<PurchaseSummaryType> {
     const row = await this.purchaseOrderRepository.findOne({
       where: { id: purchaseId, organizationId },
-      relations: ['lines'],
+      relations: ['lines', 'warehouse', 'supplier'],
     });
 
     if (!row) {
@@ -205,6 +197,8 @@ export class PurchasesService {
       supplierId: row.supplierId,
       warehouseId: row.warehouseId,
       branchId: row.warehouseId,
+      supplier: row.supplier ? { id: row.supplier.id, name: row.supplier.name } : null,
+      warehouse: row.warehouse ? { id: row.warehouse.id, name: row.warehouse.name } : null,
       currencyCode: row.currencyCode,
       orderDate: row.orderDate,
       expectedDate: row.expectedDate,
@@ -290,7 +284,7 @@ export class PurchasesService {
       invoiceNumber: 'purchase.purchase_order_number',
       totalCost: 'purchase.total_amount',
       updatedAt: 'purchase.updated_at',
-      createdAt: 'purchase.created_at',
+      createdAt: 'purchase.createdAt',
     };
 
     return map[sortBy] ?? 'purchase.created_at';

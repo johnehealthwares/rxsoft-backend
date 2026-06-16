@@ -18,7 +18,7 @@ export class PriceListItemOrmEntity {
   @JoinColumn({ name: 'item_id' })
   item!: ItemOrmEntity;
 
-  @Column({ name: 'currency_code', type: 'text', default: 'USD' })
+  @Column({ name: 'currency_code', type: 'text', default: 'NGN' })
   currencyCode!: string;
 
   @Column({ name: 'unit_price', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })

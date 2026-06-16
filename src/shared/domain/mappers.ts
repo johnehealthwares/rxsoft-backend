@@ -1,5 +1,3 @@
-import type { GenericProductOrmEntity } from '../../modules/catalog/entities/generic-product.orm-entity';
-import type { PharmaceuticsOrmEntity } from '../../modules/catalog/entities/pharmaceutics.orm-entity';
 import type { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 import type { ManufacturerOrmEntity } from '../../modules/manufacturers/entities/manufacturer.orm-entity';
 import type { OrganizationOrmEntity } from '../../modules/organizations/entities/organization.orm-entity';
@@ -13,9 +11,8 @@ import type { PriceListItemOrmEntity, PriceListOrmEntity } from '../../modules/p
 import type { PaymentMethodOrmEntity } from '../../modules/sales/entities/payment-method.orm-entity';
 import type { UomCategoryOrmEntity } from '../../modules/sales/entities/uom-category.orm-entity';
 import type { UomOrmEntity } from '../../modules/sales/entities/uom.orm-entity';
-import type { ManufacturerType, PharmaceuticsType } from './catalog.types';
+import type { ManufacturerType } from './catalog.types';
 import type {
-  GenericProductType,
   PaymentMethodType,
   PartyType,
   PriceListItemType,
@@ -33,51 +30,11 @@ import { ItemCategoryOrmEntity } from 'src/modules/catalog/entities';
 
 const toIsoString = (value: Date | null | undefined): string | null => value ? value.toISOString() : null;
 
-export const toPharmaceuticsType = (entity: PharmaceuticsOrmEntity): PharmaceuticsType => ({
-  id: entity.id,
-  organizationId: entity.organizationId,
-  code: entity.code,
-  commonBrandName: entity.commonBrandName,
-  commonGenericName: entity.commonGenericName,
-  clinicalName: entity.clinicalName,
-  drugClass: entity.drugClass,
-  chemicalConstituents: entity.chemicalConstituents,
-  pharmaceutics: entity.pharmaceutics,
-  indications: entity.indications,
-  contraindications: entity.contraindications,
-  mechanism: entity.mechanism,
-  missedDose: entity.missedDose,
-  drugInteractions: entity.drugInteractions,
-  dosage: entity.dosage,
-  createdAt: entity.createdAt.toISOString(),
-  updatedAt: entity.updatedAt.toISOString(),
-  deletedAt: toIsoString(entity.deletedAt),
-});
-
 export const toManufacturerType = (entity: ManufacturerOrmEntity): ManufacturerType => ({
   id: entity.id,
   organizationId: entity.organizationId,
   code: entity.code,
   name: entity.name,
-  createdAt: entity.createdAt.toISOString(),
-  updatedAt: entity.updatedAt.toISOString(),
-  deletedAt: toIsoString(entity.deletedAt),
-});
-
-export const toGenericProductType = (entity: GenericProductOrmEntity): GenericProductType => ({
-  id: entity.id,
-  organizationId: entity.organizationId,
-  code: entity.code,
-  name: entity.name,
-  therapeuticClass: entity.therapeuticClass,
-  dosageForm: entity.dosageForm,
-  strength: entity.strength,
-  generalUse: entity.generalUse,
-  adultDosage: entity.adultDosage,
-  pediatricDosage: entity.pediatricDosage,
-  isPrescriptionRequired: entity.isPrescriptionRequired,
-  isControlledSubstance: entity.isControlledSubstance,
-  pharmaceutics: toPharmaceuticsType(entity.pharmaceutics),
   createdAt: entity.createdAt.toISOString(),
   updatedAt: entity.updatedAt.toISOString(),
   deletedAt: toIsoString(entity.deletedAt),

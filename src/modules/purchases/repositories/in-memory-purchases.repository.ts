@@ -2,12 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PurchaseOrderOrmEntity } from '../entities/purchase-order.orm-entity';
 import { PurchaseOrderLineOrmEntity } from '../entities/purchase-order-line.orm-entity';
+import { GoodsReceiptOrmEntity } from '../entities/goods-receipt.orm-entity';
 import {
   CreatePurchasePayload,
   GoodsReceiptPayload,
   PurchaseListQuery,
   PurchaseUpdatePayload,
   PurchasesRepository,
+  ReceiveGoodsResult,
+  ReceiptListQuery,
+  UnpostGoodsPayload,
 } from './purchases.repository';
 
 @Injectable()
@@ -152,7 +156,19 @@ export class InMemoryPurchasesRepository implements PurchasesRepository {
     }
   }
 
-  async receiveGoods(_payload: GoodsReceiptPayload): Promise<void> {
-    return;
+  async receiveGoods(_payload: GoodsReceiptPayload): Promise<ReceiveGoodsResult> {
+    return {
+      receiptId: '',
+      receiptNumber: '',
+      lines: [],
+    };
+  }
+
+  async unpostGoods(_payload: UnpostGoodsPayload): Promise<void> {
+    // No-op for in-memory
+  }
+
+  async listReceipts(query: ReceiptListQuery): Promise<{ items: GoodsReceiptOrmEntity[]; total: number }> {
+    return { items: [], total: 0 };
   }
 }

@@ -64,7 +64,7 @@ export class CreatePurchaseDto {
   @IsString()
   purchaseOrderNumber?: string;
 
-  @ApiPropertyOptional({ example: 'USD' })
+  @ApiPropertyOptional({ example: 'NGN' })
   @IsOptional()
   @IsString()
   currencyCode?: string;

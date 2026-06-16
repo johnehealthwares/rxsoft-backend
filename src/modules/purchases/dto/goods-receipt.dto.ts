@@ -36,6 +36,11 @@ export class ReceiveGoodsDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  receiptNumber?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   note?: string;
 
   @ApiProperty({ type: [ReceiveGoodsLineDto] })

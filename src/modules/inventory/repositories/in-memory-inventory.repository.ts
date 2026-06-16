@@ -3,11 +3,12 @@ import {
   AdjustStockByReferencePayload,
   CreateStoreStockLocationPayload,
   InventoryRepository,
+  StockBalanceQuery,
   StoreStockLocation,
   StoreStockLocationQuery,
-  StockMovement,
   StockMovementQuery,
-  StockBalanceQuery,
+  StockMovement,
+  TransferStockPayload,
 } from './inventory.repository';
 import { StockAdjustment } from '../domains/stock-adjustment.entity';
 import { StockBalance } from '../domains/stock-balance.entity';
@@ -214,5 +215,41 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     balance.quantityOnHand += payload.deltaQuantity;
     this.stockBalances.set(balance.id, balance);
     return balance;
+  }
+
+  async transferStock(payload: TransferStockPayload): Promise<{ fromBalance: StockBalance; toBalance: StockBalance }> {
+    const fromBal = [...this.stockBalances.values()].find(
+      (b) =>
+        b.organizationId === payload.organizationId &&
+        b.item.id === payload.itemId &&
+        b.location.id === payload.fromLocationId,
+    );
+    if (!fromBal || fromBal.quantityOnHand < payload.quantity) {
+      throw new Error('Insufficient stock at source');
+    }
+    let toBal = [...this.stockBalances.values()].find(
+      (b) =>
+        b.organizationId === payload.organizationId &&
+        b.item.id === payload.itemId &&
+        b.location.id === payload.toLocationId,
+    );
+    if (!toBal) {
+      toBal = new StockBalance(
+        `b-${Date.now()}`,
+        payload.organizationId,
+        fromBal.item,
+        { id: payload.toLocationId, name: 'Unknown' },
+        null,
+        0,
+        0,
+        fromBal.averageCost,
+        null,
+        null,
+      );
+      this.stockBalances.set(toBal.id, toBal);
+    }
+    fromBal.quantityOnHand -= payload.quantity;
+    toBal.quantityOnHand += payload.quantity;
+    return { fromBalance: fromBal, toBalance: toBal };
   }
 }

@@ -31,11 +31,16 @@ describe('RefreshTokenUseCase', () => {
     list: jest.fn(),
   };
 
+  const userPosConfigService = { getOrCreate: jest.fn().mockResolvedValue({ loginTimeoutMinutes: null }) };
+  const orgConfigService = { getOrCreate: jest.fn().mockResolvedValue({ defaultLoginTimeoutMinutes: 480 }) };
+
   const useCase = new RefreshTokenUseCase(
     refreshTokenRepository,
     passwordHasher,
     tokenIssuer,
     userRepository,
+    userPosConfigService as any,
+    orgConfigService as any,
   );
 
   beforeEach(() => {

@@ -193,7 +193,7 @@ async function importPriceListItems(
         continue;
       }
 
-      const currencyCode = safeText(row.currency_code) || 'USD';
+      const currencyCode = safeText(row.currency_code) || 'NGN';
 
       if (id) {
         await dataSource.query(

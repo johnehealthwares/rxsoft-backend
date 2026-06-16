@@ -1,5 +1,6 @@
 import { PurchaseOrderLineOrmEntity } from '../entities/purchase-order-line.orm-entity';
 import { PurchaseOrderOrmEntity } from '../entities/purchase-order.orm-entity';
+import { GoodsReceiptOrmEntity } from '../entities/goods-receipt.orm-entity';
 
 export type PurchaseOrderStatus = 'draft' | 'approved' | 'partially_received' | 'received' | 'cancelled';
 
@@ -59,11 +60,32 @@ export type GoodsReceiptPayload = {
   }>;
 };
 
+export type ReceiveGoodsResult = {
+  receiptId: string;
+  receiptNumber: string;
+  lines: Array<{ itemId: string; receiptLineId: string; receivedQty: number }>;
+};
+
+export type ReceiptListQuery = {
+  organizationId: string;
+  purchaseOrderId?: string;
+  offset: number;
+  limit: number;
+};
+
+export type UnpostGoodsPayload = {
+  organizationId: string;
+  receiptLineId: string;
+  performedByUserId: string;
+};
+
 export interface PurchasesRepository {
   list(query: PurchaseListQuery): Promise<{ items: PurchaseOrderOrmEntity[]; total: number }>;
   getById(id: string, organizationId: string): Promise<PurchaseOrderOrmEntity | null>;
   create(payload: CreatePurchasePayload): Promise<PurchaseOrderOrmEntity>;
   update(id: string, organizationId: string, payload: PurchaseUpdatePayload): Promise<PurchaseOrderOrmEntity>;
   delete(id: string, organizationId: string): Promise<void>;
-  receiveGoods(payload: GoodsReceiptPayload): Promise<void>;
+  receiveGoods(payload: GoodsReceiptPayload): Promise<ReceiveGoodsResult>;
+  unpostGoods(payload: UnpostGoodsPayload): Promise<void>;
+  listReceipts(query: ReceiptListQuery): Promise<{ items: GoodsReceiptOrmEntity[]; total: number }>;
 }

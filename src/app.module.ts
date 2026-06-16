@@ -21,7 +21,10 @@ import { PricingModule } from './modules/pricing/pricing.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
+import { UserPosConfigModule } from './modules/user-pos-config/user-pos-config.module';
+import { OrganisationConfigModule } from './modules/organisation-config/organisation-config.module';
 import { WebsiteModule } from './modules/website/website.module';
+import { ApmModule } from './modules/apm/apm.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -98,7 +101,10 @@ const applicationModules = useInMemoryRepos
       ReportsModule,
       AdminAuditModule,
       WebsiteModule,
+      ApmModule,
       UploadModule,
+      UserPosConfigModule,
+      OrganisationConfigModule,
     ];
 
 @Module({

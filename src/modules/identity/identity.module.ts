@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { OrganisationConfigModule } from '../organisation-config/organisation-config.module';
+import { UserPosConfigModule } from '../user-pos-config/user-pos-config.module';
 import {
   PASSWORD_HASHER,
   REFRESH_TOKEN_REPOSITORY,
@@ -70,7 +72,7 @@ const identityRepositoryProviders = useInMemoryRepos
     ];
 
 @Module({
-  imports: [JwtModule.register({}), ...identityPersistenceImports],
+  imports: [JwtModule.register({}), OrganisationConfigModule, UserPosConfigModule, ...identityPersistenceImports],
   controllers: [AuthController, UsersController, RolesController, PermissionsController],
   exports: [CreateUserUseCase, LoginUseCase],
   providers: [

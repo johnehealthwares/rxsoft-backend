@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ForeignProperty {
   @ApiProperty()
@@ -69,13 +69,13 @@ export class ItemResponseDto {
   @ApiProperty()
   categoryId!: string;
   @ApiProperty()
-  genericProductId!: string;
+  genericProductCode!: string | null;
 
   @ApiProperty()
   category!: ItemCategoryResponse;
 
-  @ApiProperty({ type: GenericProductResponse })
-  genericProduct!: GenericProductResponse;
+  @ApiProperty({ type: GenericProductResponse, nullable: true })
+  genericProduct!: GenericProductResponse | null;
 
   @ApiProperty({ nullable: true })
   barcode!: string | null;

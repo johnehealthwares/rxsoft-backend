@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
 import { CreateStockAdjustmentDto } from '../dto/create-stock-adjustment.dto';
+import { CreateStockTransferDto } from '../dto/create-stock-transfer.dto';
 import { ListStockBalancesDto } from '../dto/list-stock-balances.dto';
 import { ListStockMovementsDto } from '../dto/list-stock-movements.dto';
 import { AdjustStockByReferenceDto } from '../dto/stock-locations.dto';
@@ -127,5 +128,25 @@ export class InventoryController {
       currentUser.organizationId,
     );
     return mapBalance(result);
+  }
+
+  @Post('transfers')
+  @Roles('admin', 'super_admin', 'inventory_clerk')
+  @AuditAction('inventory.stock.transfer')
+  @ApiOperation({ summary: 'Transfer stock between locations' })
+  async transferStock(
+    @Body() payload: CreateStockTransferDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<{ message: string; fromBalance: StockBalanceResponseDto; toBalance: StockBalanceResponseDto }> {
+    const result = await this.inventoryService.transfer(
+      payload,
+      currentUser.sub,
+      currentUser.organizationId,
+    );
+    return {
+      message: 'Stock transferred successfully',
+      fromBalance: mapBalance(result.fromBalance),
+      toBalance: mapBalance(result.toBalance),
+    };
   }
 }

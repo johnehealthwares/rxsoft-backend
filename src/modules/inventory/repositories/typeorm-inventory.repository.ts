@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLocationOrmEntity } from '../entities/stock-location.orm-entity';
 import { StockAdjustment } from '../domains/stock-adjustment.entity';
@@ -14,6 +14,7 @@ import {
   CreateStoreStockLocationPayload,
   InventoryRepository,
   AdjustStockByReferencePayload,
+  TransferStockPayload,
   StoreStockLocation,
   StockMovement,
   StockMovementQuery,
@@ -157,10 +158,10 @@ export class TypeormInventoryRepository implements InventoryRepository {
         organizationId,
         inventoryDocumentId: adjustmentEntity.id,
         inventoryDocumentLineId: null,
-        itemId: stockBalance.item.id,
-        lotId: stockBalance.lot?.id ?? null,
-        fromLocationId: adjustment.deltaQuantity < 0 ? stockBalance.location.id : null,
-        toLocationId: adjustment.deltaQuantity > 0 ? stockBalance.location.id : null,
+        item: { id: stockBalance.item.id },
+        lot: stockBalance.lot?.id ? { id: stockBalance.lot.id } : null,
+        fromLocation: adjustment.deltaQuantity < 0 ? { id: stockBalance.location.id } : null,
+        toLocation: adjustment.deltaQuantity > 0 ? { id: stockBalance.location.id } : null,
         movementType: 'adjustment',
         quantity: Math.abs(adjustment.deltaQuantity),
         unitCost: stockBalance.averageCost ?? null,
@@ -182,7 +183,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
 
       const item = await itemRepo.findOne({
-        where: { id: payload.itemId, organizationId: payload.organizationId },
+        where: { id: payload.itemId, organizationId: payload.organizationId, isActive: true },
       });
       if (!item) throw new NotFoundException('Item not found');
 
@@ -238,10 +239,10 @@ export class TypeormInventoryRepository implements InventoryRepository {
         organizationId: payload.organizationId,
         inventoryDocumentId: savedAdjustment.id,
         inventoryDocumentLineId: null,
-        itemId: item.id,
-        lotId: savedBalance.lot?.id ?? null,
-        fromLocationId: payload.deltaQuantity < 0 ? location.id : null,
-        toLocationId: payload.deltaQuantity > 0 ? location.id : null,
+        item: { id: item.id },
+        lot: savedBalance.lot?.id ? { id: savedBalance.lot.id } : null,
+        fromLocation: payload.deltaQuantity < 0 ? { id: location.id } : null,
+        toLocation: payload.deltaQuantity > 0 ? { id: location.id } : null,
         movementType: 'adjustment',
         quantity: Math.abs(payload.deltaQuantity),
         unitCost: savedBalance.averageCost ?? null,
@@ -255,6 +256,108 @@ export class TypeormInventoryRepository implements InventoryRepository {
         relations: { item: true, location: true, lot: true },
       });
       return InventoryMapper.toDomainStockBalance(reloaded);
+    });
+  }
+
+  async transferStock(payload: TransferStockPayload): Promise<{ fromBalance: StockBalance; toBalance: StockBalance }> {
+    return this.dataSource.transaction(async (manager) => {
+      const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
+      const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
+      const stockMovementRepo = manager.getRepository(StockMovementOrmEntity);
+      const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
+      const itemRepo = manager.getRepository(ItemOrmEntity);
+
+      const [fromLocation, toLocation, item] = await Promise.all([
+        stockLocationRepo.findOne({ where: { id: payload.fromLocationId, organizationId: payload.organizationId } }),
+        stockLocationRepo.findOne({ where: { id: payload.toLocationId, organizationId: payload.organizationId } }),
+        itemRepo.findOne({ where: { id: payload.itemId, organizationId: payload.organizationId, isActive: true } }),
+      ]);
+      if (!fromLocation) throw new NotFoundException('Source stock location not found');
+      if (!toLocation) throw new NotFoundException('Destination stock location not found');
+      if (!item) throw new NotFoundException('Item not found');
+      if (payload.fromLocationId === payload.toLocationId) {
+        throw new BadRequestException('Source and destination locations must be different');
+      }
+
+      let fromBalance = await stockBalanceRepo.findOne({
+        where: {
+          organizationId: payload.organizationId,
+          item: { id: payload.itemId },
+          location: { id: payload.fromLocationId },
+          lot: payload.lotId ? { id: payload.lotId } : undefined,
+        },
+        relations: { item: true, location: true, lot: true },
+      });
+      if (!fromBalance) {
+        throw new BadRequestException('No stock balance found at source location');
+      }
+      const available = Number((fromBalance.quantityOnHand - fromBalance.quantityReserved).toFixed(4));
+      if (available < payload.quantity) {
+        throw new BadRequestException(
+          `Insufficient stock at source: ${available} available, ${payload.quantity} needed`,
+        );
+      }
+
+      let toBalance = await stockBalanceRepo.findOne({
+        where: {
+          organizationId: payload.organizationId,
+          item: { id: payload.itemId },
+          location: { id: payload.toLocationId },
+          lot: payload.lotId ? { id: payload.lotId } : IsNull(),
+        },
+        relations: { item: true, location: true, lot: true },
+      });
+
+      if (!toBalance) {
+        toBalance = stockBalanceRepo.create({
+          organizationId: payload.organizationId,
+          item,
+          location: toLocation,
+          lot: payload.lotId ? ({ id: payload.lotId } as any) : null,
+          quantityOnHand: 0,
+          quantityReserved: 0,
+          averageCost: fromBalance.averageCost,
+        });
+      }
+
+      fromBalance.quantityOnHand = Number((fromBalance.quantityOnHand - payload.quantity).toFixed(4));
+      toBalance.quantityOnHand = Number((toBalance.quantityOnHand + payload.quantity).toFixed(4));
+      toBalance.averageCost = fromBalance.averageCost;
+
+      const savedFromBalance = await stockBalanceRepo.save(fromBalance);
+      const savedToBalance = await stockBalanceRepo.save(toBalance);
+
+      for (const [balance, delta] of [[savedFromBalance, -payload.quantity], [savedToBalance, payload.quantity]] as const) {
+        const adjustment = stockAdjustmentRepo.create({
+          stockBalance: balance,
+          reason: payload.reason || 'stock_transfer',
+          deltaQuantity: delta,
+          performedByUserId: payload.performedByUserId,
+          performedAt: new Date(),
+        });
+        const savedAdjustment = await stockAdjustmentRepo.save(adjustment);
+
+        const movement = stockMovementRepo.create({
+          organizationId: payload.organizationId,
+          inventoryDocumentId: savedAdjustment.id,
+          inventoryDocumentLineId: null,
+          item: { id: payload.itemId },
+          lot: payload.lotId ? { id: payload.lotId } : null,
+          fromLocation: delta < 0 ? { id: payload.fromLocationId } : null,
+          toLocation: delta > 0 ? { id: payload.toLocationId } : null,
+          movementType: 'transfer',
+          quantity: payload.quantity,
+          unitCost: balance.averageCost ?? null,
+          occurredAt: new Date(),
+          createdByUserId: payload.performedByUserId,
+        });
+        await stockMovementRepo.save(movement);
+      }
+
+      return {
+        fromBalance: InventoryMapper.toDomainStockBalance(savedFromBalance),
+        toBalance: InventoryMapper.toDomainStockBalance(savedToBalance),
+      };
     });
   }
 

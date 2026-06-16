@@ -293,6 +293,56 @@ paths:
       summary: Get all permissions grouped by module
       tags:
         - permissions
+  /api/organisation-config:
+    get:
+      operationId: OrganisationConfigController_getConfig
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_5
+        - bearer: []
+      tags: &ref_6
+        - organisation-config
+    patch:
+      operationId: OrganisationConfigController_updateConfig
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganisationConfigDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_5
+      tags: *ref_6
+  /api/user-pos-config/me:
+    get:
+      operationId: UserPosConfigController_getMyConfig
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_7
+        - bearer: []
+      tags: &ref_8
+        - user-pos-config
+    patch:
+      operationId: UserPosConfigController_updateMyConfig
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserPosConfigDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_7
+      tags: *ref_8
   /api/items:
     get:
       operationId: ItemsController_list
@@ -325,6 +375,12 @@ paths:
           schema:
             example: ANALGESICS
             type: string
+        - name: includeAll
+          required: false
+          in: query
+          schema:
+            example: true
+            type: boolean
         - name: sortBy
           required: false
           in: query
@@ -347,10 +403,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_5
+      security: &ref_9
         - bearer: []
       summary: List items with pagination, filtering and sorting
-      tags: &ref_6
+      tags: &ref_10
         - items
     post:
       operationId: ItemsController_create
@@ -368,9 +424,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_5
+      security: *ref_9
       summary: Create a catalog item
-      tags: *ref_6
+      tags: *ref_10
   /api/items/dependencies/categories:
     get:
       operationId: ItemsController_listCategories
@@ -394,9 +450,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_5
+      security: *ref_9
       summary: Search item categories by name or code
-      tags: *ref_6
+      tags: *ref_10
   /api/items/dependencies/generic-products:
     get:
       operationId: ItemsController_listGenericProducts
@@ -420,9 +476,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_5
+      security: *ref_9
       summary: Search generic products by name or code
-      tags: *ref_6
+      tags: *ref_10
   /api/items/dependencies/uoms:
     get:
       operationId: ItemsController_listUoms
@@ -446,9 +502,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_5
+      security: *ref_9
       summary: Search UOMs by name or code
-      tags: *ref_6
+      tags: *ref_10
   /api/items/{itemId}:
     get:
       operationId: ItemsController_get
@@ -465,9 +521,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_5
+      security: *ref_9
       summary: Get item details by id
-      tags: *ref_6
+      tags: *ref_10
     put:
       operationId: ItemsController_replace
       parameters:
@@ -489,9 +545,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_5
+      security: *ref_9
       summary: Create a catalog item
-      tags: *ref_6
+      tags: *ref_10
     patch:
       operationId: ItemsController_patch
       parameters:
@@ -513,9 +569,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_5
+      security: *ref_9
       summary: Partially update a catalog item
-      tags: *ref_6
+      tags: *ref_10
+  /api/items/{itemId}/uoms:
+    get:
+      operationId: ItemsController_listItemUoms
+      parameters:
+        - name: itemId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_9
+      summary: List available UOMs for an item (same category as base UOM)
+      tags: *ref_10
   /api/generic-products:
     get:
       operationId: GenericProductsController_list
@@ -556,13 +627,19 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_7
+      security: &ref_11
         - bearer: []
       summary: List generic products
-      tags: &ref_8
+      tags: &ref_12
         - generic-products
     post:
       operationId: GenericProductsController_create
@@ -576,8 +653,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_7
-      tags: *ref_8
+      security: *ref_11
+      tags: *ref_12
   /api/generic-products/search:
     get:
       operationId: GenericProductsController_search
@@ -618,11 +695,17 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_7
-      tags: *ref_8
+      security: *ref_11
+      tags: *ref_12
   /api/generic-products/{genericProductId}:
     get:
       operationId: GenericProductsController_get
@@ -635,8 +718,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_7
-      tags: *ref_8
+      security: *ref_11
+      tags: *ref_12
     put:
       operationId: GenericProductsController_replace
       parameters:
@@ -654,8 +737,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_7
-      tags: *ref_8
+      security: *ref_11
+      tags: *ref_12
     patch:
       operationId: GenericProductsController_patch
       parameters:
@@ -673,8 +756,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_7
-      tags: *ref_8
+      security: *ref_11
+      tags: *ref_12
   /api/pharmaceutics:
     get:
       operationId: PharmaceuticsController_list
@@ -715,12 +798,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_9
+      security: &ref_13
         - bearer: []
-      tags: &ref_10
+      tags: &ref_14
         - pharmaceutics
     post:
       operationId: PharmaceuticsController_create
@@ -734,8 +823,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_9
-      tags: *ref_10
+      security: *ref_13
+      tags: *ref_14
   /api/pharmaceutics/{pharmaceuticsId}:
     get:
       operationId: PharmaceuticsController_get
@@ -748,8 +837,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
-      tags: *ref_10
+      security: *ref_13
+      tags: *ref_14
     put:
       operationId: PharmaceuticsController_replace
       parameters:
@@ -767,8 +856,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
-      tags: *ref_10
+      security: *ref_13
+      tags: *ref_14
     patch:
       operationId: PharmaceuticsController_patch
       parameters:
@@ -786,8 +875,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
-      tags: *ref_10
+      security: *ref_13
+      tags: *ref_14
     delete:
       operationId: PharmaceuticsController_remove
       parameters:
@@ -799,8 +888,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
-      tags: *ref_10
+      security: *ref_13
+      tags: *ref_14
   /api/drug-components:
     get:
       operationId: DrugComponentsController_list
@@ -841,12 +930,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_11
+      security: &ref_15
         - bearer: []
-      tags: &ref_12
+      tags: &ref_16
         - drug-components
     post:
       operationId: DrugComponentsController_create
@@ -860,8 +955,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_15
+      tags: *ref_16
   /api/drug-components/{drugComponentId}:
     get:
       operationId: DrugComponentsController_get
@@ -874,8 +969,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_15
+      tags: *ref_16
     put:
       operationId: DrugComponentsController_replace
       parameters:
@@ -893,8 +988,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_15
+      tags: *ref_16
     patch:
       operationId: DrugComponentsController_patch
       parameters:
@@ -912,8 +1007,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_15
+      tags: *ref_16
     delete:
       operationId: DrugComponentsController_remove
       parameters:
@@ -925,8 +1020,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_15
+      tags: *ref_16
   /api/inventory/stock-balances:
     get:
       operationId: InventoryController_listStockBalances
@@ -954,10 +1049,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_13
+      security: &ref_17
         - bearer: []
       summary: List stock balances with pagination and filters
-      tags: &ref_14
+      tags: &ref_18
         - inventory
   /api/inventory/stock-movements:
     get:
@@ -986,9 +1081,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_13
+      security: *ref_17
       summary: List stock movements with pagination and optional movement type filter
-      tags: *ref_14
+      tags: *ref_18
   /api/inventory/adjustments:
     post:
       operationId: InventoryController_createAdjustment
@@ -1002,9 +1097,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_13
+      security: *ref_17
       summary: Apply stock adjustment to an existing stock balance record
-      tags: *ref_14
+      tags: *ref_18
   /api/inventory/adjust-quantity:
     post:
       operationId: InventoryController_adjustQuantity
@@ -1018,11 +1113,27 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_13
+      security: *ref_17
       summary: >-
         Adjust stock quantity by product and location, creating balance if
         needed
-      tags: *ref_14
+      tags: *ref_18
+  /api/inventory/transfers:
+    post:
+      operationId: InventoryController_transferStock
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStockTransferDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_17
+      summary: Transfer stock between locations
+      tags: *ref_18
   /api/stock-locations:
     get:
       operationId: StockLocationsController_list
@@ -1063,6 +1174,12 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
         - name: warehouseId
           required: false
           in: query
@@ -1071,10 +1188,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_15
+      security: &ref_19
         - bearer: []
       summary: List stock locations
-      tags: &ref_16
+      tags: &ref_20
         - stock-locations
     post:
       operationId: StockLocationsController_create
@@ -1088,8 +1205,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_19
+      tags: *ref_20
   /api/stock-locations/search:
     get:
       operationId: StockLocationsController_search
@@ -1130,6 +1247,12 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
         - name: warehouseId
           required: false
           in: query
@@ -1138,8 +1261,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_19
+      tags: *ref_20
   /api/stock-locations/{stockLocationId}:
     get:
       operationId: StockLocationsController_get
@@ -1152,8 +1275,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_19
+      tags: *ref_20
     put:
       operationId: StockLocationsController_replace
       parameters:
@@ -1171,8 +1294,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_19
+      tags: *ref_20
     patch:
       operationId: StockLocationsController_patch
       parameters:
@@ -1190,8 +1313,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_19
+      tags: *ref_20
   /api/price-lists:
     get:
       operationId: PricingController_list
@@ -1232,13 +1355,19 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_17
+      security: &ref_21
         - bearer: []
       summary: List price lists
-      tags: &ref_18
+      tags: &ref_22
         - price-lists
     post:
       operationId: PricingController_create
@@ -1252,8 +1381,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/price-lists/search:
     get:
       operationId: PricingController_search
@@ -1294,11 +1423,17 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/price-lists/items:
     post:
       operationId: PricingController_createItem
@@ -1312,8 +1447,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
     get:
       operationId: PricingController_listAllItems
       parameters:
@@ -1353,6 +1488,12 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
         - name: itemId
           required: false
           in: query
@@ -1366,8 +1507,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/price-lists/{priceListId}:
     get:
       operationId: PricingController_get
@@ -1380,8 +1521,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
     put:
       operationId: PricingController_update
       parameters:
@@ -1399,8 +1540,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
     delete:
       operationId: PricingController_remove
       parameters:
@@ -1412,8 +1553,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/price-lists/{priceListId}/items:
     get:
       operationId: PricingController_listPriceListItems
@@ -1459,6 +1600,12 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
         - name: itemId
           required: false
           in: query
@@ -1472,8 +1619,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/price-lists/{priceListId}/items/{priceListItemId}:
     patch:
       operationId: PricingController_updateItem
@@ -1497,8 +1644,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/price-lists/adjust-price:
     post:
       operationId: PricingController_adjustPrice
@@ -1512,8 +1659,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/price-lists/{priceListId}/items/{itemId}:
     delete:
       operationId: PricingController_removeItem
@@ -1531,8 +1678,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_17
-      tags: *ref_18
+      security: *ref_21
+      tags: *ref_22
   /api/categories:
     get:
       operationId: CategoriesController_list
@@ -1573,13 +1720,19 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_19
+      security: &ref_23
         - bearer: []
       summary: List categories with pagination/filter/sort
-      tags: &ref_20
+      tags: &ref_24
         - categories
     post:
       operationId: CategoriesController_create
@@ -1593,8 +1746,17 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_23
+      tags: *ref_24
+  /api/categories/metrics:
+    get:
+      operationId: CategoriesController_metrics
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_23
+      tags: *ref_24
   /api/categories/export:
     get:
       operationId: CategoriesController_export
@@ -1635,11 +1797,17 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_23
+      tags: *ref_24
   /api/categories/{categoryId}:
     put:
       operationId: CategoriesController_replace
@@ -1658,8 +1826,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_23
+      tags: *ref_24
     patch:
       operationId: CategoriesController_patch
       parameters:
@@ -1677,8 +1845,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_23
+      tags: *ref_24
     get:
       operationId: CategoriesController_get
       parameters:
@@ -1690,8 +1858,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_23
+      tags: *ref_24
     delete:
       operationId: CategoriesController_remove
       parameters:
@@ -1703,8 +1871,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_23
+      tags: *ref_24
   /api/customers:
     get:
       operationId: CustomersController_list
@@ -1745,12 +1913,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_21
+      security: &ref_25
         - bearer: []
-      tags: &ref_22
+      tags: &ref_26
         - customers
     post:
       operationId: CustomersController_create
@@ -1764,8 +1938,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_25
+      tags: *ref_26
   /api/customers/export:
     get:
       operationId: CustomersController_export
@@ -1806,11 +1980,17 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_25
+      tags: *ref_26
   /api/customers/{customerId}:
     put:
       operationId: CustomersController_replace
@@ -1829,8 +2009,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_25
+      tags: *ref_26
     patch:
       operationId: CustomersController_patch
       parameters:
@@ -1848,8 +2028,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_25
+      tags: *ref_26
     delete:
       operationId: CustomersController_remove
       parameters:
@@ -1861,8 +2041,26 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_25
+      tags: *ref_26
+  /api/suppliers:
+    post:
+      operationId: SuppliersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSupplierDto'
+      responses:
+        '201':
+          description: ''
+      security:
+        - bearer: []
+      summary: Create a supplier
+      tags:
+        - suppliers
   /api/sales:
     get:
       operationId: SalesController_listSales
@@ -1877,6 +2075,11 @@ paths:
           in: query
           schema:
             $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: status
           required: false
           in: query
@@ -1890,10 +2093,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_23
+      security: &ref_27
         - bearer: []
       summary: List sales with pagination and optional status filter
-      tags: &ref_24
+      tags: &ref_28
         - sales
     post:
       operationId: SalesController_createSale
@@ -1911,9 +2114,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSaleResponseDto'
-      security: *ref_23
+      security: *ref_27
       summary: Create posted sale and receivable on underpayment
-      tags: *ref_24
+      tags: *ref_28
   /api/sales/{saleId}/refunds:
     post:
       operationId: SalesController_createRefund
@@ -1936,9 +2139,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSaleRefundResponseDto'
-      security: *ref_23
+      security: *ref_27
       summary: Create sale refund with quantity validation against original sale lines
-      tags: *ref_24
+      tags: *ref_28
   /api/uoms:
     get:
       operationId: UomsController_list
@@ -1995,10 +2198,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_25
+      security: &ref_29
         - bearer: []
       summary: List/search UOMs by name or code
-      tags: &ref_26
+      tags: &ref_30
         - uoms
     post:
       operationId: UomsController_create
@@ -2012,9 +2215,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_25
+      security: *ref_29
       summary: Create UOM
-      tags: *ref_26
+      tags: *ref_30
   /api/uoms/{uomId}:
     get:
       operationId: UomsController_getById
@@ -2027,9 +2230,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_25
+      security: *ref_29
       summary: Get UOM by id
-      tags: *ref_26
+      tags: *ref_30
     put:
       operationId: UomsController_replace
       parameters:
@@ -2047,9 +2250,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_25
+      security: *ref_29
       summary: Update UOM
-      tags: *ref_26
+      tags: *ref_30
     patch:
       operationId: UomsController_patch
       parameters:
@@ -2067,9 +2270,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_25
+      security: *ref_29
       summary: Patch UOM
-      tags: *ref_26
+      tags: *ref_30
   /api/uom-categories:
     get:
       operationId: UomCategoriesController_list
@@ -2092,10 +2295,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_27
+      security: &ref_31
         - bearer: []
       summary: List/search UOM categories
-      tags: &ref_28
+      tags: &ref_32
         - uom-categories
     post:
       operationId: UomCategoriesController_create
@@ -2109,8 +2312,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_27
-      tags: *ref_28
+      security: *ref_31
+      tags: *ref_32
   /api/uom-categories/{categoryId}:
     get:
       operationId: UomCategoriesController_get
@@ -2123,8 +2326,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_27
-      tags: *ref_28
+      security: *ref_31
+      tags: *ref_32
     put:
       operationId: UomCategoriesController_replace
       parameters:
@@ -2142,8 +2345,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_27
-      tags: *ref_28
+      security: *ref_31
+      tags: *ref_32
     patch:
       operationId: UomCategoriesController_patch
       parameters:
@@ -2161,8 +2364,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_27
-      tags: *ref_28
+      security: *ref_31
+      tags: *ref_32
   /api/payment-methods:
     get:
       operationId: PaymentMethodsController_list
@@ -2203,12 +2406,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_29
+      security: &ref_33
         - bearer: []
-      tags: &ref_30
+      tags: &ref_34
         - payment-methods
     post:
       operationId: PaymentMethodsController_create
@@ -2222,8 +2431,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_29
-      tags: *ref_30
+      security: *ref_33
+      tags: *ref_34
   /api/payment-methods/{paymentMethodId}:
     get:
       operationId: PaymentMethodsController_get
@@ -2236,8 +2445,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
-      tags: *ref_30
+      security: *ref_33
+      tags: *ref_34
     put:
       operationId: PaymentMethodsController_replace
       parameters:
@@ -2255,8 +2464,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
-      tags: *ref_30
+      security: *ref_33
+      tags: *ref_34
     patch:
       operationId: PaymentMethodsController_patch
       parameters:
@@ -2274,8 +2483,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
-      tags: *ref_30
+      security: *ref_33
+      tags: *ref_34
     delete:
       operationId: PaymentMethodsController_remove
       parameters:
@@ -2287,8 +2496,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
-      tags: *ref_30
+      security: *ref_33
+      tags: *ref_34
   /api/receivables:
     get:
       operationId: ReceivablesController_list
@@ -2321,10 +2530,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_31
+      security: &ref_35
         - bearer: []
       summary: List receivables with pagination and filters
-      tags: &ref_32
+      tags: &ref_36
         - receivables
   /api/receivables/{receivableId}/transactions:
     get:
@@ -2358,9 +2567,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_31
+      security: *ref_35
       summary: List receivable transactions with pagination and optional type filter
-      tags: *ref_32
+      tags: *ref_36
   /api/receivables/{receivableId}/payments:
     post:
       operationId: ReceivablesController_collectPayment
@@ -2379,9 +2588,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_31
+      security: *ref_35
       summary: Collect payment against an open receivable
-      tags: *ref_32
+      tags: *ref_36
   /api/receivables/{receivableId}/adjustments:
     post:
       operationId: ReceivablesController_applyAdjustment
@@ -2400,9 +2609,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_31
+      security: *ref_35
       summary: Apply signed adjustment to a receivable and record ledger entry
-      tags: *ref_32
+      tags: *ref_36
   /api/receivables/{receivableId}/write-off:
     post:
       operationId: ReceivablesController_writeOff
@@ -2421,9 +2630,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_31
+      security: *ref_35
       summary: Write off receivable outstanding amount and close it
-      tags: *ref_32
+      tags: *ref_36
   /api/purchases:
     get:
       operationId: PurchasesController_list
@@ -2464,12 +2673,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_33
+      security: &ref_37
         - bearer: []
-      tags: &ref_34
+      tags: &ref_38
         - purchases
     post:
       operationId: PurchasesController_create
@@ -2483,8 +2698,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_37
+      tags: *ref_38
   /api/purchases/{purchaseId}:
     get:
       operationId: PurchasesController_getById
@@ -2497,8 +2712,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_37
+      tags: *ref_38
     put:
       operationId: PurchasesController_replace
       parameters:
@@ -2516,8 +2731,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_37
+      tags: *ref_38
     patch:
       operationId: PurchasesController_patch
       parameters:
@@ -2535,8 +2750,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_37
+      tags: *ref_38
     delete:
       operationId: PurchasesController_remove
       parameters:
@@ -2548,8 +2763,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_37
+      tags: *ref_38
   /api/purchases/{id}/receive:
     post:
       operationId: InflowController_receiveGoods
@@ -2568,11 +2783,32 @@ paths:
       responses:
         '201':
           description: ''
-      security: &ref_35
+      security: &ref_39
         - bearer: []
       summary: Receive goods for a purchase order
-      tags: &ref_36
+      tags: &ref_40
         - purchases-inflow
+  /api/purchases/{id}/unpost:
+    post:
+      operationId: InflowController_unpostGoods
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnpostGoodsDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_39
+      summary: Unpost a goods receipt line
+      tags: *ref_40
   /api/purchases/{id}/receipts:
     get:
       operationId: InflowController_listReceiptsByPo
@@ -2582,22 +2818,42 @@ paths:
           in: path
           schema:
             type: string
+        - name: page
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: true
+          in: query
+          schema:
+            type: number
       responses:
         '200':
           description: ''
-      security: *ref_35
+      security: *ref_39
       summary: List receipts for a purchase order
-      tags: *ref_36
+      tags: *ref_40
   /api/receipts:
     get:
       operationId: InflowController_listAllReceipts
-      parameters: []
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         '200':
           description: ''
-      security: *ref_35
+      security: *ref_39
       summary: List all goods receipts
-      tags: *ref_36
+      tags: *ref_40
   /api/organizations:
     get:
       operationId: OrganizationsController_list
@@ -2638,12 +2894,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_37
+      security: &ref_41
         - bearer: []
-      tags: &ref_38
+      tags: &ref_42
         - organizations
     post:
       operationId: OrganizationsController_create
@@ -2657,8 +2919,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_41
+      tags: *ref_42
   /api/organizations/{organizationId}:
     get:
       operationId: OrganizationsController_get
@@ -2671,8 +2933,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_41
+      tags: *ref_42
     put:
       operationId: OrganizationsController_replace
       parameters:
@@ -2690,8 +2952,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_41
+      tags: *ref_42
     patch:
       operationId: OrganizationsController_patch
       parameters:
@@ -2709,8 +2971,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_41
+      tags: *ref_42
     delete:
       operationId: OrganizationsController_remove
       parameters:
@@ -2722,8 +2984,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_41
+      tags: *ref_42
   /api/manufacturers:
     get:
       operationId: ManufacturersController_list
@@ -2764,12 +3026,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_39
+      security: &ref_43
         - bearer: []
-      tags: &ref_40
+      tags: &ref_44
         - manufacturers
     post:
       operationId: ManufacturersController_create
@@ -2783,8 +3051,17 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_43
+      tags: *ref_44
+  /api/manufacturers/metrics:
+    get:
+      operationId: ManufacturersController_metrics
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_43
+      tags: *ref_44
   /api/manufacturers/{manufacturerId}:
     get:
       operationId: ManufacturersController_get
@@ -2797,8 +3074,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_43
+      tags: *ref_44
     put:
       operationId: ManufacturersController_replace
       parameters:
@@ -2816,8 +3093,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_43
+      tags: *ref_44
     patch:
       operationId: ManufacturersController_patch
       parameters:
@@ -2835,8 +3112,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_43
+      tags: *ref_44
     delete:
       operationId: ManufacturersController_remove
       parameters:
@@ -2848,8 +3125,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_43
+      tags: *ref_44
   /api/journals:
     get:
       operationId: AccountingController_listJournals
@@ -2890,12 +3167,18 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: &ref_41
+      security: &ref_45
         - bearer: []
-      tags: &ref_42
+      tags: &ref_46
         - accounting
     post:
       operationId: AccountingController_createJournal
@@ -2909,8 +3192,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
   /api/journals/{journalId}:
     get:
       operationId: AccountingController_getJournal
@@ -2923,8 +3206,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
     patch:
       operationId: AccountingController_updateJournal
       parameters:
@@ -2942,8 +3225,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
     delete:
       operationId: AccountingController_removeJournal
       parameters:
@@ -2955,8 +3238,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
   /api/journal-entries:
     get:
       operationId: AccountingController_listJournalEntries
@@ -2997,11 +3280,17 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
     post:
       operationId: AccountingController_createJournalEntry
       parameters: []
@@ -3014,8 +3303,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
   /api/journal-entries/{entryId}:
     get:
       operationId: AccountingController_getJournalEntry
@@ -3028,8 +3317,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
     patch:
       operationId: AccountingController_updateJournalEntry
       parameters:
@@ -3047,8 +3336,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
     delete:
       operationId: AccountingController_removeJournalEntry
       parameters:
@@ -3060,8 +3349,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
   /api/journal-entries/{entryId}/lines:
     get:
       operationId: AccountingController_listJournalEntryLines
@@ -3107,11 +3396,17 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
     post:
       operationId: AccountingController_createJournalEntryLine
       parameters:
@@ -3129,8 +3424,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
   /api/journal-entries/{entryId}/lines/{lineId}:
     patch:
       operationId: AccountingController_updateJournalEntryLine
@@ -3154,8 +3449,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
     delete:
       operationId: AccountingController_removeJournalEntryLine
       parameters:
@@ -3172,8 +3467,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_45
+      tags: *ref_46
   /api/reports/daily-sales:
     get:
       operationId: ReportsController_dailySales
@@ -3181,9 +3476,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_43
+      security: &ref_47
         - bearer: []
-      tags: &ref_44
+      tags: &ref_48
         - reports
   /api/reports/inventory-valuation:
     get:
@@ -3192,8 +3487,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_47
+      tags: *ref_48
   /api/reports/top-selling-items:
     get:
       operationId: ReportsController_topSellingProducts
@@ -3201,8 +3496,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_47
+      tags: *ref_48
   /api/reports/export:
     get:
       operationId: ReportsController_exportSummary
@@ -3243,11 +3538,17 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_47
+      tags: *ref_48
   /api/audit-logs:
     get:
       operationId: AuditController_list
@@ -3288,6 +3589,12 @@ paths:
           description: Generic filter string
           schema:
             type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -3303,7 +3610,7 @@ paths:
         '200':
           description: ''
       summary: Get homepage data
-      tags: &ref_45
+      tags: &ref_49
         - website
   /api/website/products:
     get:
@@ -3313,7 +3620,7 @@ paths:
         '200':
           description: ''
       summary: List products with search/filter/pagination
-      tags: *ref_45
+      tags: *ref_49
   /api/website/products/{id}:
     get:
       operationId: WebsiteController_getProduct
@@ -3327,7 +3634,7 @@ paths:
         '200':
           description: ''
       summary: Get product detail
-      tags: *ref_45
+      tags: *ref_49
   /api/website/categories:
     get:
       operationId: WebsiteController_listCategories
@@ -3336,7 +3643,7 @@ paths:
         '200':
           description: ''
       summary: List all categories
-      tags: *ref_45
+      tags: *ref_49
   /api/website/categories/{slug}:
     get:
       operationId: WebsiteController_getCategoryBySlug
@@ -3350,7 +3657,7 @@ paths:
         '200':
           description: ''
       summary: Get category by slug with products
-      tags: *ref_45
+      tags: *ref_49
   /api/website/health-concerns:
     get:
       operationId: WebsiteController_listHealthConcerns
@@ -3359,7 +3666,7 @@ paths:
         '200':
           description: ''
       summary: List health concerns
-      tags: *ref_45
+      tags: *ref_49
   /api/website/health-concerns/{slug}:
     get:
       operationId: WebsiteController_getHealthConcernBySlug
@@ -3373,7 +3680,7 @@ paths:
         '200':
           description: ''
       summary: Get health concern by slug
-      tags: *ref_45
+      tags: *ref_49
   /api/website/prescriptions:
     post:
       operationId: WebsiteController_createPrescription
@@ -3388,7 +3695,7 @@ paths:
         '201':
           description: ''
       summary: Upload prescription with files
-      tags: *ref_45
+      tags: *ref_49
     get:
       operationId: WebsiteController_listPrescriptions
       parameters: []
@@ -3396,7 +3703,7 @@ paths:
         '200':
           description: ''
       summary: List prescriptions
-      tags: *ref_45
+      tags: *ref_49
   /api/website/consultations:
     post:
       operationId: WebsiteController_createConsultation
@@ -3411,7 +3718,7 @@ paths:
         '201':
           description: ''
       summary: Book a consultation
-      tags: *ref_45
+      tags: *ref_49
     get:
       operationId: WebsiteController_listConsultations
       parameters: []
@@ -3419,7 +3726,7 @@ paths:
         '200':
           description: ''
       summary: List consultations
-      tags: *ref_45
+      tags: *ref_49
   /api/website/cart:
     post:
       operationId: WebsiteController_addToCart
@@ -3436,7 +3743,7 @@ paths:
         '201':
           description: ''
       summary: Add to cart (returns product details for given ids)
-      tags: *ref_45
+      tags: *ref_49
     get:
       operationId: WebsiteController_getCart
       parameters:
@@ -3449,7 +3756,7 @@ paths:
         '200':
           description: ''
       summary: Get cart product details
-      tags: *ref_45
+      tags: *ref_49
   /api/website/cart/{id}:
     delete:
       operationId: WebsiteController_removeFromCart
@@ -3458,7 +3765,7 @@ paths:
         '200':
           description: ''
       summary: Remove from cart (no-op on server, client-managed)
-      tags: *ref_45
+      tags: *ref_49
   /api/website/orders:
     post:
       operationId: WebsiteController_createOrder
@@ -3473,7 +3780,7 @@ paths:
         '201':
           description: ''
       summary: Create order
-      tags: *ref_45
+      tags: *ref_49
     get:
       operationId: WebsiteController_listOrders
       parameters: []
@@ -3481,7 +3788,7 @@ paths:
         '200':
           description: ''
       summary: List orders
-      tags: *ref_45
+      tags: *ref_49
   /api/website/orders/track/{trackingCode}:
     get:
       operationId: WebsiteController_trackOrder
@@ -3495,7 +3802,7 @@ paths:
         '200':
           description: ''
       summary: Track order by code
-      tags: *ref_45
+      tags: *ref_49
   /api/website/orders/{id}:
     get:
       operationId: WebsiteController_getOrder
@@ -3509,7 +3816,7 @@ paths:
         '200':
           description: ''
       summary: Get order detail
-      tags: *ref_45
+      tags: *ref_49
   /api/website/articles:
     get:
       operationId: WebsiteController_listArticles
@@ -3518,7 +3825,7 @@ paths:
         '200':
           description: ''
       summary: List published articles
-      tags: *ref_45
+      tags: *ref_49
   /api/website/articles/{slug}:
     get:
       operationId: WebsiteController_getArticleBySlug
@@ -3532,7 +3839,7 @@ paths:
         '200':
           description: ''
       summary: Get article by slug
-      tags: *ref_45
+      tags: *ref_49
   /api/website/delivery-areas:
     get:
       operationId: WebsiteController_listDeliveryAreas
@@ -3541,7 +3848,7 @@ paths:
         '200':
           description: ''
       summary: List delivery areas
-      tags: *ref_45
+      tags: *ref_49
   /api/website/branches:
     get:
       operationId: WebsiteController_listBranches
@@ -3550,7 +3857,7 @@ paths:
         '200':
           description: ''
       summary: List branches
-      tags: *ref_45
+      tags: *ref_49
   /api/website/branches/{id}:
     get:
       operationId: WebsiteController_getBranch
@@ -3564,7 +3871,7 @@ paths:
         '200':
           description: ''
       summary: Get branch detail
-      tags: *ref_45
+      tags: *ref_49
   /api/website/contact:
     post:
       operationId: WebsiteController_submitContact
@@ -3579,7 +3886,7 @@ paths:
         '201':
           description: ''
       summary: Submit contact form
-      tags: *ref_45
+      tags: *ref_49
   /api/website/newsletter/subscribe:
     post:
       operationId: WebsiteController_subscribe
@@ -3594,7 +3901,7 @@ paths:
         '201':
           description: ''
       summary: Subscribe to newsletter
-      tags: *ref_45
+      tags: *ref_49
   /api/website/reviews:
     post:
       operationId: WebsiteController_createReview
@@ -3609,7 +3916,7 @@ paths:
         '201':
           description: ''
       summary: Submit product review
-      tags: *ref_45
+      tags: *ref_49
   /api/website/reviews/{productId}:
     get:
       operationId: WebsiteController_getProductReviews
@@ -3623,7 +3930,7 @@ paths:
         '200':
           description: ''
       summary: Get product reviews
-      tags: *ref_45
+      tags: *ref_49
   /api/website/rewards:
     get:
       operationId: WebsiteController_getRewards
@@ -3634,7 +3941,7 @@ paths:
       security:
         - bearer: []
       summary: Get rewards data
-      tags: *ref_45
+      tags: *ref_49
   /api/website/search:
     get:
       operationId: WebsiteController_search
@@ -3653,7 +3960,7 @@ paths:
         '200':
           description: ''
       summary: Global search
-      tags: *ref_45
+      tags: *ref_49
   /api/website/auth/register:
     post:
       operationId: WebsiteAuthController_register
@@ -3672,7 +3979,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponseDto'
       summary: Register a new website user
-      tags: &ref_46
+      tags: &ref_50
         - website-auth
   /api/website/auth/login:
     post:
@@ -3692,7 +3999,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponseDto'
       summary: Login for website users
-      tags: *ref_46
+      tags: *ref_50
   /api/website/admin/health-concerns:
     get:
       operationId: WebsiteAdminController_listHealthConcerns
@@ -3700,10 +4007,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_47
+      security: &ref_51
         - bearer: []
       summary: List all health concerns (admin)
-      tags: &ref_48
+      tags: &ref_52
         - website-admin
     post:
       operationId: WebsiteAdminController_createHealthConcern
@@ -3717,9 +4024,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: Create a health concern
-      tags: *ref_48
+      tags: *ref_52
   /api/website/admin/health-concerns/{id}:
     put:
       operationId: WebsiteAdminController_updateHealthConcern
@@ -3738,9 +4045,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: Update a health concern
-      tags: *ref_48
+      tags: *ref_52
     delete:
       operationId: WebsiteAdminController_deleteHealthConcern
       parameters:
@@ -3752,9 +4059,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: Soft delete a health concern
-      tags: *ref_48
+      tags: *ref_52
   /api/website/admin/articles:
     get:
       operationId: WebsiteAdminController_listArticles
@@ -3762,9 +4069,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: List all articles including unpublished
-      tags: *ref_48
+      tags: *ref_52
     post:
       operationId: WebsiteAdminController_createArticle
       parameters: []
@@ -3777,9 +4084,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: Create a blog article
-      tags: *ref_48
+      tags: *ref_52
   /api/website/admin/articles/{id}:
     put:
       operationId: WebsiteAdminController_updateArticle
@@ -3798,9 +4105,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: Update a blog article
-      tags: *ref_48
+      tags: *ref_52
     delete:
       operationId: WebsiteAdminController_deleteArticle
       parameters:
@@ -3812,9 +4119,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: Soft delete a blog article
-      tags: *ref_48
+      tags: *ref_52
   /api/website/admin/prescriptions:
     get:
       operationId: WebsiteAdminController_listPrescriptions
@@ -3827,9 +4134,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: List prescriptions with status filter and pagination
-      tags: *ref_48
+      tags: *ref_52
   /api/website/admin/prescriptions/{id}/status:
     patch:
       operationId: WebsiteAdminController_updatePrescriptionStatus
@@ -3848,9 +4155,393 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
+      security: *ref_51
       summary: Update prescription status
-      tags: *ref_48
+      tags: *ref_52
+  /api/website/admin/orders:
+    get:
+      operationId: WebsiteAdminController_listOrders
+      parameters:
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+      security: *ref_51
+      summary: List all website orders (saleChannel=mobile)
+      tags: *ref_52
+  /api/website/admin/orders/{id}:
+    get:
+      operationId: WebsiteAdminController_getOrder
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_51
+      summary: Get website order detail
+      tags: *ref_52
+  /api/website/admin/orders/{id}/status:
+    patch:
+      operationId: WebsiteAdminController_updateOrderStatus
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_51
+      summary: Update order status with transition validation
+      tags: *ref_52
+  /api/website/admin/orders/{id}/assign-location:
+    post:
+      operationId: WebsiteAdminController_assignLocation
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_51
+      summary: Assign a stock location to fulfill an order
+      tags: *ref_52
+  /api/website/admin/orders/{id}/process:
+    post:
+      operationId: WebsiteAdminController_processOrder
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_51
+      summary: Process order — deplete reserved stock and update status
+      tags: *ref_52
+  /api/apm/homepage:
+    get:
+      operationId: ApmController_getHomepage
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get campaign homepage data
+      tags: &ref_53
+        - apm
+  /api/apm/agenda:
+    get:
+      operationId: ApmController_listAgenda
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: List Oyo Next agenda items
+      tags: *ref_53
+  /api/apm/achievements:
+    get:
+      operationId: ApmController_listAchievements
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: List campaign achievements
+      tags: *ref_53
+  /api/apm/news:
+    get:
+      operationId: ApmController_listNews
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: List news articles
+      tags: *ref_53
+  /api/apm/news/{slug}:
+    get:
+      operationId: ApmController_getNewsBySlug
+      parameters:
+        - name: slug
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Get news article by slug
+      tags: *ref_53
+  /api/apm/events:
+    get:
+      operationId: ApmController_listEvents
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: List campaign events
+      tags: *ref_53
+  /api/apm/events/{id}:
+    get:
+      operationId: ApmController_getEvent
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Get event detail
+      tags: *ref_53
+  /api/apm/events/{id}/register:
+    post:
+      operationId: ApmController_registerForEvent
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRegistrationDto'
+      responses:
+        '201':
+          description: ''
+      summary: Register for an event
+      tags: *ref_53
+  /api/apm/volunteer:
+    post:
+      operationId: ApmController_registerVolunteer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterVolunteerDto'
+      responses:
+        '201':
+          description: ''
+      summary: Register as a volunteer
+      tags: *ref_53
+  /api/apm/join:
+    post:
+      operationId: ApmController_joinMovement
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinMovementDto'
+      responses:
+        '201':
+          description: ''
+      summary: Join the movement
+      tags: *ref_53
+  /api/apm/contact:
+    post:
+      operationId: ApmController_submitContact
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContactDto'
+      responses:
+        '201':
+          description: ''
+      summary: Submit contact form
+      tags: *ref_53
+  /api/apm/newsletter:
+    post:
+      operationId: ApmController_subscribeNewsletter
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsletterSubscribeDto'
+      responses:
+        '201':
+          description: ''
+      summary: Subscribe to newsletter
+      tags: *ref_53
+  /api/apm/citizens-speak:
+    post:
+      operationId: ApmController_submitFeedback
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitizenFeedbackDto'
+      responses:
+        '201':
+          description: ''
+      summary: Submit citizen feedback
+      tags: *ref_53
+  /api/apm/report:
+    post:
+      operationId: ApmController_reportIssue
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueReportDto'
+      responses:
+        '201':
+          description: ''
+      summary: Report an issue
+      tags: *ref_53
+  /api/apm/media:
+    get:
+      operationId: ApmController_listMedia
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: List media assets
+      tags: *ref_53
+  /api/apm/testimonials:
+    get:
+      operationId: ApmController_listTestimonials
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: List testimonials
+      tags: *ref_53
+  /api/apm/donate:
+    post:
+      operationId: ApmController_donate
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonationDto'
+      responses:
+        '201':
+          description: ''
+      summary: Submit a donation
+      tags: *ref_53
+  /api/apm-admin/volunteers:
+    get:
+      operationId: ApmAdminController_listVolunteers
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_54
+        - bearer: []
+      summary: List all volunteers
+      tags: &ref_55
+        - apm-admin
+  /api/apm-admin/supporters:
+    get:
+      operationId: ApmAdminController_listSupporters
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_54
+      summary: List all supporters
+      tags: *ref_55
+  /api/apm-admin/contacts:
+    get:
+      operationId: ApmAdminController_listContacts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_54
+      summary: List contact submissions
+      tags: *ref_55
+  /api/apm-admin/event-registrations:
+    get:
+      operationId: ApmAdminController_listEventRegistrations
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_54
+      summary: List event registrations
+      tags: *ref_55
+  /api/apm-admin/feedback:
+    get:
+      operationId: ApmAdminController_listFeedback
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_54
+      summary: List citizen feedback
+      tags: *ref_55
+  /api/apm-admin/issues:
+    get:
+      operationId: ApmAdminController_listIssues
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_54
+      summary: List issue reports
+      tags: *ref_55
+  /api/apm-admin/donations:
+    get:
+      operationId: ApmAdminController_listDonations
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_54
+      summary: List donations
+      tags: *ref_55
+  /api/apm-admin/stats:
+    get:
+      operationId: ApmAdminController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_54
+      summary: Get campaign stats dashboard
+      tags: *ref_55
   /api/upload/image:
     post:
       operationId: UploadController_uploadImage
@@ -3858,7 +4549,7 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_49
+      tags: &ref_56
         - Upload
     delete:
       operationId: UploadController_deleteImage
@@ -3866,7 +4557,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_49
+      tags: *ref_56
 info:
   title: RxSoft Backend API
   description: Phase 3 identity module and API contracts
@@ -4096,6 +4787,30 @@ components:
           type: array
           items:
             type: string
+    UpdateOrganisationConfigDto:
+      type: object
+      properties:
+        posHeader:
+          type: object
+        defaultLoginTimeoutMinutes:
+          type: number
+        defaultAllowPos:
+          type: boolean
+        defaultAllowA4Print:
+          type: boolean
+    UpdateUserPosConfigDto:
+      type: object
+      properties:
+        stockLocationId:
+          type: object
+        storeId:
+          type: object
+        allowA4Print:
+          type: boolean
+        allowPos:
+          type: boolean
+        loginTimeoutMinutes:
+          type: object
     ItemCategoryResponse:
       type: object
       properties:
@@ -4158,12 +4873,14 @@ components:
           type: string
         categoryId:
           type: string
-        genericProductId:
-          type: string
+        genericProductCode:
+          type: object
         category:
           $ref: '#/components/schemas/ItemCategoryResponse'
         genericProduct:
-          $ref: '#/components/schemas/GenericProductResponse'
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/GenericProductResponse'
         barcode:
           type: object
           nullable: true
@@ -4210,7 +4927,7 @@ components:
         - code
         - name
         - categoryId
-        - genericProductId
+        - genericProductCode
         - category
         - genericProduct
         - barcode
@@ -4240,9 +4957,9 @@ components:
         categoryId:
           type: string
           example: 2f9e3c8a-7fb2-4f43-98b7-5f2a0d4f9021
-        genericProductId:
+        genericProductCode:
           type: string
-          example: 5c0d6f5d-2952-4924-8ec6-c2c488a54cab
+          example: GEN001
         baseUomId:
           type: string
           example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
@@ -4279,7 +4996,6 @@ components:
         - code
         - name
         - categoryId
-        - genericProductId
         - baseUomId
     PatchItemDto:
       type: object
@@ -4467,6 +5183,28 @@ components:
         - locationId
         - deltaQuantity
         - reason
+    CreateStockTransferDto:
+      type: object
+      properties:
+        fromLocationId:
+          type: string
+        toLocationId:
+          type: string
+        itemId:
+          type: string
+        lotId:
+          type: object
+          nullable: true
+        quantity:
+          type: number
+          minimum: 0.001
+        reason:
+          type: string
+      required:
+        - fromLocationId
+        - toLocationId
+        - itemId
+        - quantity
     CreateStockLocationDto:
       type: object
       properties:
@@ -4589,7 +5327,7 @@ components:
           type: string
         currencyCode:
           type: string
-          example: USD
+          example: NGN
         unitPrice:
           type: number
         startsAt:
@@ -4645,6 +5383,19 @@ components:
           type: string
         address:
           type: string
+    CreateSupplierDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+      required:
+        - name
     CreateSaleLineDto:
       type: object
       properties:
@@ -4695,6 +5446,9 @@ components:
         storeId:
           type: string
         customerId:
+          type: object
+          nullable: true
+        stockLocationId:
           type: object
           nullable: true
         lines:
@@ -4990,14 +5744,14 @@ components:
           type: string
         currencyCode:
           type: string
-          example: USD
+          example: NGN
         orderDate:
           type: string
         expectedDate:
           type: string
         status:
           type: string
-          enum: &ref_50
+          enum: &ref_57
             - draft
             - approved
             - partially_received
@@ -5033,14 +5787,14 @@ components:
           type: string
         currencyCode:
           type: string
-          example: USD
+          example: NGN
         orderDate:
           type: string
         expectedDate:
           type: string
         status:
           type: string
-          enum: *ref_50
+          enum: *ref_57
         note:
           type: string
         invoiceNumber:
@@ -5081,6 +5835,8 @@ components:
           type: string
         receivedDate:
           type: string
+        receiptNumber:
+          type: string
         note:
           type: string
         lines:
@@ -5091,6 +5847,16 @@ components:
         - purchaseOrderId
         - receivedDate
         - lines
+    UnpostGoodsDto:
+      type: object
+      properties:
+        receiptLineId:
+          type: string
+        password:
+          type: string
+      required:
+        - receiptLineId
+        - password
     CreateOrganizationDto:
       type: object
       properties:
@@ -5300,9 +6066,23 @@ components:
       required:
         - productId
         - quantity
+    CreateOrderItemDto:
+      type: object
+      properties:
+        itemId:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+      required:
+        - itemId
+        - quantity
     CreateOrderDto:
       type: object
       properties:
+        customerId:
+          type: string
         deliveryAddress:
           type: string
         city:
@@ -5321,9 +6101,14 @@ components:
             type: string
         notes:
           type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateOrderItemDto'
       required:
         - deliveryAddress
         - paymentMethod
+        - items
     CreateContactDto:
       type: object
       properties:
@@ -5493,3 +6278,117 @@ components:
             - Fulfilled
       required:
         - status
+    EventRegistrationDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        lga:
+          type: string
+        ward:
+          type: string
+      required:
+        - name
+        - phone
+    RegisterVolunteerDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        lga:
+          type: string
+        ward:
+          type: string
+        pollingUnit:
+          type: string
+        skills:
+          type: string
+        interests:
+          type: string
+        availability:
+          type: string
+      required:
+        - name
+        - phone
+    JoinMovementDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        lga:
+          type: string
+        ward:
+          type: string
+        interests:
+          type: string
+        skills:
+          type: string
+      required:
+        - name
+        - phone
+    CitizenFeedbackDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        lga:
+          type: string
+        message:
+          type: string
+        topic:
+          type: string
+      required:
+        - name
+        - message
+    IssueReportDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        lga:
+          type: string
+        ward:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - description
+    DonationDto:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        amount:
+          type: number
+        notes:
+          type: string
+      required:
+        - name
+        - amount

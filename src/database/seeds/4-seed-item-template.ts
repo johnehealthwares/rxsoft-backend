@@ -19,9 +19,6 @@ type LookupMaps = {
   uoms: Map<string, string>;
   itemCategories: Map<string, string>;
   classifications: Map<string, string>;
-  pharmaceutics: Map<string, string>;
-  generics: Map<string, string>;
-  drugComponents: Map<string, string>;
 };
 
 function newLookupMaps(): LookupMaps {
@@ -30,9 +27,6 @@ function newLookupMaps(): LookupMaps {
     uoms: new Map(),
     itemCategories: new Map(),
     classifications: new Map(),
-    pharmaceutics: new Map(),
-    generics: new Map(),
-    drugComponents: new Map(),
   };
 }
 
@@ -526,234 +520,7 @@ async function importClassifications(
   console.log(`    classification done: ${inserted} inserted, ${updated} updated/refreshed, ${skipped} skipped`);
 }
 
-async function importPharmaceutics(
-  dataSource: DataSource,
-  rows: Record<string, any>[],
-  organizationId: string,
-  lookups: LookupMaps,
-  results: RowSyncResult[],
-): Promise<void> {
-  const table = 'pharmaceutics';
-  let updated = 0, inserted = 0, skipped = 0;
 
-  for (const row of rows) {
-    const uuid = safeText(row.uuid);
-    const code = safeText(row.code);
-    if (!code) { skipped++; continue; }
-    const rowNumber = row._rowNumber;
-
-    try {
-      let id: string | null = null;
-
-      if (uuid) {
-        const existing: Array<{ id: string }> = await dataSource.query(
-          `SELECT id FROM ${table} WHERE id = $1 LIMIT 1`,
-          [uuid],
-        );
-        if (existing.length > 0) id = existing[0].id;
-      }
-
-      if (!id) {
-        const existing: Array<{ id: string }> = await dataSource.query(
-          `SELECT id FROM ${table} WHERE organization_id = $1 AND code = $2 LIMIT 1`,
-          [organizationId, code],
-        );
-        if (existing.length > 0) id = existing[0].id;
-      }
-
-      const clinicalName = safeText(row.clinicalName);
-      const drugClass = safeText(row.drugClass);
-      const pharmacology = safeText(row.pharmacology);
-      const indications = safeText(row.indications);
-      const contraindications = safeText(row.contraindications);
-      const mechanism = safeText(row.mechanism);
-
-      if (id) {
-        const sets = [
-          `clinical_name = $1`,
-          `drug_class = $2`,
-          `pharmaceutics = $3`,
-          `indications = $4`,
-          `contraindications = $5`,
-          `mechanism = $6`,
-          `updated_at = $7`,
-        ];
-        const vals = [clinicalName, drugClass, pharmacology, indications, contraindications, mechanism, new Date().toISOString(), id];
-        await dataSource.query(
-          `UPDATE ${table} SET ${sets.join(', ')} WHERE id = $8`,
-          vals,
-        );
-        updated++;
-      } else {
-        id = randomUUID();
-        await dataSource.query(
-          `INSERT INTO ${table} (id, organization_id, code, clinical_name, drug_class, pharmaceutics, indications, contraindications, mechanism) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (organization_id, code) DO UPDATE SET clinical_name = EXCLUDED.clinical_name, drug_class = EXCLUDED.drug_class, pharmaceutics = EXCLUDED.pharmaceutics, indications = EXCLUDED.indications, contraindications = EXCLUDED.contraindications, mechanism = EXCLUDED.mechanism`,
-          [id, organizationId, code, clinicalName, drugClass, pharmacology, indications, contraindications, mechanism],
-        );
-        inserted++;
-      }
-
-      lookups.pharmaceutics.set(code, id);
-      results.push({ rowNumber, uuid: id, code, sheet: 'pharmaceutical_index', status: 'SUCCESS' });
-    } catch (err) {
-      console.error(`    ERROR row ${rowNumber} [pharmaceutical_index] code="${code}": ${err instanceof Error ? err.message : err}`);
-      results.push({ rowNumber, code, sheet: 'pharmaceutical_index', status: 'ERROR', message: `Exception: ${err instanceof Error ? err.message : String(err)}` });
-    }
-  }
-
-  console.log(`    pharmaceutical_index done: ${inserted} inserted, ${updated} updated/refreshed, ${skipped} skipped`);
-}
-
-async function importDrugs(
-  dataSource: DataSource,
-  rows: Record<string, any>[],
-  organizationId: string,
-  lookups: LookupMaps,
-  results: RowSyncResult[],
-): Promise<void> {
-  const genericTable = 'generic_products';
-  const componentTable = 'drug_components';
-
-  // Collect all unique drug component names from all rows
-  const allComponentNames = new Set<string>();
-  for (const row of rows) {
-    const namesStr = safeText(row.drugComponentNames);
-    if (namesStr) {
-      for (const name of namesStr.split(',').map(s => s.trim()).filter(Boolean)) {
-        allComponentNames.add(name);
-      }
-    }
-  }
-
-  console.log(`    Parsed ${allComponentNames.size} unique drug component names across ${rows.length} drug rows`);
-
-  // Ensure "Not Found" component exists (constraint is (org, name))
-  await ensureNotFound(dataSource, componentTable, organizationId, 'name', {});
-
-  // Upsert all drug components
-  let compInserted = 0, compExisting = 0;
-  for (const name of allComponentNames) {
-    const existing: Array<{ id: string }> = await dataSource.query(
-      `SELECT id FROM ${componentTable} WHERE organization_id = $1 AND name = $2 LIMIT 1`,
-      [organizationId, name],
-    );
-    if (existing.length > 0) {
-      lookups.drugComponents.set(name, existing[0].id);
-      compExisting++;
-    } else {
-      const id = randomUUID();
-      await dataSource.query(
-        `INSERT INTO ${componentTable} (id, organization_id, name) VALUES ($1, $2, $3) ON CONFLICT (organization_id, name) DO NOTHING`,
-        [id, organizationId, name],
-      );
-      lookups.drugComponents.set(name, id);
-      compInserted++;
-    }
-  }
-  console.log(`    Drug components: ${compInserted} created, ${compExisting} existing`);
-
-  // Upsert generic products
-  let updated = 0, inserted = 0, skipped = 0, linksSet = 0, notFoundPharm = 0;
-
-  for (const row of rows) {
-    const uuid = safeText(row.uuid);
-    const code = safeText(row.code);
-    if (!code) { skipped++; continue; }
-    const rowNumber = row._rowNumber;
-
-    try {
-      let id: string | null = null;
-
-      if (uuid) {
-        const existing: Array<{ id: string }> = await dataSource.query(
-          `SELECT id FROM ${genericTable} WHERE id = $1 LIMIT 1`,
-          [uuid],
-        );
-        if (existing.length > 0) id = existing[0].id;
-      }
-
-      if (!id) {
-        const existing: Array<{ id: string }> = await dataSource.query(
-          `SELECT id FROM ${genericTable} WHERE organization_id = $1 AND code = $2 LIMIT 1`,
-          [organizationId, code],
-        );
-        if (existing.length > 0) id = existing[0].id;
-      }
-
-      const name = safeText(row.name) || code;
-      const therapeuticClass = safeText(row.therapeuticClass);
-      const generalUse = safeText(row.generalUse) || '';
-      const adultDosage = safeText(row.adultDosage) || '';
-      const pediatricDosage = safeText(row.pediatricDosage) || '';
-
-      // Resolve pharmaceutics FK
-      const pharmCode = safeText(row.pharmaceuticsCode);
-      let pharmId: string | null = null;
-      if (pharmCode) {
-        pharmId = lookups.pharmaceutics.get(pharmCode) || null;
-        if (!pharmId) {
-          pharmId = await ensureNotFound(dataSource, 'pharmaceutics', organizationId, 'code', {});
-          notFoundPharm++;
-          console.warn(`    WARN row ${rowNumber}: pharmaceuticsCode "${pharmCode}" not found, using "Not Found" fallback for "${code}"`);
-        }
-      }
-
-      if (id) {
-        const sets = [
-          `name = $1`,
-          `therapeutic_class = $2`,
-          `general_use = $3`,
-          `adult_dosage = $4`,
-          `pediatric_dosage = $5`,
-          `pharmaceutics_id = $6`,
-          `updated_at = $7`,
-        ];
-        const vals = [name, therapeuticClass, generalUse, adultDosage, pediatricDosage, pharmId, new Date().toISOString(), id];
-        await dataSource.query(
-          `UPDATE ${genericTable} SET ${sets.join(', ')} WHERE id = $8`,
-          vals,
-        );
-        updated++;
-      } else {
-        id = randomUUID();
-        await dataSource.query(
-          `INSERT INTO ${genericTable} (id, organization_id, code, name, therapeutic_class, general_use, adult_dosage, pediatric_dosage, pharmaceutics_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (organization_id, code) DO UPDATE SET name = EXCLUDED.name, therapeutic_class = EXCLUDED.therapeutic_class, general_use = EXCLUDED.general_use, adult_dosage = EXCLUDED.adult_dosage, pediatric_dosage = EXCLUDED.pediatric_dosage, pharmaceutics_id = EXCLUDED.pharmaceutics_id`,
-          [id, organizationId, code, name, therapeuticClass, generalUse, adultDosage, pediatricDosage, pharmId],
-        );
-        inserted++;
-      }
-
-      lookups.generics.set(code, id);
-      results.push({ rowNumber, uuid: id, code, sheet: 'drug', status: 'SUCCESS' });
-
-      // Link drug components to pharmaceutics via join table
-      if (pharmId) {
-        const namesStr = safeText(row.drugComponentNames);
-        if (namesStr) {
-          await dataSource.query(
-            `DELETE FROM pharmaceutics_drug_components WHERE pharmaceutics_id = $1`,
-            [pharmId],
-          );
-          for (const compName of namesStr.split(',').map(s => s.trim()).filter(Boolean)) {
-            const compId = lookups.drugComponents.get(compName);
-            if (compId) {
-              await dataSource.query(
-                `INSERT INTO pharmaceutics_drug_components (pharmaceutics_id, drug_component_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-                [pharmId, compId],
-              );
-              linksSet++;
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.error(`    ERROR row ${rowNumber} [drug] code="${code}": ${err instanceof Error ? err.message : err}`);
-      results.push({ rowNumber, code, sheet: 'drug', status: 'ERROR', message: `Exception: ${err instanceof Error ? err.message : String(err)}` });
-    }
-  }
-
-  console.log(`    drug done: ${inserted} inserted, ${updated} updated/refreshed, ${skipped} skipped, ${linksSet} component links, ${notFoundPharm} "Not Found" pharmaceutics fallbacks`);
-}
 
 async function importItems(
   dataSource: DataSource,
@@ -764,7 +531,7 @@ async function importItems(
 ): Promise<void> {
   const table = 'items';
   let updated = 0, inserted = 0, skipped = 0;
-  let notFoundCat = 0, notFoundGen = 0, notFoundUom = 0;
+  let notFoundCat = 0, notFoundUom = 0;
 
   for (const row of rows) {
     const uuid = safeText(row.uuid);
@@ -808,17 +575,7 @@ async function importItems(
         }
       }
 
-      const drugCode = safeText(row.drug_code);
-      let genId: string | null = null;
-      if (drugCode) {
-        genId = lookups.generics.get(drugCode) || null;
-        if (!genId) {
-          const notFoundPharmId = await ensureNotFound(dataSource, 'pharmaceutics', organizationId, 'code', {});
-          genId = await ensureNotFound(dataSource, 'generic_products', organizationId, 'code', { name: 'Not Found', general_use: '', adult_dosage: '', pediatric_dosage: '', pharmaceutics_id: notFoundPharmId });
-          notFoundGen++;
-          console.warn(`    WARN row ${rowNumber}: drug_code "${drugCode}" not found for item "${code}", using "Not Found" fallback`);
-        }
-      }
+      const drugCode = safeText(row.drug_code) || 'NOT_FOUND';
 
       const uomCode = safeText(row.uomCode);
       let baseUomId: string | null = null;
@@ -847,7 +604,7 @@ async function importItems(
         const sets = [
           `name = $1`,
           `category_id = $2`,
-          `generic_product_id = $3`,
+          `generic_product_code = $3`,
           `base_uom_id = $4`,
           `purchase_uom_id = $5`,
           `sale_uom_id = $6`,
@@ -856,7 +613,7 @@ async function importItems(
           `is_active = $9`,
           `updated_at = $10`,
         ];
-        const vals = [name, catId, genId, baseUomId, purchaseUomId, saleUomId, barcode, trackLot, isActive, new Date().toISOString(), id];
+        const vals = [name, catId, drugCode, baseUomId, purchaseUomId, saleUomId, barcode, trackLot, isActive, new Date().toISOString(), id];
         await dataSource.query(
           `UPDATE ${table} SET ${sets.join(', ')} WHERE id = $11`,
           vals,
@@ -865,8 +622,8 @@ async function importItems(
       } else {
         id = randomUUID();
         await dataSource.query(
-          `INSERT INTO ${table} (id, organization_id, code, name, category_id, generic_product_id, base_uom_id, purchase_uom_id, sale_uom_id, barcode, track_lot, track_expiry, shelf_life_days, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) ON CONFLICT (organization_id, code) DO UPDATE SET name = EXCLUDED.name, category_id = EXCLUDED.category_id, generic_product_id = EXCLUDED.generic_product_id, base_uom_id = EXCLUDED.base_uom_id, purchase_uom_id = EXCLUDED.purchase_uom_id, sale_uom_id = EXCLUDED.sale_uom_id, barcode = EXCLUDED.barcode, track_lot = EXCLUDED.track_lot, is_active = EXCLUDED.is_active`,
-          [id, organizationId, code, name, catId, genId, baseUomId, purchaseUomId, saleUomId, barcode, trackLot, true, 730, isActive],
+          `INSERT INTO ${table} (id, organization_id, code, name, category_id, generic_product_code, base_uom_id, purchase_uom_id, sale_uom_id, barcode, track_lot, track_expiry, shelf_life_days, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) ON CONFLICT (organization_id, code) DO UPDATE SET name = EXCLUDED.name, category_id = EXCLUDED.category_id, generic_product_code = EXCLUDED.generic_product_code, base_uom_id = EXCLUDED.base_uom_id, purchase_uom_id = EXCLUDED.purchase_uom_id, sale_uom_id = EXCLUDED.sale_uom_id, barcode = EXCLUDED.barcode, track_lot = EXCLUDED.track_lot, is_active = EXCLUDED.is_active`,
+          [id, organizationId, code, name, catId, drugCode, baseUomId, purchaseUomId, saleUomId, barcode, trackLot, true, 730, isActive],
         );
         inserted++;
       }
@@ -879,14 +636,13 @@ async function importItems(
   }
 
   console.log(`    item done: ${inserted} inserted, ${updated} updated/refreshed, ${skipped} skipped`);
-  if (notFoundCat > 0) console.log(`      "Not Found" fallbacks — category: ${notFoundCat}, generic: ${notFoundGen}, uom: ${notFoundUom}`);
+  if (notFoundCat > 0) console.log(`      "Not Found" fallbacks — category: ${notFoundCat}, uom: ${notFoundUom}`);
 }
 
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 export async function seedItemsTemplates(
   dataSource: DataSource,
-  _genericMap?: Record<string, string>,
 ): Promise<void> {
   const organizationId = DEFAULT_ORGANIZATION_ID;
   const sheetReader = new GoogleSheetReaderService();
@@ -902,7 +658,7 @@ export async function seedItemsTemplates(
   const sheetNames = await sheetReader.getSheetNames(SPREADSHEET_ID);
   console.log(`  Sheets found: ${sheetNames.join(', ')}`);
 
-  const priority = ['uom_category', 'uom', 'item_category', 'classification', 'pharmaceutical_index', 'drug', 'item'];
+  const priority = ['uom_category', 'uom', 'item_category', 'classification', 'item'];
   const orderedSheets = [...sheetNames].sort((a, b) => {
     const ia = priority.indexOf(a);
     const ib = priority.indexOf(b);
@@ -947,14 +703,6 @@ export async function seedItemsTemplates(
       case 'classification':
         await importClassifications(dataSource, rows, organizationId, lookups, allResults);
         await loadLookupMap(dataSource, 'classifications', organizationId, lookups.classifications);
-        break;
-      case 'pharmaceutical_index':
-        await importPharmaceutics(dataSource, rows, organizationId, lookups, allResults);
-        await loadLookupMap(dataSource, 'pharmaceutics', organizationId, lookups.pharmaceutics);
-        break;
-      case 'drug':
-        await importDrugs(dataSource, rows, organizationId, lookups, allResults);
-        await loadLookupMap(dataSource, 'generic_products', organizationId, lookups.generics);
         break;
       case 'item':
         await importItems(dataSource, rows, organizationId, lookups, allResults);
@@ -1032,7 +780,7 @@ async function mainStandalone(): Promise<void> {
   console.log('Connected to PostgreSQL');
 
   try {
-    await seedItemsTemplates(dataSource, {});
+    await seedItemsTemplates(dataSource);
   } finally {
     await dataSource.destroy();
     console.log('Disconnected from PostgreSQL');

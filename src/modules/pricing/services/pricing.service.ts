@@ -151,7 +151,7 @@ export class PricingService {
   ): Promise<PriceListItemType> {
     const priceList = await this.priceListRepository.findOne({ where: { id: payload.priceListId, organizationId } });
     if (!priceList) throw new NotFoundException('Price list not found');
-    const item = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId } });
+    const item = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId, isActive: true } });
     if (!item) throw new BadRequestException('Item not found');
 
     const location = payload.locationId
@@ -208,7 +208,7 @@ export class PricingService {
       priceList,
       item,
       location,
-      currencyCode: payload.currencyCode ?? 'USD',
+      currencyCode: payload.currencyCode ?? 'NGN',
       unitPrice: payload.unitPrice,
       startsAt: payload.startsAt ? new Date(payload.startsAt) : undefined,
       endsAt: payload.endsAt ? new Date(payload.endsAt) : undefined,
@@ -238,7 +238,7 @@ export class PricingService {
     }
 
     if (payload.itemId) {
-      const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId } });
+      const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId, isActive: true } });
       if (!itemRef) throw new BadRequestException('Item not found');
       item.item = itemRef;
     }
@@ -271,7 +271,7 @@ export class PricingService {
       where: { id: payload.priceListId, organizationId },
     });
     if (!priceList) throw new NotFoundException('Price list not found');
-    const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId } });
+    const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId, isActive: true } });
     if (!itemRef) throw new BadRequestException('Item not found');
 
     const location = payload.locationId
@@ -294,7 +294,7 @@ export class PricingService {
         priceList,
         item: itemRef,
         location,
-        currencyCode: payload.currencyCode ?? 'USD',
+        currencyCode: payload.currencyCode ?? 'NGN',
         unitPrice: payload.unitPrice,
         startsAt: payload.startsAt ? new Date(payload.startsAt) : undefined,
         endsAt: payload.endsAt ? new Date(payload.endsAt) : undefined,

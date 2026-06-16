@@ -32,6 +32,12 @@ export class ManufacturersController {
     return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
   }
 
+  @Get('metrics')
+  @Roles('admin', 'super_admin')
+  async metrics(@CurrentUser() currentUser: RequestUser) {
+    return this.manufacturersService.getLastCreated(currentUser.organizationId);
+  }
+
   @Get(':manufacturerId')
   @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
   async get(

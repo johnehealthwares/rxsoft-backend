@@ -1,5 +1,4 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { GenericProductOrmEntity } from './generic-product.orm-entity';
 import { ItemCategoryOrmEntity } from './item-category.orm-entity';
 import { UomOrmEntity } from '../../sales/entities';
 
@@ -25,11 +24,8 @@ export class ItemOrmEntity {
   @JoinColumn({ name: 'category_id',  })
   category!: ItemCategoryOrmEntity;
 
-  @ManyToOne(() => GenericProductOrmEntity, (genericProduct) => genericProduct.items, {
-    nullable: false,
-  })
-  @JoinColumn({ name: 'generic_product_id' })
-  genericProduct!: GenericProductOrmEntity;
+  @Column({ name: 'generic_product_code', type: 'text', nullable: true })
+  genericProductCode!: string | null;
 
   @Column({ name: 'base_uom_id', type: 'text' })
   baseUomId!: string;

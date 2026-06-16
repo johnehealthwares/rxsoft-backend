@@ -19,7 +19,7 @@ export class GetItemUseCase {
       return cached;
     }
 
-    const product = await this.productRepository.findById(productId, organizationId);
+    const product = await this.productRepository.findById(productId, organizationId, false);
     if (!product) {
       throw new NotFoundException('Item not found');
     }

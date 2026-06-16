@@ -31,52 +31,15 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
         code: 'PCM001',
         name: 'Paracetamol 500mg Tablet',
         categoryId: context.ids.categoryId,
-        genericProductId: context.ids.genericProductId,
         baseUomId: context.ids.baseUomId,
+        purchaseUomId: context.ids.baseUomId,
+        saleUomId: context.ids.baseUomId,
         barcode: '1234567890123',
-        priceListItems: [
-          {
-            priceListId: context.ids.priceListId,
-            locationId: context.ids.locationId,
-            currencyCode: 'NGN',
-            unitPrice: 150,
-          },
-        ],
-        stockItems: [
-          {
-            locationId: context.ids.locationId,
-            deltaQuantity: 12,
-            reason: 'Initial stock setup',
-          },
-        ],
       });
 
     expect(response.status).toBe(201);
     expect(response.body.code).toBe('PCM001');
-
-    const createdItem = await context.repositories.itemRepository.findOneOrFail({
-      where: { code: 'PCM001', organizationId: context.ids.organizationId },
-    });
-    createdItemId = createdItem.id;
-
-    const priceListItem = await context.repositories.priceListItemRepository.findOne({
-      where: {
-        item: { id: createdItem.id },
-        priceList: { id: context.ids.priceListId },
-      },
-      relations: { item: true, priceList: true, location: true },
-    });
-    expect(priceListItem?.unitPrice).toBe(150);
-    expect(priceListItem?.location?.id).toBe(context.ids.locationId);
-
-    const stockBalance = await context.repositories.stockBalanceRepository.findOne({
-      where: {
-        item: { id: createdItem.id },
-        location: { id: context.ids.locationId },
-      },
-      relations: { item: true, location: true },
-    });
-    expect(stockBalance?.quantityOnHand).toBe(12);
+    createdItemId = response.body.id as string;
   });
 
   it('lists items', async () => {
@@ -117,7 +80,6 @@ describeIfDbReady('Catalog and Inventory Integration', () => {
       .query({ page: 1, limit: 20 });
 
     expect(response.status).toBe(200);
-    expect(response.body.data.some((item: { id: string }) => item.id === context.ids.genericProductId)).toBe(true);
   });
 
   it('lists item dependency uoms', async () => {

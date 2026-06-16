@@ -1,132 +1,100 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import type { GenericProductType } from '../../../shared/domain';
-import { toGenericProductType } from '../../../shared/domain/mappers';
-import { CreateGenericProductDto, ListGenericProductsDto, UpdateGenericProductDto } from '../dto/generic-products.dto';
-import { GenericProductOrmEntity } from '../entities/generic-product.orm-entity';
-import { PharmaceuticsOrmEntity } from '../entities/pharmaceutics.orm-entity';
+import { HealthcareConceptsService } from '../../../services/healthcare-concepts.service';
+import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
+import type { ListGenericProductsDto } from '../dto/generic-products.dto';
+
+const toGenericProductType = (cached: any): GenericProductType => ({
+  id: cached.id,
+  organizationId: '',
+  code: cached.code,
+  name: cached.name,
+  therapeuticClass: cached.therapeuticClass ?? null,
+  dosageForm: cached.dosageForm ?? null,
+  strength: cached.strength ?? null,
+  generalUse: cached.generalUse ?? '',
+  adultDosage: cached.adultDosage ?? '',
+  pediatricDosage: cached.pediatricDosage ?? '',
+  isPrescriptionRequired: cached.isPrescriptionRequired ?? false,
+  isControlledSubstance: cached.isControlledSubstance ?? false,
+  pharmaceutics: cached.pharmaceutics
+    ? {
+        id: cached.pharmaceutics.id ?? '',
+        organizationId: '',
+        code: cached.pharmaceutics.code ?? '',
+        commonBrandName: cached.pharmaceutics.commonBrandName ?? null,
+        commonGenericName: cached.pharmaceutics.commonGenericName ?? null,
+        clinicalName: cached.pharmaceutics.clinicalName ?? null,
+        drugClass: cached.pharmaceutics.drugClass ?? null,
+        chemicalConstituents: cached.pharmaceutics.chemicalConstituents ?? null,
+        pharmaceutics: cached.pharmaceutics.pharmaceutics ?? null,
+        indications: cached.pharmaceutics.indications ?? null,
+        contraindications: cached.pharmaceutics.contraindications ?? null,
+        mechanism: cached.pharmaceutics.mechanism ?? null,
+        missedDose: cached.pharmaceutics.missedDose ?? null,
+        drugInteractions: cached.pharmaceutics.drugInteractions ?? null,
+        dosage: cached.pharmaceutics.dosage ?? null,
+        createdAt: cached.pharmaceutics.createdAt ?? new Date().toISOString(),
+        updatedAt: cached.pharmaceutics.updatedAt ?? new Date().toISOString(),
+        deletedAt: null,
+      }
+    : null!,
+  createdAt: cached.createdAt ?? new Date().toISOString(),
+  updatedAt: cached.updatedAt ?? new Date().toISOString(),
+  deletedAt: null,
+});
 
 @Injectable()
 export class GenericProductsService {
   constructor(
-    @InjectRepository(GenericProductOrmEntity)
-    private readonly genericProductRepository: Repository<GenericProductOrmEntity>,
-    @InjectRepository(PharmaceuticsOrmEntity)
-    private readonly pharmaceuticsRepository: Repository<PharmaceuticsOrmEntity>,
+    private readonly healthcare: HealthcareConceptsService,
+    private readonly cache: GenericDrugCacheService,
   ) {}
 
-  async list(
-    query: ListGenericProductsDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
-  ): Promise<{ data: GenericProductType[]; total: number }> {
-    const qb = this.genericProductRepository
-      .createQueryBuilder('generic_product')
-      .leftJoinAndSelect('generic_product.pharmaceutics', 'pharmacology_info')
-      .where('generic_product.organization_id = :organizationId', { organizationId })
-      .andWhere('generic_product.deleted_at IS NULL')
-      // .orderBy('generic_product.updated_at', 'DESC')
-      .skip(query.offset)
-      .take(query.limit);
-
-    if (query.search) {
-      qb.andWhere('(generic_product.code ILIKE :search OR generic_product.name ILIKE :search)', {
-        search: `%${query.search}%`,
-      });
-    }
-
-    const [data, total] = await qb.getManyAndCount();
-    return { data: data.map(toGenericProductType), total };
+  async list(query: ListGenericProductsDto, _organizationId?: string): Promise<{ data: GenericProductType[]; total: number }> {
+    const search = query.search ?? '';
+    const offset = query.offset ?? 0;
+    const limit = query.limit ?? 20;
+    const result = this.cache.searchLightweight(search, offset, limit);
+    const items = result.items
+      .map((item) => this.cache.getByCode(item.code))
+      .filter(Boolean);
+    return {
+      data: items.map(toGenericProductType),
+      total: result.total,
+    };
   }
 
-  async get(id: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<GenericProductType> {
-    const item = await this.genericProductRepository.findOne({
-      where: { id, organizationId, deletedAt: IsNull() },
-      relations: { pharmaceutics: true },
-    });
-    if (!item) throw new NotFoundException('Generic product not found');
-    return toGenericProductType(item);
+  async get(idOrCode: string, _organizationId?: string): Promise<GenericProductType> {
+    let cached = this.cache.getByCode(idOrCode);
+    if (!cached) {
+      cached = this.cache.getAll().find((p) => p.id === idOrCode);
+    }
+    if (!cached) {
+      const fetched = await this.healthcare.getGenericProductByCode(idOrCode);
+      if (!fetched) throw new NotFoundException('Generic product not found');
+      return toGenericProductType(fetched);
+    }
+    return toGenericProductType(cached);
   }
 
-  async create(
-    payload: CreateGenericProductDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
-  ): Promise<GenericProductType> {
-    const duplicate = await this.genericProductRepository.findOne({
-      where: { organizationId, code: payload.code, deletedAt: IsNull() },
-    });
-    if (duplicate) throw new BadRequestException('Generic product code already exists');
-
-    const pharmaceutics = await this.pharmaceuticsRepository.findOne({
-      where: { id: payload.pharmaceuticsId, organizationId, deletedAt: IsNull() },
-    });
-    if (!pharmaceutics) throw new BadRequestException('Pharmacology info not found');
-
-    const entity = this.genericProductRepository.create({
-      organizationId,
-      code: payload.code,
-      name: payload.name,
-      therapeuticClass: payload.therapeuticClass ?? null,
-      dosageForm: payload.dosageForm ?? null,
-      strength: payload.strength ?? null,
-      generalUse: payload.generalUse ?? '',
-      adultDosage: payload.adultDosage ?? '',
-      pediatricDosage: payload.pediatricDosage ?? '',
-      isPrescriptionRequired: payload.isPrescriptionRequired ?? false,
-      isControlledSubstance: payload.isControlledSubstance ?? false,
-      pharmaceutics,
-    });
-    const savedEntity = await this.genericProductRepository.save(entity);
-    const fullEntity = await this.genericProductRepository.findOneOrFail({
-      where: { id: savedEntity.id, organizationId, deletedAt: IsNull() },
-      relations: { pharmaceutics: true },
-    });
-    return toGenericProductType(fullEntity);
+  async create(payload: any, _organizationId?: string): Promise<GenericProductType> {
+    const result = await this.healthcare.createGenericProduct(payload);
+    if (!result) throw new BadRequestException('Failed to create generic product');
+    this.cache.invalidate(result.code);
+    return toGenericProductType(result);
   }
 
-  async update(
-    id: string,
-    payload: UpdateGenericProductDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
-  ): Promise<GenericProductType> {
-    const item = await this.genericProductRepository.findOne({
-      where: { id, organizationId, deletedAt: IsNull() },
-      relations: { pharmaceutics: true },
-    });
-    if (!item) throw new NotFoundException('Generic product not found');
+  async update(id: string, payload: any, _organizationId?: string): Promise<GenericProductType> {
+    const result = await this.healthcare.updateGenericProduct(id, payload);
+    if (!result) throw new NotFoundException('Generic product not found');
+    this.cache.invalidate(result.code);
+    return toGenericProductType(result);
+  }
 
-    if (payload.code && payload.code !== item.code) {
-      const duplicate = await this.genericProductRepository.findOne({
-        where: { organizationId, code: payload.code, deletedAt: IsNull() },
-      });
-      if (duplicate) throw new BadRequestException('Generic product code already exists');
-      item.code = payload.code;
-    }
-
-    if (payload.pharmaceuticsId) {
-      const pharmaceutics = await this.pharmaceuticsRepository.findOne({
-        where: { id: payload.pharmaceuticsId, organizationId, deletedAt: IsNull() },
-      });
-      if (!pharmaceutics) throw new BadRequestException('Pharmacology info not found');
-      item.pharmaceutics = pharmaceutics;
-    }
-
-    if (payload.name !== undefined) item.name = payload.name;
-    if (payload.therapeuticClass !== undefined) item.therapeuticClass = payload.therapeuticClass ?? null;
-    if (payload.dosageForm !== undefined) item.dosageForm = payload.dosageForm ?? null;
-    if (payload.strength !== undefined) item.strength = payload.strength ?? null;
-    if (payload.generalUse !== undefined) item.generalUse = payload.generalUse;
-    if (payload.adultDosage !== undefined) item.adultDosage = payload.adultDosage;
-    if (payload.pediatricDosage !== undefined) item.pediatricDosage = payload.pediatricDosage;
-    if (payload.isPrescriptionRequired !== undefined) item.isPrescriptionRequired = payload.isPrescriptionRequired;
-    if (payload.isControlledSubstance !== undefined) item.isControlledSubstance = payload.isControlledSubstance;
-
-    const savedItem = await this.genericProductRepository.save(item);
-    const fullEntity = await this.genericProductRepository.findOneOrFail({
-      where: { id: savedItem.id, organizationId, deletedAt: IsNull() },
-      relations: { pharmaceutics: true },
-    });
-    return toGenericProductType(fullEntity);
+  async remove(id: string, _organizationId?: string): Promise<void> {
+    const cached = this.cache.getAll().find((p) => p.id === id);
+    if (cached) this.cache.invalidate(cached.code);
+    await this.healthcare.deleteGenericProduct(id);
   }
 }

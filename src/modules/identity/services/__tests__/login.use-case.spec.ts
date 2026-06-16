@@ -42,12 +42,17 @@ describe('LoginUseCase', () => {
     revoke: jest.fn(),
   };
 
+  const userPosConfigService = { getOrCreate: jest.fn().mockResolvedValue({ loginTimeoutMinutes: null }) };
+  const orgConfigService = { getOrCreate: jest.fn().mockResolvedValue({ defaultLoginTimeoutMinutes: 480 }) };
+
   const useCase = new LoginUseCase(
     userRepository,
     roleRepository,
     passwordHasher,
     tokenIssuer,
     refreshTokenRepository,
+    userPosConfigService as any,
+    orgConfigService as any,
   );
 
   beforeEach(() => {

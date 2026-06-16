@@ -5,6 +5,8 @@ import type { RoleRepository } from '../repositories/role.repository';
 import type { PasswordHasherPort } from './password-hasher.port';
 import type { TokenIssuerPort } from './token-issuer.port';
 import type { RefreshTokenRepository } from '../repositories/refresh-token.repository';
+import { UserPosConfigService } from '../../user-pos-config/services/user-pos-config.service';
+import { OrganisationConfigService } from '../../organisation-config/services/organisation-config.service';
 import {
   PASSWORD_HASHER,
   REFRESH_TOKEN_REPOSITORY,
@@ -26,6 +28,8 @@ export class LoginUseCase {
     private readonly tokenIssuer: TokenIssuerPort,
     @Inject(REFRESH_TOKEN_REPOSITORY)
     private readonly refreshTokenRepository: RefreshTokenRepository,
+    private readonly userPosConfigService: UserPosConfigService,
+    private readonly orgConfigService: OrganisationConfigService,
   ) {}
 
   async execute(payload: LoginDto): Promise<Awaited<ReturnType<TokenIssuerPort['issuePair']>>> {
@@ -42,6 +46,23 @@ export class LoginUseCase {
     const roles = await this.roleRepository.listByCodes(user.roleCodes, user.organizationId);
     const permissions = [...new Set(roles.flatMap((role) => role.permissionCodes))];
 
+    // Resolve login timeout: user config → org config → 15 min fallback
+    let loginTimeoutMinutes: number | undefined;
+    try {
+      const userConfig = await this.userPosConfigService.getOrCreate(user.id, user.organizationId);
+      loginTimeoutMinutes = userConfig.loginTimeoutMinutes ?? undefined;
+    } catch {
+      // ignore
+    }
+    if (!loginTimeoutMinutes) {
+      try {
+        const orgConfig = await this.orgConfigService.getOrCreate(user.organizationId);
+        loginTimeoutMinutes = orgConfig.defaultLoginTimeoutMinutes;
+      } catch {
+        // ignore
+      }
+    }
+
     const tokenPair = await this.tokenIssuer.issuePair({
       sub: user.id,
       organizationId: user.organizationId,
@@ -49,7 +70,7 @@ export class LoginUseCase {
       roles: user.roleCodes,
       permissions,
       phone: user.phone,
-    });
+    }, loginTimeoutMinutes);
 
     const refreshTokenHash = await this.passwordHasher.hash(tokenPair.refreshToken);
     await this.refreshTokenRepository.persist(

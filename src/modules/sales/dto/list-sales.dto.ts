@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class ListSalesDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
@@ -17,6 +17,11 @@ export class ListSalesDto {
   @Min(1)
   @Max(100)
   limit = 20;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  search?: string;
 
   @ApiPropertyOptional({ enum: ['draft', 'posted', 'voided', 'refunded'] })
   @IsOptional()

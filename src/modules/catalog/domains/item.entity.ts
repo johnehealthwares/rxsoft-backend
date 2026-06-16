@@ -1,5 +1,4 @@
 import { ForeignProperty } from '../dto/item-response.dto';
-import { GenericProduct } from './generic-product.entity';
 import { ItemCategory } from './item-category.entity';
 
 export class Item {
@@ -8,10 +7,9 @@ export class Item {
     public readonly organizationId: string,
     public readonly code: string,
     public readonly name: string,
-    public readonly genericProductId: string,
+    public readonly genericProductCode: string | null,
     public readonly categoryId: string,
     public readonly category: ItemCategory,
-    public readonly genericProduct: GenericProduct,
     public readonly baseUomId: string,
     public readonly purchaseUomId: string | null,
     public readonly saleUomId: string | null,

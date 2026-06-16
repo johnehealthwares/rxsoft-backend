@@ -66,6 +66,11 @@ export class CreateSaleDto {
   @IsString()
   customerId?: string | null;
 
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  stockLocationId?: string | null;
+
   @ApiProperty({ type: [CreateSaleLineDto] })
   @IsArray()
   @ValidateNested({ each: true })

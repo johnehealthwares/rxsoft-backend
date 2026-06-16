@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { StockBalanceOrmEntity } from './stock-balance.orm-entity';
+import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
 @Entity('stock_adjustments')
@@ -18,6 +19,10 @@ export class StockAdjustmentOrmEntity {
 
   @Column({ name: 'delta_quantity', type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   deltaQuantity!: number;
+
+  @ManyToOne(() => UserOrmEntity, { nullable: false })
+  @JoinColumn({ name: 'performed_by_user_id' })
+  performedBy!: UserOrmEntity;
 
   @Column({ name: 'performed_by_user_id', type: 'text' })
   performedByUserId!: string;

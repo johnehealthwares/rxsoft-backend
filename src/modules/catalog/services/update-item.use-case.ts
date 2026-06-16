@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { AppCacheService } from '../../../common/cache/cache.service';
 import { InventoryService } from '../../inventory/services/inventory.service';
 import { PricingService } from '../../pricing/services/pricing.service';
@@ -8,12 +7,14 @@ import type { ItemRepository } from '../repositories/item.repository';
 import { Item } from '../domains/item.entity';
 import { CreateItemDto } from '../dto/create-item.dto';
 import { validateUoms } from './utils';
+import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
 
 @Injectable()
 export class UpdateItemUseCase {
   constructor(
     @Inject(ITEM_REPOSITORY)
     private readonly productRepository: ItemRepository,
+    private readonly cache: GenericDrugCacheService,
     @Optional()
     private readonly pricingService?: PricingService,
     @Optional()
@@ -30,12 +31,11 @@ export class UpdateItemUseCase {
       throw new BadRequestException('Category does not exist');
     }
 
-    const genericProduct = await this.productRepository.findGenericProductById(
-      payload.genericProductId,
-      organizationId,
-    );
-    if (!genericProduct) {
-      throw new BadRequestException('Generic product does not exist');
+    if (payload.genericProductCode) {
+      const genericProduct = this.cache.getByCode(payload.genericProductCode);
+      if (!genericProduct) {
+        throw new BadRequestException('Generic product does not exist');
+      }
     }
 
     if (!payload.baseUomId || !payload.purchaseUomId || !payload.saleUomId) {
@@ -68,10 +68,9 @@ export class UpdateItemUseCase {
       organizationId,
       payload.code,
       payload.name,
-      genericProduct.id,
+      payload.genericProductCode ?? null,
       category.id,
       category,
-      genericProduct,
       payload.baseUomId,
       payload.purchaseUomId ?? null,
       payload.saleUomId ?? null,

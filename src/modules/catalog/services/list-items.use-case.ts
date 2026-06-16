@@ -23,6 +23,7 @@ export class ListItemsUseCase {
       payload.page,
       payload.limit,
       payload.search ?? '',
+      payload.includeAll ?? false,
       payload.categoryCode ?? '',
       payload.sortBy,
       payload.sortOrder,
@@ -39,6 +40,7 @@ export class ListItemsUseCase {
       search: payload.search,
       categoryCode: payload.categoryCode,
       sortBy: payload.sortBy,
+      showAll: payload.includeAll,
       sortOrder: payload.sortOrder,
     });
     

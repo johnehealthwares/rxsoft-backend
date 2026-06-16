@@ -15,7 +15,7 @@ export class PatchItemUseCase {
   ) {}
 
   async execute(itemId: string, payload: PatchItemDto, organizationId: string): Promise<Item> {
-    const existing = await this.productRepository.findById(itemId, organizationId);
+    const existing = await this.productRepository.findById(itemId, organizationId, true);
     if (!existing) {
       throw new NotFoundException('Item not found');
     }
@@ -25,10 +25,9 @@ export class PatchItemUseCase {
       existing.organizationId,
       existing.code,
       payload.name ?? existing.name,
-      existing.genericProductId,
+      existing.genericProductCode,
       existing.categoryId,
       existing.category,
-      existing.genericProduct,
       existing.baseUomId,
       existing.purchaseUomId,
       existing.saleUomId,

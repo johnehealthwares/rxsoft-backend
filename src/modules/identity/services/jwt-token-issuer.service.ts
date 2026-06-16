@@ -17,10 +17,12 @@ export class JwtTokenIssuerService implements TokenIssuerPort {
     private readonly configService: ConfigService,
   ) {}
 
-  async issuePair(payload: TokenPayload): Promise<TokenPair> {
+  async issuePair(payload: TokenPayload, loginTimeoutMinutes?: number): Promise<TokenPair> {
+    const accessExpiresIn = loginTimeoutMinutes ? loginTimeoutMinutes * 60 : this.accessTokenExpiresIn;
+
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_ACCESS_SECRET', 'rxsoft-access-secret'),
-      expiresIn: this.accessTokenExpiresIn,
+      expiresIn: accessExpiresIn,
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -31,7 +33,7 @@ export class JwtTokenIssuerService implements TokenIssuerPort {
     return {
       accessToken,
       refreshToken,
-      accessTokenExpiresIn: this.accessTokenExpiresIn,
+      accessTokenExpiresIn: accessExpiresIn,
       refreshTokenExpiresIn: this.refreshTokenExpiresIn,
     };
   }

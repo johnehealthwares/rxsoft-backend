@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, Min, MinLength, ArrayMinSize, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ListQueryDto {
@@ -67,7 +67,21 @@ export class AddToCartDto {
   quantity!: number;
 }
 
+export class CreateOrderItemDto {
+  @ApiProperty() @IsUUID()
+  itemId!: string;
+
+  @ApiProperty() @Type(() => Number) @IsInt() @Min(1)
+  quantity!: number;
+
+  @ApiPropertyOptional() @Type(() => Number) @IsOptional()
+  unitPrice?: number;
+}
+
 export class CreateOrderDto {
+  @ApiPropertyOptional() @IsUUID() @IsOptional()
+  customerId?: string;
+
   @ApiProperty() @IsString()
   deliveryAddress!: string;
 
@@ -91,6 +105,9 @@ export class CreateOrderDto {
 
   @ApiPropertyOptional() @IsString() @IsOptional()
   notes?: string;
+
+  @ApiProperty({ type: [CreateOrderItemDto] }) @IsArray() @ValidateNested({ each: true }) @Type(() => CreateOrderItemDto) @ArrayMinSize(1)
+  items!: CreateOrderItemDto[];
 }
 
 export class CreateContactDto {

@@ -1,5 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { PurchaseOrderOrmEntity } from './purchase-order.orm-entity';
+import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 
 @Entity('purchase_order_lines')
 export class PurchaseOrderLineOrmEntity {
@@ -10,6 +12,10 @@ export class PurchaseOrderLineOrmEntity {
   @JoinColumn({ name: 'purchase_order_id' })
   purchaseOrder!: PurchaseOrderOrmEntity;
 
+  @ManyToOne(() => ItemOrmEntity, { nullable: false })
+  @JoinColumn({ name: 'item_id' })
+  item!: ItemOrmEntity;
+
   @Column({ name: 'item_id', type: 'uuid' })
   itemId!: string;
 
@@ -18,6 +24,10 @@ export class PurchaseOrderLineOrmEntity {
 
   @Column({ name: 'received_qty', type: 'numeric', precision: 14, scale: 3, default: 0 })
   receivedQty!: number;
+
+  @ManyToOne(() => UomOrmEntity, { nullable: false })
+  @JoinColumn({ name: 'uom_id' })
+  uom!: UomOrmEntity;
 
   @Column({ name: 'uom_id', type: 'uuid' })
   uomId!: string;

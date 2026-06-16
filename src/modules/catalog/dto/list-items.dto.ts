@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class ListItemsDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
@@ -32,6 +32,13 @@ export class ListItemsDto {
   @IsOptional()
   @IsString()
   categoryCode?: string;
+
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  includeAll?: boolean;
 
   @ApiPropertyOptional({ enum: ['name', 'code', 'createdAt'], default: 'name' })
   @IsOptional()

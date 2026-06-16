@@ -1,7 +1,4 @@
 import type { AuditLogOrmEntity } from '../../modules/audit/entities/audit-log.orm-entity';
-import type { DrugComponentOrmEntity } from '../../modules/catalog/entities/drug-component.orm-entity';
-import type { GenericProductOrmEntity } from '../../modules/catalog/entities/generic-product.orm-entity';
-import type { PharmaceuticsOrmEntity } from '../../modules/catalog/entities/pharmaceutics.orm-entity';
 import type { ItemCategoryOrmEntity as CatalogItemCategoryOrmEntity } from '../../modules/catalog/entities/item-category.orm-entity';
 import type { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 // import type { ItemCategoryOrmEntity as CategoriesItemCategoryOrmEntity } from '../../modules/categories/entities/item-category.orm-entity';
@@ -45,9 +42,6 @@ type SerializedEntity<T> = {
 };
 
 export type AuditLogEntityType = SerializedEntity<AuditLogOrmEntity>;
-export type DrugComponentEntityType = SerializedEntity<DrugComponentOrmEntity>;
-export type GenericProductEntityType = SerializedEntity<GenericProductOrmEntity>;
-export type PharmacologyInfoEntityType = SerializedEntity<PharmaceuticsOrmEntity>;
 export type CatalogItemCategoryEntityType = SerializedEntity<CatalogItemCategoryOrmEntity>;
 export type ItemEntityType = SerializedEntity<ItemOrmEntity>;
 // export type CategoriesItemCategoryEntityType = SerializedEntity<CategoriesItemCategoryOrmEntity>;

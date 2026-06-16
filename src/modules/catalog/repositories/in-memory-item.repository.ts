@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { GenericProduct } from '../domains/generic-product.entity';
-import { Pharmaceutics } from '../domains/pharmaceutics.entity';
 import { Item } from '../domains/item.entity';
 import { ItemCategory } from '../domains/item-category.entity';
 import {
@@ -15,31 +13,9 @@ export class InMemoryItemRepository implements ItemRepository {
   private readonly items = new Map<string, Item>();
   private readonly createdAtById = new Map<string, Date>();
   private readonly categories = new Map<string, ItemCategory>();
-  private readonly genericProducts = new Map<string, GenericProduct>();
   private readonly uoms = new Map<string, UomLookup>();
 
   constructor() {
-    const pharm = new Pharmaceutics(
-      'c7afe5de-d281-4b81-a271-8e1182cf3260',
-      'PHARM001',
-      'Paracetamol',
-      'Analgesic',
-      'Central analgesic action',
-      'Fever and pain',
-      'Severe liver disease',
-      'Blood'
-    );
-    const generic = new GenericProduct(
-      'f8fe2ed1-bb77-4aa7-b689-c44df7c0c3a1',
-      'GEN001',
-      'Paracetamol',
-      'Analgesic and antipyretic',
-      '500mg every 6-8h',
-      'Weight-based dosing',
-      false,
-      false,
-      pharm,
-    );
     const category = new ItemCategory(
       'd76d8e07-6368-4f96-8dd1-cd9b610ce208',
       'ANALGESICS',
@@ -51,10 +27,9 @@ export class InMemoryItemRepository implements ItemRepository {
       'org1',
       'PCM500',
       'Paracetamol 500mg Tablet',
-      generic.id,
+      'GEN001',
       category.id,
       category,
-      generic,
       uom.id,
       null,
       uom.id,
@@ -70,14 +45,13 @@ export class InMemoryItemRepository implements ItemRepository {
 
     this.items.set(product.id, product);
     this.categories.set(category.id, category);
-    this.genericProducts.set(generic.id, generic);
     this.uoms.set(uom.id, uom);
     this.createdAtById.set(product.id, new Date('2026-01-01T00:00:00.000Z'));
   }
 
   async list(query: ItemListQuery): Promise<{ items: Item[]; total: number }> {
     let items = [...this.items.values()].filter(
-      (product) => product.organizationId === query.organizationId,
+      (product) => product.organizationId === query.organizationId && product.isActive,
     );
 
     if (query.search) {
@@ -123,7 +97,7 @@ export class InMemoryItemRepository implements ItemRepository {
 
   async findById(id: string, organizationId: string): Promise<Item | null> {
     const item = this.items.get(id) ?? null;
-    if (!item || item.organizationId !== organizationId) {
+    if (!item || item.organizationId !== organizationId || !item.isActive) {
       return null;
     }
     return item;
@@ -132,7 +106,7 @@ export class InMemoryItemRepository implements ItemRepository {
   async findByCode(code: string, organizationId: string): Promise<Item | null> {
     return (
       [...this.items.values()].find(
-        (product) => product.code === code && product.organizationId === organizationId,
+        (product) => product.code === code && product.organizationId === organizationId && product.isActive,
       ) ?? null
     );
   }
@@ -140,7 +114,7 @@ export class InMemoryItemRepository implements ItemRepository {
   async findByBarcode(barcode: string, organizationId: string): Promise<Item | null> {
     return (
       [...this.items.values()].find(
-        (product) => product.barcode === barcode && product.organizationId === organizationId,
+        (product) => product.barcode === barcode && product.organizationId === organizationId && product.isActive,
       ) ?? null
     );
   }
@@ -148,10 +122,6 @@ export class InMemoryItemRepository implements ItemRepository {
 
   async findCategoryById(id: string, _organizationId: string): Promise<ItemCategory | null> {
     return this.categories.get(id) ?? null;
-  }
-
-  async findGenericProductById(id: string, _organizationId: string): Promise<GenericProduct | null> {
-    return this.genericProducts.get(id) ?? null;
   }
 
   async findUomById(id: string, _organizationId: string): Promise<UomLookup | null> {
@@ -162,29 +132,6 @@ export class InMemoryItemRepository implements ItemRepository {
     query: ItemDependencySearchQuery,
   ): Promise<{ items: Array<{ id: string; code: string; name: string }>; total: number }> {
     let items = [...this.categories.values()].map((item) => ({
-      id: item.id,
-      code: item.code,
-      name: item.name,
-    }));
-
-    if (query.search) {
-      const s = query.search.toLowerCase();
-      items = items.filter(
-        (item) => item.name.toLowerCase().includes(s) || item.code.toLowerCase().includes(s),
-      );
-    }
-
-    const total = items.length;
-    return {
-      items: items.slice(query.offset, query.offset + query.limit),
-      total,
-    };
-  }
-
-  async listGenericProducts(
-    query: ItemDependencySearchQuery,
-  ): Promise<{ items: Array<{ id: string; code: string; name: string }>; total: number }> {
-    let items = [...this.genericProducts.values()].map((item) => ({
       id: item.id,
       code: item.code,
       name: item.name,

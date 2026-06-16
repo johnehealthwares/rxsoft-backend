@@ -16,3 +16,8 @@ export const DEFAULT_UOM_ID = persistenceConfigService.get<string>(
   'DEFAULT_UOM_ID',
   '00000000-0000-0000-0000-000000000001',
 );
+
+export const DEFAULT_STORE_ID = persistenceConfigService.get<string>(
+  'DEFAULT_STORE_ID',
+  'default',
+);

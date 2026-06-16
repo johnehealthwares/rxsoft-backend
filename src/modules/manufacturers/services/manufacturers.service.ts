@@ -33,6 +33,15 @@ export class ManufacturersService {
     return { data: data.map(toManufacturerType), total };
   }
 
+  async getLastCreated(organizationId = DEFAULT_ORGANIZATION_ID): Promise<{ id: string; code: string; createdAt: string } | null> {
+    const entity = await this.manufacturerRepository.findOne({
+      where: { organizationId, deletedAt: IsNull() },
+      order: { createdAt: 'DESC' },
+    });
+    if (!entity) return null;
+    return { id: entity.id, code: entity.code ?? entity.name, createdAt: entity.createdAt.toISOString() };
+  }
+
   async get(id: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<ManufacturerType> {
     const manufacturer = await this.manufacturerRepository.findOne({
       where: { id, organizationId, deletedAt: IsNull() },

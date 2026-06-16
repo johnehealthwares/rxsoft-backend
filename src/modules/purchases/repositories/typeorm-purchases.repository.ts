@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
+import { UomOrmEntity } from '../../sales/entities';
 import {
   StockAdjustmentOrmEntity,
   StockBalanceOrmEntity,
@@ -15,6 +17,9 @@ import {
   PurchaseListQuery,
   PurchaseUpdatePayload,
   PurchasesRepository,
+  ReceiveGoodsResult,
+  ReceiptListQuery,
+  UnpostGoodsPayload,
 } from './purchases.repository';
 
 @Injectable()
@@ -164,8 +169,8 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
     if (!result.affected) throw new NotFoundException('Purchase order not found');
   }
 
-  async receiveGoods(payload: GoodsReceiptPayload): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
+  async receiveGoods(payload: GoodsReceiptPayload): Promise<ReceiveGoodsResult> {
+    return this.dataSource.transaction(async (manager) => {
       const poRepo = manager.getRepository(PurchaseOrderOrmEntity);
       const poLineRepo = manager.getRepository(PurchaseOrderLineOrmEntity);
       const grRepo = manager.getRepository(GoodsReceiptOrmEntity);
@@ -175,6 +180,19 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
       const adjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
       const warehouseRepo = manager.getRepository(WarehouseOrmEntity);
       const locationRepo = manager.getRepository(StockLocationOrmEntity);
+      const itemRepo2 = manager.getRepository(ItemOrmEntity);
+      const uomRepo = manager.getRepository(UomOrmEntity);
+
+      const itemIds = [...new Set(payload.lines.map((l) => l.itemId))];
+      const grItems = await itemRepo2.find({
+        where: { id: In(itemIds), organizationId: payload.organizationId },
+        select: ['id', 'baseUomId'],
+      });
+      const itemBaseUomMap = new Map(grItems.map((i) => [i.id, i.baseUomId]));
+
+      const uomIds = [...new Set(payload.lines.map((l) => l.uomId))];
+      const grUoms = await uomRepo.find({ where: { id: In(uomIds) } });
+      const uomFactorMap = new Map(grUoms.map((u) => [u.id, u.factor]));
 
       const po = await poRepo.findOne({
         where: { id: payload.purchaseOrderId, organizationId: payload.organizationId },
@@ -208,17 +226,18 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
       });
       const savedGr = await grRepo.save(gr);
 
-      const grLineEntities = payload.lines.map((line) =>
-        grLineRepo.create({
-          goodsReceipt: savedGr,
-          itemId: line.itemId,
-          orderedQty: line.orderedQty,
-          receivedQty: line.receivedQty,
-          uomId: line.uomId,
-          unitCost: line.unitCost,
-        }),
+      const savedGrLines = await grLineRepo.save(
+        payload.lines.map((line) =>
+          grLineRepo.create({
+            goodsReceipt: savedGr,
+            itemId: line.itemId,
+            orderedQty: line.orderedQty,
+            receivedQty: line.receivedQty,
+            uomId: line.uomId,
+            unitCost: line.unitCost,
+          }),
+        ),
       );
-      await grLineRepo.save(grLineEntities);
 
       for (const incomingLine of payload.lines) {
         const poLine = po.lines.find((l) => l.itemId === incomingLine.itemId)!;
@@ -259,17 +278,22 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
       }
 
       for (const incomingLine of payload.lines) {
+        const lineUomFactor = uomFactorMap.get(incomingLine.uomId) ?? 1;
+        const baseUomId = itemBaseUomMap.get(incomingLine.itemId);
+        const baseUomFactor = baseUomId ? (uomFactorMap.get(baseUomId) ?? 1) : 1;
+        const baseQty = Number((incomingLine.receivedQty * lineUomFactor / baseUomFactor).toFixed(4));
+
         await movementRepo.save(
           movementRepo.create({
             organizationId: payload.organizationId,
             inventoryDocumentId: savedGr.id,
             inventoryDocumentLineId: null,
-            itemId: incomingLine.itemId,
-            lotId: null,
-            fromLocationId: null,
-            toLocationId: stockLocation.id,
+            item: { id: incomingLine.itemId },
+            lot: null,
+            fromLocation: null,
+            toLocation: { id: stockLocation.id },
             movementType: 'in',
-            quantity: incomingLine.receivedQty,
+            quantity: baseQty,
             unitCost: incomingLine.unitCost,
             occurredAt: payload.receivedDate,
             createdByUserId: payload.createdByUserId,
@@ -297,19 +321,155 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
             quantityReserved: 0,
             averageCost: 0,
           });
-        upsertBalance.quantityOnHand = Number((upsertBalance.quantityOnHand + incomingLine.receivedQty).toFixed(4));
+
+        const oldQty = upsertBalance.quantityOnHand;
+        const newQty = Number((oldQty + baseQty).toFixed(4));
+        upsertBalance.quantityOnHand = newQty;
+        upsertBalance.averageCost = oldQty + baseQty > 0
+          ? Number(((oldQty * upsertBalance.averageCost + baseQty * incomingLine.unitCost) / (oldQty + baseQty)).toFixed(4))
+          : incomingLine.unitCost;
         const savedBalance = await balanceRepo.save(upsertBalance);
 
         await adjustmentRepo.save(
           adjustmentRepo.create({
             stockBalance: savedBalance,
             reason: `goods_receipt:${savedGr.receiptNumber}`,
-            deltaQuantity: incomingLine.receivedQty,
+            deltaQuantity: baseQty,
             performedByUserId: payload.createdByUserId,
             performedAt: payload.receivedDate,
           }),
         );
       }
+
+      return {
+        receiptId: savedGr.id,
+        receiptNumber: savedGr.receiptNumber,
+        lines: savedGrLines.map((l) => ({
+          itemId: l.itemId,
+          receiptLineId: l.id,
+          receivedQty: Number(l.receivedQty),
+        })),
+      };
     });
+  }
+
+  async unpostGoods(payload: UnpostGoodsPayload): Promise<void> {
+    const line = await this.goodsReceiptLineRepository.findOne({
+      where: { id: payload.receiptLineId },
+      relations: ['goodsReceipt', 'goodsReceipt.purchaseOrder'],
+    });
+    if (!line) throw new NotFoundException('Goods receipt line not found');
+    if (line.isUnposted) throw new BadRequestException('Goods receipt line is already unposted');
+
+    const receipt = line.goodsReceipt;
+    const po = receipt?.purchaseOrder;
+    const baseQty = Number(line.receivedQty);
+
+    const stockMovement = await this.stockMovementRepository.findOne({
+      where: {
+        inventoryDocumentId: receipt.id,
+        inventoryDocumentLineId: line.id,
+        movementType: 'in',
+      },
+    });
+    if (!stockMovement) {
+      await this.goodsReceiptLineRepository.update(line.id, { isUnposted: true });
+      return;
+    }
+
+    const toLocation = stockMovement.toLocation;
+    if (!toLocation) {
+      throw new BadRequestException('Cannot unpost: original stock movement has no source location');
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      const movementRepo = manager.getRepository(StockMovementOrmEntity);
+      const balanceRepo = manager.getRepository(StockBalanceOrmEntity);
+      const adjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
+      const grLineRepo = manager.getRepository(GoodsReceiptLineOrmEntity);
+      const poLineRepo = manager.getRepository(PurchaseOrderLineOrmEntity);
+      const poRepo = manager.getRepository(PurchaseOrderOrmEntity);
+
+      await movementRepo.save(
+        movementRepo.create({
+          organizationId: payload.organizationId,
+          inventoryDocumentId: receipt.id,
+          inventoryDocumentLineId: line.id,
+          item: { id: line.itemId },
+          lot: null,
+          fromLocation: toLocation,
+          toLocation: null,
+          movementType: 'out',
+          quantity: baseQty,
+          unitCost: line.unitCost,
+          occurredAt: new Date(),
+          createdByUserId: payload.performedByUserId,
+        }),
+      );
+
+      const balance = await balanceRepo.findOne({
+        where: {
+          organizationId: payload.organizationId,
+          item: { id: line.itemId },
+          location: { id: toLocation.id },
+        },
+        relations: ['item', 'location'],
+      });
+      if (balance) {
+        balance.quantityOnHand = Number(Math.max(0, balance.quantityOnHand - baseQty).toFixed(4));
+        const savedBalance = await balanceRepo.save(balance);
+
+        await adjustmentRepo.save(
+          adjustmentRepo.create({
+            stockBalance: savedBalance,
+            reason: `goods_unpost:${receipt.receiptNumber}`,
+            deltaQuantity: -baseQty,
+            performedByUserId: payload.performedByUserId,
+            performedAt: new Date(),
+          }),
+        );
+      }
+
+      await grLineRepo.update(line.id, { isUnposted: true });
+
+      const poId = po?.id;
+      if (!poId) return;
+
+      const allPoLines = await poLineRepo.find({
+        where: { itemId: line.itemId },
+        relations: ['purchaseOrder'],
+      });
+
+      const matchedPoLines = allPoLines.filter(
+        (pl) => pl.purchaseOrder?.id === poId,
+      );
+
+      for (const pl of matchedPoLines) {
+        pl.receivedQty = Number(Math.max(0, pl.receivedQty - baseQty).toFixed(3));
+        await poLineRepo.save(pl);
+      }
+
+      const totalOrdered = matchedPoLines.reduce((s, l) => s + Number(l.orderedQty), 0);
+      const totalReceived = matchedPoLines.reduce((s, l) => s + Number(l.receivedQty), 0);
+      const newStatus = totalReceived <= 0 ? 'approved' : totalReceived < totalOrdered ? 'partially_received' : 'received';
+      if (poId) {
+        await poRepo.update(poId, { status: newStatus as any });
+      }
+    });
+  }
+
+  async listReceipts(query: ReceiptListQuery): Promise<{ items: GoodsReceiptOrmEntity[]; total: number }> {
+    const where: Record<string, unknown> = { organizationId: query.organizationId };
+    if (query.purchaseOrderId) {
+      where.purchaseOrder = { id: query.purchaseOrderId };
+    }
+    const [items, total] = await this.goodsReceiptRepository.findAndCount({
+      where: where as any,
+      relations: ['lines', 'purchaseOrder'],
+      order: { createdAt: 'DESC' },
+      skip: query.offset,
+      take: query.limit,
+    });
+    return { items, total };
   }
 }

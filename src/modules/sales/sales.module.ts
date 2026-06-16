@@ -31,6 +31,7 @@ import { SalesService } from './services/sales.service';
 import { UomsService } from './services/uoms.service';
 import { PaymentMethodsService } from './services/payment-methods.service';
 import { UomCategoriesService } from './services/uom-categories.service';
+import { UomConverterService } from './services/uom-converter.service';
 import { SALES_REPOSITORY } from './services/sales.di-tokens';
 
 const salesConfigService = new ConfigService();
@@ -80,10 +81,11 @@ const salesRepositoryProviders = useInMemoryRepos
     UomsService,
     UomCategoriesService,
     PaymentMethodsService,
+    UomConverterService,
     JwtAuthGuard,
     RolesGuard,
     ...salesRepositoryProviders,
   ],
-  exports: [SalesService],
+  exports: [SalesService, UomConverterService],
 })
 export class SalesModule {}

@@ -20,10 +20,10 @@ export class CreateItemDto {
   @IsNotEmpty()
   categoryId!: string;
 
-  @ApiProperty({ example: '5c0d6f5d-2952-4924-8ec6-c2c488a54cab' })
+  @ApiPropertyOptional({ example: 'GEN001' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  genericProductId!: string;
+  genericProductCode?: string;
 
   @ApiProperty({ example: '8f6c4d74-607a-4d90-96f5-4aa6f4a32b31' })
   @IsString()

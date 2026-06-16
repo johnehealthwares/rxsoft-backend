@@ -18,7 +18,7 @@ export class TypeormUserRepository implements UserRepository {
 
   async findByUsername(username: string, organizationId?: string): Promise<User | null> {
     const item = await this.userRepository.findOne({
-      where: organizationId ? { username, organizationId } : { username },
+      where: organizationId ? { username, organizationId, isActive: true } : { username, isActive: true },
       relations: { roles: true },
     });
 
@@ -27,7 +27,7 @@ export class TypeormUserRepository implements UserRepository {
 
   async findById(id: string, organizationId?: string): Promise<User | null> {
     const item = await this.userRepository.findOne({
-      where: organizationId ? { id, organizationId } : { id },
+      where: organizationId ? { id, organizationId, isActive: true } : { id, isActive: true },
       relations: { roles: true },
     });
 
@@ -98,7 +98,7 @@ export class TypeormUserRepository implements UserRepository {
   async list(offset: number, limit: number, organizationId: string): Promise<{ items: User[]; total: number }> {
     const [items, total] = await this.userRepository.findAndCount({
       relations: { roles: true },
-      where: { organizationId },
+      where: { organizationId, isActive: true },
       skip: offset,
       take: limit,
       order: { createdAt: 'DESC' },

@@ -32,7 +32,8 @@ describeIfDbReady('Sales and Receivables Integration', () => {
       .send({
         saleNumber: 'SALE-001',
         saleChannel: 'pos',
-        storeId: context.ids.locationId,
+        storeId: 'default',
+        stockLocationId: context.ids.locationId,
         customerId: context.ids.customerId,
         lines: [
           {
@@ -50,6 +51,7 @@ describeIfDbReady('Sales and Receivables Integration', () => {
         ],
       });
 
+    if (response.status !== 201) console.log('SALES ERR:', JSON.stringify(response.body));
     expect(response.status).toBe(201);
     expect(response.body.receivableCreated).toBe(true);
     expect(response.body.outstandingAmount).toBe(60);
@@ -75,7 +77,8 @@ describeIfDbReady('Sales and Receivables Integration', () => {
       .send({
         saleNumber: 'SALE-002',
         saleChannel: 'pos',
-        storeId: context.ids.locationId,
+        storeId: 'default',
+        stockLocationId: context.ids.locationId,
         lines: [
           {
             itemId: context.ids.seedItemId,

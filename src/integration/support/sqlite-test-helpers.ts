@@ -7,24 +7,27 @@ import request from 'supertest';
 import { Repository } from 'typeorm';
 import { ItemCategoryOrmEntity } from '../../modules/catalog/entities/item-category.orm-entity';
 import { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
-import { GenericProductOrmEntity } from '../../modules/catalog/entities/generic-product.orm-entity';
-import { PharmaceuticsOrmEntity } from '../../modules/catalog/entities/pharmaceutics.orm-entity';
 import { PartyOrmEntity } from '../../modules/customers/entities/party.orm-entity';
 import { PermissionOrmEntity } from '../../modules/identity/entities/permission.orm-entity';
 import { RoleOrmEntity } from '../../modules/identity/entities/role.orm-entity';
 import { UserOrmEntity } from '../../modules/identity/entities/user.orm-entity';
 import {
+  StockAdjustmentOrmEntity,
   StockBalanceOrmEntity,
   StockLocationOrmEntity,
   StockLotOrmEntity,
   StockMovementOrmEntity,
+  StoreStockLocationOrmEntity,
+  WarehouseOrmEntity,
 } from '../../modules/inventory/entities';
 import { PriceListItemOrmEntity, PriceListOrmEntity } from '../../modules/pricing/entities';
+import { GoodsReceiptLineOrmEntity, GoodsReceiptOrmEntity, PurchaseOrderLineOrmEntity, PurchaseOrderOrmEntity } from '../../modules/purchases/entities';
 import {
   AccountReceivableOrmEntity,
   PaymentMethodOrmEntity,
   SaleLineOrmEntity,
   SaleOrmEntity,
+  UomCategoryOrmEntity,
   UomOrmEntity,
 } from '../../modules/sales/entities';
 
@@ -66,7 +69,6 @@ type SeededIds = {
   organizationId: string;
   adminUserId: string;
   categoryId: string;
-  genericProductId: string;
   baseUomId: string;
   seedItemId: string;
   locationId: string;
@@ -74,6 +76,8 @@ type SeededIds = {
   priceListId: string;
   paymentMethodId: string;
   customerId: string;
+  warehouseId: string;
+  supplierId: string;
 };
 
 type Repositories = {
@@ -84,6 +88,11 @@ type Repositories = {
   saleRepository: Repository<SaleOrmEntity>;
   saleLineRepository: Repository<SaleLineOrmEntity>;
   receivableRepository: Repository<AccountReceivableOrmEntity>;
+  purchaseOrderRepository: Repository<PurchaseOrderOrmEntity>;
+  goodsReceiptRepository: Repository<GoodsReceiptOrmEntity>;
+  goodsReceiptLineRepository: Repository<GoodsReceiptLineOrmEntity>;
+  stockAdjustmentRepository: Repository<StockAdjustmentOrmEntity>;
+  warehouseRepository: Repository<WarehouseOrmEntity>;
 };
 
 export type IntegrationTestContext = {
@@ -100,23 +109,28 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
   const userRepo = moduleFixture.get<Repository<UserOrmEntity>>(getRepositoryToken(UserOrmEntity));
   const permissionRepo = moduleFixture.get<Repository<PermissionOrmEntity>>(getRepositoryToken(PermissionOrmEntity));
   const categoryRepo = moduleFixture.get<Repository<ItemCategoryOrmEntity>>(getRepositoryToken(ItemCategoryOrmEntity));
-  const pharmRepo = moduleFixture.get<Repository<PharmaceuticsOrmEntity>>(getRepositoryToken(PharmaceuticsOrmEntity));
-  const genericRepo = moduleFixture.get<Repository<GenericProductOrmEntity>>(getRepositoryToken(GenericProductOrmEntity));
   const itemRepo = moduleFixture.get<Repository<ItemOrmEntity>>(getRepositoryToken(ItemOrmEntity));
   const stockLocationRepo = moduleFixture.get<Repository<StockLocationOrmEntity>>(getRepositoryToken(StockLocationOrmEntity));
   const stockLotRepo = moduleFixture.get<Repository<StockLotOrmEntity>>(getRepositoryToken(StockLotOrmEntity));
   const stockBalanceRepo = moduleFixture.get<Repository<StockBalanceOrmEntity>>(getRepositoryToken(StockBalanceOrmEntity));
   const stockMovementRepo = moduleFixture.get<Repository<StockMovementOrmEntity>>(getRepositoryToken(StockMovementOrmEntity));
   const uomRepo = moduleFixture.get<Repository<UomOrmEntity>>(getRepositoryToken(UomOrmEntity));
+  const uomCategoryRepo = moduleFixture.get<Repository<UomCategoryOrmEntity>>(getRepositoryToken(UomCategoryOrmEntity));
   const priceListRepo = moduleFixture.get<Repository<PriceListOrmEntity>>(getRepositoryToken(PriceListOrmEntity));
   const priceListItemRepo = moduleFixture.get<Repository<PriceListItemOrmEntity>>(getRepositoryToken(PriceListItemOrmEntity));
   const paymentMethodRepo = moduleFixture.get<Repository<PaymentMethodOrmEntity>>(getRepositoryToken(PaymentMethodOrmEntity));
   const partyRepo = moduleFixture.get<Repository<PartyOrmEntity>>(getRepositoryToken(PartyOrmEntity));
+  const warehouseRepo = moduleFixture.get<Repository<WarehouseOrmEntity>>(getRepositoryToken(WarehouseOrmEntity));
   const saleRepo = moduleFixture.get<Repository<SaleOrmEntity>>(getRepositoryToken(SaleOrmEntity));
   const saleLineRepo = moduleFixture.get<Repository<SaleLineOrmEntity>>(getRepositoryToken(SaleLineOrmEntity));
   const receivableRepo = moduleFixture.get<Repository<AccountReceivableOrmEntity>>(
     getRepositoryToken(AccountReceivableOrmEntity),
   );
+  const purchaseOrderRepo = moduleFixture.get<Repository<PurchaseOrderOrmEntity>>(getRepositoryToken(PurchaseOrderOrmEntity));
+  const goodsReceiptRepo = moduleFixture.get<Repository<GoodsReceiptOrmEntity>>(getRepositoryToken(GoodsReceiptOrmEntity));
+  const goodsReceiptLineRepo = moduleFixture.get<Repository<GoodsReceiptLineOrmEntity>>(getRepositoryToken(GoodsReceiptLineOrmEntity));
+  const stockAdjustmentRepo = moduleFixture.get<Repository<StockAdjustmentOrmEntity>>(getRepositoryToken(StockAdjustmentOrmEntity));
+  const storeStockLocationRepo = moduleFixture.get<Repository<StoreStockLocationOrmEntity>>(getRepositoryToken(StoreStockLocationOrmEntity));
 
   const organizationId = 'org1';
 
@@ -163,9 +177,16 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     userRepo.create({
       organizationId,
       username: 'admin',
-      passwordHash: createHash('sha256').update('test').digest('hex'),
+      passwordHash: createHash('sha256').update('test123').digest('hex'),
       isActive: true,
       roles: [superAdminRole],
+    }),
+  );
+
+  const uomCategory = await uomCategoryRepo.save(
+    uomCategoryRepo.create({
+      organizationId,
+      name: 'Units',
     }),
   );
 
@@ -175,6 +196,7 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
       code: 'UNIT',
       name: 'Unit',
       uomType: 'reference',
+      categoryId: uomCategory.id,
       factor: 1,
       rounding: 1,
       isActive: true,
@@ -189,53 +211,25 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     }),
   );
 
-  const pharmaceutics = await pharmRepo.save(
-    pharmRepo.create({
-      organizationId,
-      code: 'PHARM001',
-      clinicalName: 'Paracetamol',
-      drugClass: 'Analgesic',
-      pharmaceutics: 'Analgesic activity',
-      indications: 'Pain and fever',
-      contraindications: 'Severe liver disease',
-      mechanism: 'CNS action',
-    }),
-  );
-
-  const generic = await genericRepo.save(
-    genericRepo.create({
-      organizationId,
-      code: 'GEN001',
-      name: 'Paracetamol',
-      generalUse: 'Pain relief',
-      adultDosage: '500mg',
-      pediatricDosage: 'Weight based',
-      isPrescriptionRequired: false,
-      isControlledSubstance: false,
-      pharmaceutics,
-    }),
-  );
-
-  const seedItem = await itemRepo.save(
-    itemRepo.create({
-      organizationId,
-      code: 'PCM-SEED-001',
-      name: 'Paracetamol 500mg Tablet (Seed)',
-      category,
-      genericProduct: generic,
-      baseUomId: baseUom.id,
-      baseUom,
-      purchaseUomId: null,
-      purchaseUom: null,
-      saleUomId: baseUom.id,
-      saleUom: baseUom,
-      barcode: '9999999999999',
-      isActive: true,
-      trackLot: true,
-      trackExpiry: true,
-      shelfLifeDays: null,
-    }),
-  );
+  const seedItem = await itemRepo.save({
+    id: undefined as unknown as string,
+    organizationId,
+    code: 'PCM-SEED-001',
+    name: 'Paracetamol 500mg Tablet (Seed)',
+    category,
+    genericProductCode: null,
+    baseUomId: baseUom.id,
+    baseUom,
+    purchaseUomId: null,
+    purchaseUom: null,
+    saleUomId: baseUom.id,
+    saleUom: baseUom,
+    barcode: '9999999999999',
+    isActive: true,
+    trackLot: true,
+    trackExpiry: true,
+    shelfLifeDays: null,
+  });
 
   const location = await stockLocationRepo.save(
     stockLocationRepo.create({
@@ -254,19 +248,18 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     }),
   );
 
-  const stockBalance = await stockBalanceRepo.save(
-    stockBalanceRepo.create({
-      organizationId,
-      item: seedItem,
-      location,
-      lot,
-      quantityOnHand: 20,
-      quantityReserved: 2,
-      averageCost: 1.25,
-      reorderMinQty: null,
-      reorderMaxQty: null,
-    }),
-  );
+  const stockBalance = await stockBalanceRepo.save({
+    id: undefined as unknown as string,
+    organizationId,
+    item: seedItem,
+    location,
+    lot,
+    quantityOnHand: 20,
+    quantityReserved: 2,
+    averageCost: 1.25,
+    reorderMinQty: null,
+    reorderMaxQty: null,
+  });
 
   const priceList = await priceListRepo.save(
     priceListRepo.create({
@@ -301,12 +294,47 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     }),
   );
 
+  const supplier = await partyRepo.save(
+    partyRepo.create({
+      organizationId,
+      partyType: 'supplier',
+      code: null,
+      name: 'Test Supplier',
+      phone: '08000000001',
+      email: 'supplier@example.com',
+      addressLine1: '99 Supplier Street',
+      isActive: true,
+    }),
+  );
+
+  const warehouse = await warehouseRepo.save(
+    warehouseRepo.create({
+      organizationId,
+      storeId: null,
+      code: 'WH01',
+      name: 'Test Warehouse',
+      isActive: true,
+    }),
+  );
+
+  // Link existing location to warehouse
+  await stockLocationRepo.update(location.id, { warehouseId: warehouse.id });
+
+  // Seed sale_return store stock location for refunds
+  await storeStockLocationRepo.save(
+    storeStockLocationRepo.create({
+      organizationId,
+      storeId: 'default',
+      purpose: 'sale_return',
+      stockLocation: location,
+    }),
+  );
+
   return {
     ids: {
       organizationId,
       adminUserId: adminUser.id,
       categoryId: category.id,
-      genericProductId: generic.id,
       baseUomId: baseUom.id,
       seedItemId: seedItem.id,
       locationId: location.id,
@@ -314,6 +342,8 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
       priceListId: priceList.id,
       paymentMethodId: paymentMethod.id,
       customerId: customer.id,
+      warehouseId: warehouse.id,
+      supplierId: supplier.id,
     },
     repositories: {
       itemRepository: itemRepo,
@@ -323,6 +353,11 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
       saleRepository: saleRepo,
       saleLineRepository: saleLineRepo,
       receivableRepository: receivableRepo,
+      purchaseOrderRepository: purchaseOrderRepo,
+      goodsReceiptRepository: goodsReceiptRepo,
+      goodsReceiptLineRepository: goodsReceiptLineRepo,
+      stockAdjustmentRepository: stockAdjustmentRepo,
+      warehouseRepository: warehouseRepo,
     },
   };
 }
@@ -363,7 +398,7 @@ export async function createIntegrationTestContext(): Promise<IntegrationTestCon
     loginAsAdmin: async () => {
       const response = await request(app.getHttpAdapter().getInstance()).post('/auth/login').send({
         username: 'admin',
-        password: 'test',
+        password: 'test123',
       });
 
       return {

@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { DateOrNullTransformer } from 'src/shared/utils/column-transformer';
 
 @Entity('blog_articles')
 export class BlogArticleOrmEntity {
@@ -32,7 +33,7 @@ export class BlogArticleOrmEntity {
   @Column({ name: 'is_published', type: 'boolean', default: false })
   isPublished!: boolean;
 
-  @Column({ name: 'published_at', type: 'timestamptz', nullable: true })
+  @Column({ name: 'published_at', nullable: true, type: 'text', transformer: DateOrNullTransformer })
   publishedAt!: Date | null;
 
   @Column({ name: 'meta_title', type: 'text', nullable: true })

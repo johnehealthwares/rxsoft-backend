@@ -63,6 +63,7 @@ export class CreateSaleUseCase {
       saleChannel: payload.saleChannel,
       storeId: payload.storeId,
       customerId: payload.customerId ?? null,
+      stockLocationId: payload.stockLocationId ?? null,
       soldByUserId: userId,
       saleDate: new Date(),
       subtotalAmount,

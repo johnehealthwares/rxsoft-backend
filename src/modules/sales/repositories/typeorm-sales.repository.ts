@@ -6,9 +6,12 @@ import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import {
   StockAdjustmentOrmEntity,
   StockBalanceOrmEntity,
+  StockLocationOrmEntity,
   StockLotOrmEntity,
+  StockMovementOrmEntity,
   StoreStockLocationOrmEntity,
 } from '../../inventory/entities';
+import { UomConverterService } from '../services/uom-converter.service';
 import { ReceivableTransactionOrmEntity } from '../../receivables/entities';
 import { Sale } from '../domains/sale.entity';
 import {
@@ -49,7 +52,12 @@ export class TypeormSalesRepository implements SalesRepository {
   constructor(
     @InjectRepository(SaleOrmEntity)
     private readonly saleRepository: Repository<SaleOrmEntity>,
+    @InjectRepository(ItemOrmEntity)
+    private readonly itemRepository: Repository<ItemOrmEntity>,
+    @InjectRepository(UomOrmEntity)
+    private readonly uomRepository: Repository<UomOrmEntity>,
     private readonly dataSource: DataSource,
+    private readonly uomConverter: UomConverterService,
   ) {}
 
   async list(query: SalesListQuery): Promise<{ items: Sale[]; total: number }> {
@@ -62,6 +70,10 @@ export class TypeormSalesRepository implements SalesRepository {
 
     if (query.status) {
       qb.andWhere('sale.status = :status', { status: query.status });
+    }
+
+    if (query.search) {
+      qb.andWhere('sale.sale_number ILIKE :search', { search: `%${query.search}%` });
     }
 
     const [items, total] = await qb.getManyAndCount();
@@ -77,6 +89,7 @@ export class TypeormSalesRepository implements SalesRepository {
       const saleLineRepo = manager.getRepository(SaleLineOrmEntity);
       const salePaymentRepo = manager.getRepository(SalePaymentOrmEntity);
       const receivableRepo = manager.getRepository(AccountReceivableOrmEntity);
+      const receivableTxnRepo = manager.getRepository(ReceivableTransactionOrmEntity);
       const itemRepo = manager.getRepository(ItemOrmEntity);
       const lotRepo = manager.getRepository(StockLotOrmEntity);
       const uomRepo = manager.getRepository(UomOrmEntity);
@@ -92,19 +105,21 @@ export class TypeormSalesRepository implements SalesRepository {
       }
 
       const itemIds = [...new Set(payload.lines.map((line) => line.itemId))];
+      const items: ItemOrmEntity[] = [];
       if (itemIds.length) {
-        const items = await itemRepo.find({
+        const foundItems = await itemRepo.find({
           where: {
             id: In(itemIds),
             organizationId: payload.organizationId,
           },
-          select: ['id'],
+          select: ['id', 'baseUomId'],
         });
-        console.log({items, itemIds})
-        if (items.length !== itemIds.length) {
+        if (foundItems.length !== itemIds.length) {
           throw new Error('One or more item references are invalid');
         }
+        items.push(...foundItems);
       }
+      const itemBaseUomMap = new Map(items.map((i) => [i.id, i.baseUomId]));
 
       const uomIds = [...new Set(payload.lines.map((line) => line.uomId))];
       if (uomIds.length) {
@@ -238,8 +253,119 @@ export class TypeormSalesRepository implements SalesRepository {
           closedAt: null,
         });
         const savedReceivable = await receivableRepo.save(receivable);
+        await receivableTxnRepo.save(
+          receivableTxnRepo.create({
+            receivable: savedReceivable,
+            transactionType: 'charge',
+            amount: savedReceivable.originalAmount,
+            transactionDate: payload.saleDate,
+            paymentMethod: null,
+            referenceNumber: savedSale.saleNumber,
+            receivedByUser: null,
+          }),
+        );
         receivableId = savedReceivable.id;
         outstandingAmount = savedReceivable.outstandingAmount;
+      }
+
+      if (payload.status !== 'draft') {
+        const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
+        const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
+        const stockMovementRepo = manager.getRepository(StockMovementOrmEntity);
+        const storeStockLocationRepo = manager.getRepository(StoreStockLocationOrmEntity);
+        const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
+
+        let stockLocation: StockLocationOrmEntity | null = null;
+        if (payload.stockLocationId) {
+          stockLocation = await stockLocationRepo.findOne({
+            where: { id: payload.stockLocationId, organizationId: payload.organizationId },
+          });
+          if (!stockLocation) {
+            throw new BadRequestException('Stock location not found');
+          }
+        } else {
+          const ssl = await storeStockLocationRepo.findOne({
+            where: {
+              organizationId: payload.organizationId,
+              storeId: payload.storeId,
+              purpose: 'sale_issue',
+              isActive: true,
+            },
+            relations: ['stockLocation'],
+          });
+          if (!ssl) {
+            throw new BadRequestException(
+              'No active sale_issue stock location configured for this store, and no stockLocationId provided',
+            );
+          }
+          stockLocation = ssl.stockLocation;
+        }
+
+        const uomMap = new Map<string, UomOrmEntity>();
+        const uomIds = [...new Set(payload.lines.map((l) => l.uomId))];
+        const uoms = await uomRepo.find({ where: { id: In(uomIds) } });
+        for (const u of uoms) uomMap.set(u.id, u);
+
+        for (const line of payload.lines) {
+          const baseUomId = itemBaseUomMap.get(line.itemId);
+          if (!baseUomId) continue;
+
+          const uom = uomMap.get(line.uomId);
+          if (!uom) continue;
+
+          const baseQty = await this.uomConverter.convertToBaseUom(line.quantity, line.uomId, baseUomId);
+
+          const balanceWhere: any = {
+            organizationId: payload.organizationId,
+            item: { id: line.itemId },
+            location: { id: stockLocation.id },
+          };
+          if (line.lotId) balanceWhere.lot = { id: line.lotId };
+          let stockBalance = await stockBalanceRepo.findOne({ where: balanceWhere,
+            relations: ['item', 'location', 'lot'],
+          });
+
+          if (!stockBalance) {
+            throw new BadRequestException(
+              `No stock balance found for item ${line.itemId} at location ${stockLocation.id}`,
+            );
+          }
+
+          const available = Number((stockBalance.quantityOnHand - stockBalance.quantityReserved).toFixed(4));
+          if (available < baseQty) {
+            throw new BadRequestException(
+              `Insufficient stock for item ${line.itemId}: ${available} available, ${baseQty} needed`,
+            );
+          }
+
+          stockBalance.quantityOnHand = Number((stockBalance.quantityOnHand - baseQty).toFixed(4));
+          const savedBalance = await stockBalanceRepo.save(stockBalance);
+
+          const adjustment = stockAdjustmentRepo.create({
+            stockBalance: savedBalance,
+            reason: `sale:${savedSale.saleNumber}`,
+            deltaQuantity: -baseQty,
+            performedByUserId: payload.soldByUserId,
+            performedAt: payload.saleDate,
+          });
+          const savedAdjustment = await stockAdjustmentRepo.save(adjustment);
+
+          const movement = stockMovementRepo.create({
+            organizationId: payload.organizationId,
+            inventoryDocumentId: savedSale.id,
+            inventoryDocumentLineId: null,
+            item: { id: line.itemId },
+            lot: line.lotId ? { id: line.lotId } : null,
+            fromLocation: { id: stockLocation.id },
+            toLocation: null,
+            movementType: 'out',
+            quantity: baseQty,
+            unitCost: line.unitPrice,
+            occurredAt: payload.saleDate,
+            createdByUserId: payload.soldByUserId,
+          });
+          await stockMovementRepo.save(movement);
+        }
       }
 
       return {

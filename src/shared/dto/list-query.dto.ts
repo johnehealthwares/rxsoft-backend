@@ -38,6 +38,11 @@ export class ListQueryDto {
   @IsOptional()
   filter?: string;
 
+  @ApiPropertyOptional({ description: 'Filter by organization (superadmin only)' })
+  @IsString()
+  @IsOptional()
+  organizationId?: string;
+
 
   get offset(): number {
     return (this.page - 1) * this.limit;

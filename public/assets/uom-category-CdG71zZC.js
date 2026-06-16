@@ -1,1 +1,0 @@
-import{U as e}from"./pages-DPmUigOr.js";import{At as t,Ei as n}from"./index-BtmlBlD7.js";import{n as r}from"./schema-ewfOPVlF.js";var i=n();function a(){return(0,i.jsx)(t,{initialState:{},children:(0,i.jsx)(e,{config:r})})}var o=a;export{o as component};

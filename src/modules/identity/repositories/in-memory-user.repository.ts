@@ -22,14 +22,14 @@ export class InMemoryUserRepository implements UserRepository {
 
   async findByUsername(username: string, organizationId?: string): Promise<User | null> {
     const user = [...this.users.values()].find(
-      (item) => item.username === username && (!organizationId || item.organizationId === organizationId),
+      (item) => item.username === username && (!organizationId || item.organizationId === organizationId) && item.isActive,
     );
     return user ?? null;
   }
 
   async findById(id: string, organizationId?: string): Promise<User | null> {
     const user = this.users.get(id) ?? null;
-    if (!user || (organizationId && user.organizationId !== organizationId)) {
+    if (!user || (organizationId && user.organizationId !== organizationId) || !user.isActive) {
       return null;
     }
     return user;
@@ -56,7 +56,7 @@ export class InMemoryUserRepository implements UserRepository {
   }
 
   async list(offset: number, limit: number, organizationId: string): Promise<{ items: User[]; total: number }> {
-    const items = [...this.users.values()].filter((item) => item.organizationId === organizationId);
+    const items = [...this.users.values()].filter((item) => item.organizationId === organizationId && item.isActive);
     return {
       items: items.slice(offset, offset + limit),
       total: items.length,

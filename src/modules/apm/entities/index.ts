@@ -1,0 +1,15 @@
+export { CampaignInfoOrmEntity } from './campaign-info.orm-entity';
+export { AgendaItemOrmEntity } from './agenda-item.orm-entity';
+export { AchievementOrmEntity } from './achievement.orm-entity';
+export { NewsArticleOrmEntity } from './news-article.orm-entity';
+export { EventOrmEntity } from './event.orm-entity';
+export { EventRegistrationOrmEntity } from './event-registration.orm-entity';
+export { VolunteerOrmEntity } from './volunteer.orm-entity';
+export { SupporterOrmEntity } from './supporter.orm-entity';
+export { TestimonialOrmEntity } from './testimonial.orm-entity';
+export { MediaAssetOrmEntity } from './media-asset.orm-entity';
+export { ContactSubmissionOrmEntity } from './contact-submission.orm-entity';
+export { NewsletterSubscriberOrmEntity } from './newsletter-subscriber.orm-entity';
+export { CitizenFeedbackOrmEntity } from './citizen-feedback.orm-entity';
+export { IssueReportOrmEntity } from './issue-report.orm-entity';
+export { DonationOrmEntity } from './donation.orm-entity';

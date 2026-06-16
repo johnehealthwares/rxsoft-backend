@@ -17,7 +17,7 @@ export class ReceiveGoodsUseCase {
     payload: ReceiveGoodsDto,
     organizationId: string,
     userId: string,
-  ): Promise<void> {
+  ) {
     const po = await this.purchasesRepository.getById(payload.purchaseOrderId, organizationId);
     if (!po) {
       throw new NotFoundException('Purchase order not found');
@@ -41,9 +41,9 @@ export class ReceiveGoodsUseCase {
       }
     }
 
-    await this.purchasesRepository.receiveGoods({
+    const result = await this.purchasesRepository.receiveGoods({
       organizationId,
-      receiptNumber: `GR-${Date.now()}`,
+      receiptNumber: payload.receiptNumber ?? `GR-${Date.now()}`,
       purchaseOrderId: payload.purchaseOrderId,
       receivedDate: new Date(payload.receivedDate),
       createdByUserId: userId,
@@ -58,5 +58,6 @@ export class ReceiveGoodsUseCase {
     });
 
     await this.cacheService?.invalidateByPrefix(`purchases:list:${organizationId}:`);
+    return result;
   }
 }

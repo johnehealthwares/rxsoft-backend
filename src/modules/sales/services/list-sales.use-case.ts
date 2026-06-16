@@ -28,6 +28,7 @@ export class ListSalesUseCase {
       offset: query.offset,
       limit: query.limit,
       status: query.status,
+      search: query.search,
     });
 
     await this.cacheService?.set(key, result, 30);

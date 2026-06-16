@@ -19,6 +19,7 @@ import {
   StockMovementOrmEntity,
   WarehouseOrmEntity,
 } from '../inventory/entities';
+import { PartyOrmEntity } from '../customers/entities/party.orm-entity';
 
 const purchasesConfigService = new ConfigService();
 const useInMemoryRepos = purchasesConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -35,6 +36,7 @@ const purchasesPersistenceImports = useInMemoryRepos
         StockLocationOrmEntity,
         StockAdjustmentOrmEntity,
         WarehouseOrmEntity,
+        PartyOrmEntity,
       ]),
     ];
 const purchasesRepositoryProviders = useInMemoryRepos

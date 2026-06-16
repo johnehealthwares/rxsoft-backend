@@ -5,6 +5,7 @@ export type SalesListQuery = {
   offset: number;
   limit: number;
   status?: 'draft' | 'posted' | 'voided' | 'refunded';
+  search?: string;
 };
 
 export type CreateSaleRepositoryPayload = {
@@ -13,6 +14,7 @@ export type CreateSaleRepositoryPayload = {
   saleChannel: 'pos' | 'invoice' | 'mobile';
   storeId: string;
   customerId: string | null;
+  stockLocationId: string | null;
   soldByUserId: string;
   saleDate: Date;
   subtotalAmount: number;

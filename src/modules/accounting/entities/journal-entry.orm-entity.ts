@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { DateOrNullTransformer } from 'src/shared/utils/column-transformer';
 import { JournalOrmEntity } from './journal.orm-entity';
 import { JournalEntryLineOrmEntity } from './journal-entry-line.orm-entity';
 
@@ -39,7 +40,7 @@ export class JournalEntryOrmEntity {
   @Column({ name: 'created_by_user_id', type: 'uuid', nullable: true })
   createdByUserId!: string | null;
 
-  @Column({ name: 'posted_at', type: 'timestamptz', nullable: true })
+  @Column({ name: 'posted_at', nullable: true, type: 'text', transformer: DateOrNullTransformer })
   postedAt!: Date | null;
 
   @OneToMany(() => JournalEntryLineOrmEntity, (line) => line.journalEntry)

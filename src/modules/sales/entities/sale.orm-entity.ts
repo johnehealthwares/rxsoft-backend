@@ -1,7 +1,9 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { SaleLineOrmEntity } from './sale-line.orm-entity';
 import { SalePaymentOrmEntity } from './sale-payment.orm-entity';
 import { SaleRefundOrmEntity } from './sale-refund.orm-entity';
+import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
+import { PartyOrmEntity } from '../../customers/entities/party.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 import { DEFAULT_SYSTEM_USER_ID } from 'src/shared/constants/persistence-scope';
 
@@ -23,11 +25,39 @@ export class SaleOrmEntity {
   @Column({ name: 'store_id', type: 'text' })
   storeId!: string;
 
+  @ManyToOne(() => PartyOrmEntity, { nullable: true })
+  @JoinColumn({ name: 'customer_id' })
+  customer!: PartyOrmEntity | null;
+
   @Column({ name: 'customer_id', type: 'text', nullable: true })
   customerId!: string | null;
 
   @Column({ type: 'text' })
   status!: 'draft' | 'posted' | 'voided' | 'refunded';
+
+  @Column({ name: 'order_status', type: 'text', nullable: true })
+  orderStatus!: 'pending' | 'confirmed' | 'processing' | 'dispatched' | 'in_transit' | 'delivered' | 'cancelled' | null;
+
+  @Column({ name: 'delivery_address', type: 'text', nullable: true })
+  deliveryAddress!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  city!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  state!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  phone!: string | null;
+
+  @Column({ name: 'shipping_method', type: 'text', nullable: true })
+  shippingMethod!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  notes!: string | null;
+
+  @Column({ name: 'assigned_location_id', type: 'uuid', nullable: true })
+  assignedLocationId!: string | null;
 
   @Column({ name: 'subtotal_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   subtotalAmount!: number;
@@ -49,6 +79,10 @@ export class SaleOrmEntity {
 
   @CreateDateColumn({ name: 'sale_date'/* timestamptzz */ })
   saleDate!: Date;
+
+  @ManyToOne(() => UserOrmEntity, { nullable: false })
+  @JoinColumn({ name: 'sold_by_user_id' })
+  soldBy!: UserOrmEntity;
 
   @Column({ name: 'sold_by_user_id', type: 'text' })
   soldByUserId!: string;

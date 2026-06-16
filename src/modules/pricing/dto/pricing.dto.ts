@@ -148,7 +148,7 @@ export class AdjustItemPriceDto {
   @IsString()
   locationId?: string;
 
-  @ApiPropertyOptional({ example: 'USD' })
+  @ApiPropertyOptional({ example: 'NGN' })
   @IsOptional()
   @IsString()
   currencyCode?: string;

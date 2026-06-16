@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateItemDto } from '../dto/create-item.dto';
 import { ListItemDependenciesDto } from '../dto/list-item-dependencies.dto';
 import { ListItemsDto } from '../dto/list-items.dto';
@@ -9,6 +11,8 @@ import { GetItemUseCase } from '../services/get-item.use-case';
 import { ListItemDependenciesUseCase } from '../services/list-item-dependencies.use-case';
 import { ListItemsUseCase } from '../services/list-items.use-case';
 import { Item } from '../domains/item.entity';
+import { ItemOrmEntity } from '../entities/item.orm-entity';
+import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -18,6 +22,7 @@ import { AuditAction } from '../../../common/decorators/audit-action.decorator';
 import { UpdateItemUseCase } from '../services/update-item.use-case';
 import { PatchItemUseCase } from '../services/patch-item.use-case';
 import { PatchItemDto } from '../dto/patch-item.dto';
+import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
 
 type ItemListResponse = {
   data: ItemResponseDto[];
@@ -28,49 +33,6 @@ type ItemDependencyResponse<T> = {
   data: T[];
   meta: { page: number; limit: number; total: number };
 };
-
-function toResponse(item: Item): ItemResponseDto {
-  return {
-    id: item.id,
-    code: item.code,
-    name: item.name,
-    category: {
-      id: item.category.id,
-      code: item.category.code,
-      name: item.category.name,
-    },
-    genericProductId: item.genericProductId,
-    categoryId: item.categoryId,
-    genericProduct: {
-      id: item.genericProduct.id,
-      code: item.genericProduct.code,
-      name: item.genericProduct.name,
-      pharmaceutics: item.genericProduct.pharmaceutics && {
-        code: item.genericProduct.pharmaceutics.code,
-        clinicalName: item.genericProduct.pharmaceutics.clinicalName,
-        drugClass: item.genericProduct.pharmaceutics.drugClass,
-        pharmaceutics: item.genericProduct.pharmaceutics.pharmaceutics,
-      },
-      isPrescriptionRequired: item.genericProduct.isPrescriptionRequired,
-      isControlledSubstance: item.genericProduct.isControlledSubstance,
-    },
-    baseUomId: item.baseUomId,
-    purchaseUomId: item.purchaseUomId,
-    saleUomId: item.saleUomId,
-    baseUom: item.baseUom,
-    purchaseUom: item.purchaseUom,
-    saleUom: item.saleUom,
-    barcode: item.barcode,
-    trackLot: item.trackLot,
-    trackExpiry: item.trackExpiry,
-    shelfLifeDays: item.shelfLifeDays,
-    isActive: item.isActive,
-    imageUrl: item.imageUrl,
-    smallImageUrl: item.smallImageUrl,
-    mediumImageUrl: item.mediumImageUrl,
-    largeImageUrl: item.largeImageUrl,
-  };
-}
 
 @ApiTags('items')
 @ApiBearerAuth()
@@ -84,7 +46,62 @@ export class ItemsController {
     private readonly createItemUseCase: CreateItemUseCase,
     private readonly updateItemUseCase: UpdateItemUseCase,
     private readonly patchItemUseCase: PatchItemUseCase,
+    private readonly genericDrugCache: GenericDrugCacheService,
+    @InjectRepository(ItemOrmEntity)
+    private readonly itemRepo: Repository<ItemOrmEntity>,
+    @InjectRepository(UomOrmEntity)
+    private readonly uomRepo: Repository<UomOrmEntity>,
   ) {}
+
+  private toResponse(item: Item): ItemResponseDto {
+    const cached = item.genericProductCode
+      ? this.genericDrugCache.getByCode(item.genericProductCode)
+      : null;
+    return {
+      id: item.id,
+      code: item.code,
+      name: item.name,
+      category: {
+        id: item.category.id,
+        code: item.category.code,
+        name: item.category.name,
+      },
+      genericProductCode: item.genericProductCode,
+      categoryId: item.categoryId,
+      genericProduct: cached
+        ? {
+            id: cached.id,
+            code: cached.code,
+            name: cached.name,
+            pharmaceutics: cached.pharmaceutics
+              ? {
+                  code: cached.pharmaceutics.code,
+                  clinicalName: cached.pharmaceutics.clinicalName ?? '',
+                  drugClass: cached.pharmaceutics.drugClass ?? '',
+                  pharmaceutics: cached.pharmaceutics.pharmaceutics ?? '',
+                }
+              : { code: '', clinicalName: '', drugClass: '', pharmaceutics: '' },
+            isPrescriptionRequired: cached.isPrescriptionRequired ?? false,
+            isControlledSubstance: cached.isControlledSubstance ?? false,
+          }
+        : null,
+      baseUomId: item.baseUomId,
+      purchaseUomId: item.purchaseUomId,
+      saleUomId: item.saleUomId,
+      baseUom: item.baseUom,
+      purchaseUom: item.purchaseUom,
+      saleUom: item.saleUom,
+      barcode: item.barcode,
+      trackLot: item.trackLot,
+      trackExpiry: item.trackExpiry,
+      shelfLifeDays: item.shelfLifeDays,
+      isActive: item.isActive,
+      imageUrl: item.imageUrl,
+      smallImageUrl: item.smallImageUrl,
+      mediumImageUrl: item.mediumImageUrl,
+      largeImageUrl: item.largeImageUrl,
+    };
+  }
 
   @Get()
   @Roles('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk')
@@ -92,7 +109,7 @@ export class ItemsController {
   async list(@Query() query: ListItemsDto, @CurrentUser() currentUser: RequestUser): Promise<ItemListResponse> {
     const result = await this.listItemsUseCase.execute(query, currentUser.organizationId);
     return {
-      data: result.items.map(toResponse),
+      data: result.items.map((item) => this.toResponse(item)),
       meta: {
         page: query.page,
         limit: query.limit,
@@ -169,7 +186,7 @@ export class ItemsController {
     @CurrentUser() currentUser: RequestUser,
   ): Promise<ItemResponseDto> {
     const item = await this.getItemUseCase.execute(itemId, currentUser.organizationId);
-    return toResponse(item);
+    return this.toResponse(item);
   }
 
   @Post()
@@ -182,7 +199,7 @@ export class ItemsController {
     @CurrentUser() currentUser: RequestUser,
   ): Promise<ItemResponseDto> {
     const item = await this.createItemUseCase.execute(payload, currentUser.organizationId, currentUser.sub);
-    return toResponse(item);
+    return this.toResponse(item);
   }
 
 
@@ -197,7 +214,7 @@ export class ItemsController {
     @Param('itemId') itemId: string,
   ): Promise<ItemResponseDto> {
     const item = await this.updateItemUseCase.execute(itemId, payload, currentUser.organizationId, currentUser.sub);
-    return toResponse(item);
+    return this.toResponse(item);
   }
 
   @Patch(":itemId")
@@ -211,6 +228,30 @@ export class ItemsController {
     @Param('itemId') itemId: string,
   ): Promise<ItemResponseDto> {
     const item = await this.patchItemUseCase.execute(itemId, payload, currentUser.organizationId);
-    return toResponse(item);
+    return this.toResponse(item);
+  }
+
+  @Get(':itemId/uoms')
+  @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk', 'cashier')
+  @ApiOperation({ summary: 'List available UOMs for an item (same category as base UOM)' })
+  async listItemUoms(
+    @Param('itemId') itemId: string,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    const item = await this.itemRepo.findOne({
+      where: { id: itemId, organizationId: currentUser.organizationId },
+      relations: ['baseUom'],
+    });
+    if (!item) return { data: [] };
+
+    const baseUomCategoryId = item.baseUom?.categoryId;
+    if (!baseUomCategoryId) return { data: [] };
+
+    const uoms = await this.uomRepo.find({
+      where: { categoryId: baseUomCategoryId, isActive: true },
+      select: ['id', 'code', 'name', 'factor', 'uomType', 'rounding', 'isActive'],
+    });
+
+    return { data: uoms };
   }
 }

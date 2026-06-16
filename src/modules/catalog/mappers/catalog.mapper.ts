@@ -1,9 +1,5 @@
-import { GenericProduct } from '../domains/generic-product.entity';
-import { Pharmaceutics } from '../domains/pharmaceutics.entity';
 import { Item } from '../domains/item.entity';
 import { ItemCategory } from '../domains/item-category.entity';
-import { GenericProductOrmEntity } from '../entities/generic-product.orm-entity';
-import { PharmaceuticsOrmEntity } from '../entities/pharmaceutics.orm-entity';
 import { ItemOrmEntity } from '../entities/item.orm-entity';
 import { ItemCategoryOrmEntity } from '../entities/item-category.orm-entity';
 import { ForeignProperty } from '../dto/item-response.dto';
@@ -21,49 +17,21 @@ export class CatalogMapper {
     };
   }
 
-  static toDomainPharmaceutics(orm: PharmaceuticsOrmEntity): Pharmaceutics {
-    return new Pharmaceutics(
-      orm.id,
-      orm.code,
-      orm.clinicalName ?? '',
-      orm.drugClass ?? '',
-      orm.pharmaceutics ?? '',
-      orm.indications ?? '',
-      orm.contraindications ?? '',
-      'Blood'
-    );
-  }
-
-  static toDomainGenericProduct(orm: GenericProductOrmEntity): GenericProduct {
-    return new GenericProduct(
-      orm.id,
-      orm.code,
-      orm.name,
-      orm.generalUse,
-      orm.adultDosage,
-      orm.pediatricDosage,
-      orm.isPrescriptionRequired,
-      orm.isControlledSubstance,
-      orm.pharmaceutics && this.toDomainPharmaceutics(orm.pharmaceutics),
-    );
-  }
-  
   static toDomainItem(orm: ItemOrmEntity): Item {
     return new Item(
       orm.id,
       orm.organizationId,
       orm.code,
       orm.name,
-      orm.genericProduct?.id,
+      orm.genericProductCode,
       orm.category?.id,
       orm.category && this.toDomainItemCategory(orm.category),
-      orm.genericProduct && this.toDomainGenericProduct(orm.genericProduct),
       orm.baseUomId,
       orm.purchaseUomId,
-      orm.saleUomId,  
+      orm.saleUomId,
       orm.baseUom && this.toForeignProperty(orm.baseUom),
-      orm.purchaseUom && this.toForeignProperty(orm.baseUom),
-      orm.saleUom && this.toForeignProperty(orm.baseUom),
+      orm.purchaseUom && this.toForeignProperty(orm.purchaseUom),
+      orm.saleUom && this.toForeignProperty(orm.saleUom),
       orm.barcode,
       orm.trackLot,
       orm.trackExpiry,
