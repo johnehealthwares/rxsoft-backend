@@ -1,0 +1,5 @@
+import { n as LisPage } from "./pages-DSapmkjk.js";
+//#region src/routes/_authenticated/lis/index.tsx?tsr-split=component
+var SplitComponent = LisPage;
+//#endregion
+export { SplitComponent as component };

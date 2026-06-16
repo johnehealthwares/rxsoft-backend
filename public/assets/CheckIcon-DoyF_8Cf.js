@@ -1,0 +1,42 @@
+import { V as rem } from "./Box-7OfPvxF3.js";
+import { t as require_jsx_runtime } from "./jsx-runtime-DUb9_lJB.js";
+//#region node_modules/@mantine/core/esm/components/Checkbox/CheckIcon.mjs
+var import_jsx_runtime = require_jsx_runtime();
+function CheckIcon({ size, style, ...others }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		viewBox: "0 0 10 7",
+		fill: "none",
+		xmlns: "http://www.w3.org/2000/svg",
+		style: size !== void 0 ? {
+			width: rem(size),
+			height: rem(size),
+			...style
+		} : style,
+		"aria-hidden": true,
+		...others,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			d: "M4 4.586L1.707 2.293A1 1 0 1 0 .293 3.707l3 3a.997.997 0 0 0 1.414 0l5-5A1 1 0 1 0 8.293.293L4 4.586z",
+			fill: "currentColor",
+			fillRule: "evenodd",
+			clipRule: "evenodd"
+		})
+	});
+}
+function CheckboxIcon({ indeterminate, ...others }) {
+	if (indeterminate) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+		xmlns: "http://www.w3.org/2000/svg",
+		fill: "none",
+		viewBox: "0 0 32 6",
+		"aria-hidden": true,
+		...others,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+			width: "32",
+			height: "6",
+			fill: "currentColor",
+			rx: "3"
+		})
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CheckIcon, { ...others });
+}
+//#endregion
+export { CheckboxIcon as n, CheckIcon as t };
