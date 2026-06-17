@@ -1,0 +1,1 @@
+{"version":3,"file":"import-config.js","sourceRoot":"","sources":["../../../src/database/import/import-config.ts"],"names":[],"mappings":";;;AAEA,mCAAuD;AAG1C,QAAA,aAAa,GAGtB;IACF,IAAI,EAAE;QACJ,GAAG,EAAE,EAAE;QACP,eAAe,EAAE,QAAQ;QACzB,IAAI,EAAE,gBAAQ,CAAC,SAAS;KACzB;CACF,CAAC"}

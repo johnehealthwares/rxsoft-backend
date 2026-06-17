@@ -1,0 +1,38 @@
+import { SaleLineOrmEntity } from './sale-line.orm-entity';
+import { SalePaymentOrmEntity } from './sale-payment.orm-entity';
+import { SaleRefundOrmEntity } from './sale-refund.orm-entity';
+import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
+import { PartyOrmEntity } from '../../customers/entities/party.orm-entity';
+export declare class SaleOrmEntity {
+    id: string;
+    organizationId: string;
+    saleNumber: string;
+    saleChannel: 'pos' | 'invoice' | 'mobile';
+    storeId: string;
+    customer: PartyOrmEntity | null;
+    customerId: string | null;
+    status: 'draft' | 'posted' | 'voided' | 'refunded';
+    orderStatus: 'pending' | 'confirmed' | 'processing' | 'dispatched' | 'in_transit' | 'delivered' | 'cancelled' | null;
+    deliveryAddress: string | null;
+    city: string | null;
+    state: string | null;
+    phone: string | null;
+    shippingMethod: string | null;
+    notes: string | null;
+    assignedLocationId: string | null;
+    subtotalAmount: number;
+    discountAmount: number;
+    taxAmount: number;
+    totalAmount: number;
+    paidAmount: number;
+    changeAmount: number;
+    saleDate: Date;
+    soldBy: UserOrmEntity;
+    soldByUserId: string;
+    createdBy: string;
+    lines: SaleLineOrmEntity[];
+    payments: SalePaymentOrmEntity[];
+    refunds: SaleRefundOrmEntity[];
+    createdAt: Date;
+    updatedAt: Date;
+}
