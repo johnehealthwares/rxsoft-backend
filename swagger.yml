@@ -2044,6 +2044,58 @@ paths:
       security: *ref_25
       tags: *ref_26
   /api/suppliers:
+    get:
+      operationId: SuppliersController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_27
+        - bearer: []
+      tags: &ref_28
+        - suppliers
     post:
       operationId: SuppliersController_create
       parameters: []
@@ -2056,11 +2108,9 @@ paths:
       responses:
         '201':
           description: ''
-      security:
-        - bearer: []
+      security: *ref_27
       summary: Create a supplier
-      tags:
-        - suppliers
+      tags: *ref_28
   /api/sales:
     get:
       operationId: SalesController_listSales
@@ -2093,10 +2143,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_27
+      security: &ref_29
         - bearer: []
       summary: List sales with pagination and optional status filter
-      tags: &ref_28
+      tags: &ref_30
         - sales
     post:
       operationId: SalesController_createSale
@@ -2114,9 +2164,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSaleResponseDto'
-      security: *ref_27
+      security: *ref_29
       summary: Create posted sale and receivable on underpayment
-      tags: *ref_28
+      tags: *ref_30
   /api/sales/{saleId}/refunds:
     post:
       operationId: SalesController_createRefund
@@ -2139,9 +2189,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSaleRefundResponseDto'
-      security: *ref_27
+      security: *ref_29
       summary: Create sale refund with quantity validation against original sale lines
-      tags: *ref_28
+      tags: *ref_30
   /api/uoms:
     get:
       operationId: UomsController_list
@@ -2198,10 +2248,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_29
+      security: &ref_31
         - bearer: []
       summary: List/search UOMs by name or code
-      tags: &ref_30
+      tags: &ref_32
         - uoms
     post:
       operationId: UomsController_create
@@ -2215,9 +2265,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_29
+      security: *ref_31
       summary: Create UOM
-      tags: *ref_30
+      tags: *ref_32
   /api/uoms/{uomId}:
     get:
       operationId: UomsController_getById
@@ -2230,9 +2280,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
+      security: *ref_31
       summary: Get UOM by id
-      tags: *ref_30
+      tags: *ref_32
     put:
       operationId: UomsController_replace
       parameters:
@@ -2250,9 +2300,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
+      security: *ref_31
       summary: Update UOM
-      tags: *ref_30
+      tags: *ref_32
     patch:
       operationId: UomsController_patch
       parameters:
@@ -2270,9 +2320,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
+      security: *ref_31
       summary: Patch UOM
-      tags: *ref_30
+      tags: *ref_32
   /api/uom-categories:
     get:
       operationId: UomCategoriesController_list
@@ -2295,10 +2345,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_31
+      security: &ref_33
         - bearer: []
       summary: List/search UOM categories
-      tags: &ref_32
+      tags: &ref_34
         - uom-categories
     post:
       operationId: UomCategoriesController_create
@@ -2312,8 +2362,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_31
-      tags: *ref_32
+      security: *ref_33
+      tags: *ref_34
   /api/uom-categories/{categoryId}:
     get:
       operationId: UomCategoriesController_get
@@ -2326,8 +2376,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_31
-      tags: *ref_32
+      security: *ref_33
+      tags: *ref_34
     put:
       operationId: UomCategoriesController_replace
       parameters:
@@ -2345,8 +2395,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_31
-      tags: *ref_32
+      security: *ref_33
+      tags: *ref_34
     patch:
       operationId: UomCategoriesController_patch
       parameters:
@@ -2364,8 +2414,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_31
-      tags: *ref_32
+      security: *ref_33
+      tags: *ref_34
   /api/payment-methods:
     get:
       operationId: PaymentMethodsController_list
@@ -2415,9 +2465,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_33
+      security: &ref_35
         - bearer: []
-      tags: &ref_34
+      tags: &ref_36
         - payment-methods
     post:
       operationId: PaymentMethodsController_create
@@ -2431,8 +2481,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_35
+      tags: *ref_36
   /api/payment-methods/{paymentMethodId}:
     get:
       operationId: PaymentMethodsController_get
@@ -2445,8 +2495,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_35
+      tags: *ref_36
     put:
       operationId: PaymentMethodsController_replace
       parameters:
@@ -2464,8 +2514,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_35
+      tags: *ref_36
     patch:
       operationId: PaymentMethodsController_patch
       parameters:
@@ -2483,8 +2533,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_35
+      tags: *ref_36
     delete:
       operationId: PaymentMethodsController_remove
       parameters:
@@ -2496,8 +2546,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_35
+      tags: *ref_36
   /api/receivables:
     get:
       operationId: ReceivablesController_list
@@ -2530,10 +2580,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_35
+      security: &ref_37
         - bearer: []
       summary: List receivables with pagination and filters
-      tags: &ref_36
+      tags: &ref_38
         - receivables
   /api/receivables/{receivableId}/transactions:
     get:
@@ -2567,9 +2617,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_35
+      security: *ref_37
       summary: List receivable transactions with pagination and optional type filter
-      tags: *ref_36
+      tags: *ref_38
   /api/receivables/{receivableId}/payments:
     post:
       operationId: ReceivablesController_collectPayment
@@ -2588,9 +2638,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_35
+      security: *ref_37
       summary: Collect payment against an open receivable
-      tags: *ref_36
+      tags: *ref_38
   /api/receivables/{receivableId}/adjustments:
     post:
       operationId: ReceivablesController_applyAdjustment
@@ -2609,9 +2659,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_35
+      security: *ref_37
       summary: Apply signed adjustment to a receivable and record ledger entry
-      tags: *ref_36
+      tags: *ref_38
   /api/receivables/{receivableId}/write-off:
     post:
       operationId: ReceivablesController_writeOff
@@ -2630,9 +2680,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_35
+      security: *ref_37
       summary: Write off receivable outstanding amount and close it
-      tags: *ref_36
+      tags: *ref_38
   /api/purchases:
     get:
       operationId: PurchasesController_list
@@ -2682,9 +2732,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_37
+      security: &ref_39
         - bearer: []
-      tags: &ref_38
+      tags: &ref_40
         - purchases
     post:
       operationId: PurchasesController_create
@@ -2698,8 +2748,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_39
+      tags: *ref_40
   /api/purchases/{purchaseId}:
     get:
       operationId: PurchasesController_getById
@@ -2712,8 +2762,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_39
+      tags: *ref_40
     put:
       operationId: PurchasesController_replace
       parameters:
@@ -2731,8 +2781,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_39
+      tags: *ref_40
     patch:
       operationId: PurchasesController_patch
       parameters:
@@ -2750,8 +2800,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_39
+      tags: *ref_40
     delete:
       operationId: PurchasesController_remove
       parameters:
@@ -2763,8 +2813,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
-      tags: *ref_38
+      security: *ref_39
+      tags: *ref_40
   /api/purchases/{id}/receive:
     post:
       operationId: InflowController_receiveGoods
@@ -2783,10 +2833,10 @@ paths:
       responses:
         '201':
           description: ''
-      security: &ref_39
+      security: &ref_41
         - bearer: []
       summary: Receive goods for a purchase order
-      tags: &ref_40
+      tags: &ref_42
         - purchases-inflow
   /api/purchases/{id}/unpost:
     post:
@@ -2806,9 +2856,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_39
+      security: *ref_41
       summary: Unpost a goods receipt line
-      tags: *ref_40
+      tags: *ref_42
   /api/purchases/{id}/receipts:
     get:
       operationId: InflowController_listReceiptsByPo
@@ -2831,9 +2881,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
+      security: *ref_41
       summary: List receipts for a purchase order
-      tags: *ref_40
+      tags: *ref_42
   /api/receipts:
     get:
       operationId: InflowController_listAllReceipts
@@ -2851,9 +2901,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
+      security: *ref_41
       summary: List all goods receipts
-      tags: *ref_40
+      tags: *ref_42
   /api/organizations:
     get:
       operationId: OrganizationsController_list
@@ -2903,9 +2953,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_41
+      security: &ref_43
         - bearer: []
-      tags: &ref_42
+      tags: &ref_44
         - organizations
     post:
       operationId: OrganizationsController_create
@@ -2919,8 +2969,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_43
+      tags: *ref_44
   /api/organizations/{organizationId}:
     get:
       operationId: OrganizationsController_get
@@ -2933,8 +2983,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_43
+      tags: *ref_44
     put:
       operationId: OrganizationsController_replace
       parameters:
@@ -2952,8 +3002,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_43
+      tags: *ref_44
     patch:
       operationId: OrganizationsController_patch
       parameters:
@@ -2971,8 +3021,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_43
+      tags: *ref_44
     delete:
       operationId: OrganizationsController_remove
       parameters:
@@ -2984,8 +3034,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
-      tags: *ref_42
+      security: *ref_43
+      tags: *ref_44
   /api/manufacturers:
     get:
       operationId: ManufacturersController_list
@@ -3035,9 +3085,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_43
+      security: &ref_45
         - bearer: []
-      tags: &ref_44
+      tags: &ref_46
         - manufacturers
     post:
       operationId: ManufacturersController_create
@@ -3051,8 +3101,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_45
+      tags: *ref_46
   /api/manufacturers/metrics:
     get:
       operationId: ManufacturersController_metrics
@@ -3060,8 +3110,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_45
+      tags: *ref_46
   /api/manufacturers/{manufacturerId}:
     get:
       operationId: ManufacturersController_get
@@ -3074,8 +3124,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_45
+      tags: *ref_46
     put:
       operationId: ManufacturersController_replace
       parameters:
@@ -3093,8 +3143,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_45
+      tags: *ref_46
     patch:
       operationId: ManufacturersController_patch
       parameters:
@@ -3112,8 +3162,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_45
+      tags: *ref_46
     delete:
       operationId: ManufacturersController_remove
       parameters:
@@ -3125,8 +3175,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_43
-      tags: *ref_44
+      security: *ref_45
+      tags: *ref_46
   /api/journals:
     get:
       operationId: AccountingController_listJournals
@@ -3176,9 +3226,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_45
+      security: &ref_47
         - bearer: []
-      tags: &ref_46
+      tags: &ref_48
         - accounting
     post:
       operationId: AccountingController_createJournal
@@ -3192,8 +3242,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
   /api/journals/{journalId}:
     get:
       operationId: AccountingController_getJournal
@@ -3206,8 +3256,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
     patch:
       operationId: AccountingController_updateJournal
       parameters:
@@ -3225,8 +3275,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
     delete:
       operationId: AccountingController_removeJournal
       parameters:
@@ -3238,8 +3288,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
   /api/journal-entries:
     get:
       operationId: AccountingController_listJournalEntries
@@ -3289,8 +3339,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
     post:
       operationId: AccountingController_createJournalEntry
       parameters: []
@@ -3303,8 +3353,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
   /api/journal-entries/{entryId}:
     get:
       operationId: AccountingController_getJournalEntry
@@ -3317,8 +3367,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
     patch:
       operationId: AccountingController_updateJournalEntry
       parameters:
@@ -3336,8 +3386,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
     delete:
       operationId: AccountingController_removeJournalEntry
       parameters:
@@ -3349,8 +3399,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
   /api/journal-entries/{entryId}/lines:
     get:
       operationId: AccountingController_listJournalEntryLines
@@ -3405,8 +3455,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
     post:
       operationId: AccountingController_createJournalEntryLine
       parameters:
@@ -3424,8 +3474,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
   /api/journal-entries/{entryId}/lines/{lineId}:
     patch:
       operationId: AccountingController_updateJournalEntryLine
@@ -3449,8 +3499,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
     delete:
       operationId: AccountingController_removeJournalEntryLine
       parameters:
@@ -3467,8 +3517,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_45
-      tags: *ref_46
+      security: *ref_47
+      tags: *ref_48
   /api/reports/daily-sales:
     get:
       operationId: ReportsController_dailySales
@@ -3476,9 +3526,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_47
+      security: &ref_49
         - bearer: []
-      tags: &ref_48
+      tags: &ref_50
         - reports
   /api/reports/inventory-valuation:
     get:
@@ -3487,8 +3537,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
-      tags: *ref_48
+      security: *ref_49
+      tags: *ref_50
   /api/reports/top-selling-items:
     get:
       operationId: ReportsController_topSellingProducts
@@ -3496,8 +3546,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
-      tags: *ref_48
+      security: *ref_49
+      tags: *ref_50
   /api/reports/export:
     get:
       operationId: ReportsController_exportSummary
@@ -3547,8 +3597,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_47
-      tags: *ref_48
+      security: *ref_49
+      tags: *ref_50
   /api/audit-logs:
     get:
       operationId: AuditController_list
@@ -3610,7 +3660,7 @@ paths:
         '200':
           description: ''
       summary: Get homepage data
-      tags: &ref_49
+      tags: &ref_51
         - website
   /api/website/products:
     get:
@@ -3620,7 +3670,7 @@ paths:
         '200':
           description: ''
       summary: List products with search/filter/pagination
-      tags: *ref_49
+      tags: *ref_51
   /api/website/products/{id}:
     get:
       operationId: WebsiteController_getProduct
@@ -3634,7 +3684,7 @@ paths:
         '200':
           description: ''
       summary: Get product detail
-      tags: *ref_49
+      tags: *ref_51
   /api/website/categories:
     get:
       operationId: WebsiteController_listCategories
@@ -3643,7 +3693,7 @@ paths:
         '200':
           description: ''
       summary: List all categories
-      tags: *ref_49
+      tags: *ref_51
   /api/website/categories/{slug}:
     get:
       operationId: WebsiteController_getCategoryBySlug
@@ -3657,7 +3707,7 @@ paths:
         '200':
           description: ''
       summary: Get category by slug with products
-      tags: *ref_49
+      tags: *ref_51
   /api/website/health-concerns:
     get:
       operationId: WebsiteController_listHealthConcerns
@@ -3666,7 +3716,7 @@ paths:
         '200':
           description: ''
       summary: List health concerns
-      tags: *ref_49
+      tags: *ref_51
   /api/website/health-concerns/{slug}:
     get:
       operationId: WebsiteController_getHealthConcernBySlug
@@ -3680,7 +3730,7 @@ paths:
         '200':
           description: ''
       summary: Get health concern by slug
-      tags: *ref_49
+      tags: *ref_51
   /api/website/prescriptions:
     post:
       operationId: WebsiteController_createPrescription
@@ -3695,7 +3745,7 @@ paths:
         '201':
           description: ''
       summary: Upload prescription with files
-      tags: *ref_49
+      tags: *ref_51
     get:
       operationId: WebsiteController_listPrescriptions
       parameters: []
@@ -3703,7 +3753,7 @@ paths:
         '200':
           description: ''
       summary: List prescriptions
-      tags: *ref_49
+      tags: *ref_51
   /api/website/consultations:
     post:
       operationId: WebsiteController_createConsultation
@@ -3718,7 +3768,7 @@ paths:
         '201':
           description: ''
       summary: Book a consultation
-      tags: *ref_49
+      tags: *ref_51
     get:
       operationId: WebsiteController_listConsultations
       parameters: []
@@ -3726,7 +3776,7 @@ paths:
         '200':
           description: ''
       summary: List consultations
-      tags: *ref_49
+      tags: *ref_51
   /api/website/cart:
     post:
       operationId: WebsiteController_addToCart
@@ -3743,7 +3793,7 @@ paths:
         '201':
           description: ''
       summary: Add to cart (returns product details for given ids)
-      tags: *ref_49
+      tags: *ref_51
     get:
       operationId: WebsiteController_getCart
       parameters:
@@ -3756,7 +3806,7 @@ paths:
         '200':
           description: ''
       summary: Get cart product details
-      tags: *ref_49
+      tags: *ref_51
   /api/website/cart/{id}:
     delete:
       operationId: WebsiteController_removeFromCart
@@ -3765,7 +3815,7 @@ paths:
         '200':
           description: ''
       summary: Remove from cart (no-op on server, client-managed)
-      tags: *ref_49
+      tags: *ref_51
   /api/website/orders:
     post:
       operationId: WebsiteController_createOrder
@@ -3780,7 +3830,7 @@ paths:
         '201':
           description: ''
       summary: Create order
-      tags: *ref_49
+      tags: *ref_51
     get:
       operationId: WebsiteController_listOrders
       parameters: []
@@ -3788,7 +3838,7 @@ paths:
         '200':
           description: ''
       summary: List orders
-      tags: *ref_49
+      tags: *ref_51
   /api/website/orders/track/{trackingCode}:
     get:
       operationId: WebsiteController_trackOrder
@@ -3802,7 +3852,7 @@ paths:
         '200':
           description: ''
       summary: Track order by code
-      tags: *ref_49
+      tags: *ref_51
   /api/website/orders/{id}:
     get:
       operationId: WebsiteController_getOrder
@@ -3816,7 +3866,7 @@ paths:
         '200':
           description: ''
       summary: Get order detail
-      tags: *ref_49
+      tags: *ref_51
   /api/website/articles:
     get:
       operationId: WebsiteController_listArticles
@@ -3825,7 +3875,7 @@ paths:
         '200':
           description: ''
       summary: List published articles
-      tags: *ref_49
+      tags: *ref_51
   /api/website/articles/{slug}:
     get:
       operationId: WebsiteController_getArticleBySlug
@@ -3839,7 +3889,7 @@ paths:
         '200':
           description: ''
       summary: Get article by slug
-      tags: *ref_49
+      tags: *ref_51
   /api/website/delivery-areas:
     get:
       operationId: WebsiteController_listDeliveryAreas
@@ -3848,7 +3898,7 @@ paths:
         '200':
           description: ''
       summary: List delivery areas
-      tags: *ref_49
+      tags: *ref_51
   /api/website/branches:
     get:
       operationId: WebsiteController_listBranches
@@ -3857,7 +3907,7 @@ paths:
         '200':
           description: ''
       summary: List branches
-      tags: *ref_49
+      tags: *ref_51
   /api/website/branches/{id}:
     get:
       operationId: WebsiteController_getBranch
@@ -3871,7 +3921,7 @@ paths:
         '200':
           description: ''
       summary: Get branch detail
-      tags: *ref_49
+      tags: *ref_51
   /api/website/contact:
     post:
       operationId: WebsiteController_submitContact
@@ -3886,7 +3936,7 @@ paths:
         '201':
           description: ''
       summary: Submit contact form
-      tags: *ref_49
+      tags: *ref_51
   /api/website/newsletter/subscribe:
     post:
       operationId: WebsiteController_subscribe
@@ -3901,7 +3951,7 @@ paths:
         '201':
           description: ''
       summary: Subscribe to newsletter
-      tags: *ref_49
+      tags: *ref_51
   /api/website/reviews:
     post:
       operationId: WebsiteController_createReview
@@ -3916,7 +3966,7 @@ paths:
         '201':
           description: ''
       summary: Submit product review
-      tags: *ref_49
+      tags: *ref_51
   /api/website/reviews/{productId}:
     get:
       operationId: WebsiteController_getProductReviews
@@ -3930,7 +3980,7 @@ paths:
         '200':
           description: ''
       summary: Get product reviews
-      tags: *ref_49
+      tags: *ref_51
   /api/website/rewards:
     get:
       operationId: WebsiteController_getRewards
@@ -3941,7 +3991,7 @@ paths:
       security:
         - bearer: []
       summary: Get rewards data
-      tags: *ref_49
+      tags: *ref_51
   /api/website/search:
     get:
       operationId: WebsiteController_search
@@ -3960,7 +4010,7 @@ paths:
         '200':
           description: ''
       summary: Global search
-      tags: *ref_49
+      tags: *ref_51
   /api/website/auth/register:
     post:
       operationId: WebsiteAuthController_register
@@ -3979,7 +4029,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponseDto'
       summary: Register a new website user
-      tags: &ref_50
+      tags: &ref_52
         - website-auth
   /api/website/auth/login:
     post:
@@ -3999,7 +4049,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponseDto'
       summary: Login for website users
-      tags: *ref_50
+      tags: *ref_52
   /api/website/admin/health-concerns:
     get:
       operationId: WebsiteAdminController_listHealthConcerns
@@ -4007,10 +4057,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_51
+      security: &ref_53
         - bearer: []
       summary: List all health concerns (admin)
-      tags: &ref_52
+      tags: &ref_54
         - website-admin
     post:
       operationId: WebsiteAdminController_createHealthConcern
@@ -4024,9 +4074,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Create a health concern
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/health-concerns/{id}:
     put:
       operationId: WebsiteAdminController_updateHealthConcern
@@ -4045,9 +4095,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Update a health concern
-      tags: *ref_52
+      tags: *ref_54
     delete:
       operationId: WebsiteAdminController_deleteHealthConcern
       parameters:
@@ -4059,9 +4109,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Soft delete a health concern
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/articles:
     get:
       operationId: WebsiteAdminController_listArticles
@@ -4069,9 +4119,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: List all articles including unpublished
-      tags: *ref_52
+      tags: *ref_54
     post:
       operationId: WebsiteAdminController_createArticle
       parameters: []
@@ -4084,9 +4134,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Create a blog article
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/articles/{id}:
     put:
       operationId: WebsiteAdminController_updateArticle
@@ -4105,9 +4155,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Update a blog article
-      tags: *ref_52
+      tags: *ref_54
     delete:
       operationId: WebsiteAdminController_deleteArticle
       parameters:
@@ -4119,9 +4169,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Soft delete a blog article
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/prescriptions:
     get:
       operationId: WebsiteAdminController_listPrescriptions
@@ -4134,9 +4184,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: List prescriptions with status filter and pagination
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/prescriptions/{id}/status:
     patch:
       operationId: WebsiteAdminController_updatePrescriptionStatus
@@ -4155,9 +4205,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Update prescription status
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/orders:
     get:
       operationId: WebsiteAdminController_listOrders
@@ -4180,9 +4230,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: List all website orders (saleChannel=mobile)
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/orders/{id}:
     get:
       operationId: WebsiteAdminController_getOrder
@@ -4195,9 +4245,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Get website order detail
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/orders/{id}/status:
     patch:
       operationId: WebsiteAdminController_updateOrderStatus
@@ -4210,9 +4260,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Update order status with transition validation
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/orders/{id}/assign-location:
     post:
       operationId: WebsiteAdminController_assignLocation
@@ -4225,9 +4275,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Assign a stock location to fulfill an order
-      tags: *ref_52
+      tags: *ref_54
   /api/website/admin/orders/{id}/process:
     post:
       operationId: WebsiteAdminController_processOrder
@@ -4240,9 +4290,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_51
+      security: *ref_53
       summary: Process order — deplete reserved stock and update status
-      tags: *ref_52
+      tags: *ref_54
   /api/apm/homepage:
     get:
       operationId: ApmController_getHomepage
@@ -4251,7 +4301,7 @@ paths:
         '200':
           description: ''
       summary: Get campaign homepage data
-      tags: &ref_53
+      tags: &ref_55
         - apm
   /api/apm/agenda:
     get:
@@ -4261,7 +4311,7 @@ paths:
         '200':
           description: ''
       summary: List Oyo Next agenda items
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/achievements:
     get:
       operationId: ApmController_listAchievements
@@ -4270,7 +4320,7 @@ paths:
         '200':
           description: ''
       summary: List campaign achievements
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/news:
     get:
       operationId: ApmController_listNews
@@ -4279,7 +4329,7 @@ paths:
         '200':
           description: ''
       summary: List news articles
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/news/{slug}:
     get:
       operationId: ApmController_getNewsBySlug
@@ -4293,7 +4343,7 @@ paths:
         '200':
           description: ''
       summary: Get news article by slug
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/events:
     get:
       operationId: ApmController_listEvents
@@ -4302,7 +4352,7 @@ paths:
         '200':
           description: ''
       summary: List campaign events
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/events/{id}:
     get:
       operationId: ApmController_getEvent
@@ -4316,7 +4366,7 @@ paths:
         '200':
           description: ''
       summary: Get event detail
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/events/{id}/register:
     post:
       operationId: ApmController_registerForEvent
@@ -4336,7 +4386,7 @@ paths:
         '201':
           description: ''
       summary: Register for an event
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/volunteer:
     post:
       operationId: ApmController_registerVolunteer
@@ -4351,7 +4401,7 @@ paths:
         '201':
           description: ''
       summary: Register as a volunteer
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/join:
     post:
       operationId: ApmController_joinMovement
@@ -4366,7 +4416,7 @@ paths:
         '201':
           description: ''
       summary: Join the movement
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/contact:
     post:
       operationId: ApmController_submitContact
@@ -4381,7 +4431,7 @@ paths:
         '201':
           description: ''
       summary: Submit contact form
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/newsletter:
     post:
       operationId: ApmController_subscribeNewsletter
@@ -4396,7 +4446,7 @@ paths:
         '201':
           description: ''
       summary: Subscribe to newsletter
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/citizens-speak:
     post:
       operationId: ApmController_submitFeedback
@@ -4411,7 +4461,7 @@ paths:
         '201':
           description: ''
       summary: Submit citizen feedback
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/report:
     post:
       operationId: ApmController_reportIssue
@@ -4426,7 +4476,7 @@ paths:
         '201':
           description: ''
       summary: Report an issue
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/media:
     get:
       operationId: ApmController_listMedia
@@ -4435,7 +4485,7 @@ paths:
         '200':
           description: ''
       summary: List media assets
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/testimonials:
     get:
       operationId: ApmController_listTestimonials
@@ -4444,7 +4494,7 @@ paths:
         '200':
           description: ''
       summary: List testimonials
-      tags: *ref_53
+      tags: *ref_55
   /api/apm/donate:
     post:
       operationId: ApmController_donate
@@ -4459,7 +4509,7 @@ paths:
         '201':
           description: ''
       summary: Submit a donation
-      tags: *ref_53
+      tags: *ref_55
   /api/apm-admin/volunteers:
     get:
       operationId: ApmAdminController_listVolunteers
@@ -4467,10 +4517,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_54
+      security: &ref_56
         - bearer: []
       summary: List all volunteers
-      tags: &ref_55
+      tags: &ref_57
         - apm-admin
   /api/apm-admin/supporters:
     get:
@@ -4479,9 +4529,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_54
+      security: *ref_56
       summary: List all supporters
-      tags: *ref_55
+      tags: *ref_57
   /api/apm-admin/contacts:
     get:
       operationId: ApmAdminController_listContacts
@@ -4489,9 +4539,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_54
+      security: *ref_56
       summary: List contact submissions
-      tags: *ref_55
+      tags: *ref_57
   /api/apm-admin/event-registrations:
     get:
       operationId: ApmAdminController_listEventRegistrations
@@ -4499,9 +4549,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_54
+      security: *ref_56
       summary: List event registrations
-      tags: *ref_55
+      tags: *ref_57
   /api/apm-admin/feedback:
     get:
       operationId: ApmAdminController_listFeedback
@@ -4509,9 +4559,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_54
+      security: *ref_56
       summary: List citizen feedback
-      tags: *ref_55
+      tags: *ref_57
   /api/apm-admin/issues:
     get:
       operationId: ApmAdminController_listIssues
@@ -4519,9 +4569,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_54
+      security: *ref_56
       summary: List issue reports
-      tags: *ref_55
+      tags: *ref_57
   /api/apm-admin/donations:
     get:
       operationId: ApmAdminController_listDonations
@@ -4529,9 +4579,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_54
+      security: *ref_56
       summary: List donations
-      tags: *ref_55
+      tags: *ref_57
   /api/apm-admin/stats:
     get:
       operationId: ApmAdminController_getStats
@@ -4539,9 +4589,1047 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_54
+      security: *ref_56
       summary: Get campaign stats dashboard
-      tags: *ref_55
+      tags: *ref_57
+  /api/apm/conversion/dashboard:
+    get:
+      operationId: ApmConversionController_getDashboard
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_58
+        - bearer: []
+      summary: Get conversion dashboard summary
+      tags: &ref_59
+        - apm-conversion
+  /api/apm/conversion/lgas:
+    get:
+      operationId: ApmConversionController_getLgaConversionDashboard
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_58
+      summary: Get LGA conversion dashboard
+      tags: *ref_59
+  /api/apm/conversion/wards/{lgaId}:
+    get:
+      operationId: ApmConversionController_getWardConversionDashboard
+      parameters:
+        - name: lgaId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_58
+      summary: Get ward conversion dashboard for LGA
+      tags: *ref_59
+  /api/apm/conversion/polling-units/{wardId}:
+    get:
+      operationId: ApmConversionController_getPollingUnitDashboard
+      parameters:
+        - name: wardId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_58
+      summary: Get polling units for ward
+      tags: *ref_59
+  /api/apm/conversion/score/{entityType}/{entityId}:
+    put:
+      operationId: ApmConversionController_updateScore
+      parameters:
+        - name: entityType
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: entityId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConversionScoreDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_58
+      summary: Update conversion score for LGA or ward
+      tags: *ref_59
+  /api/apm/conversion/polling-units/{id}:
+    put:
+      operationId: ApmConversionController_updatePollingUnit
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePollingUnitDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_58
+      summary: Update polling unit details
+      tags: *ref_59
+  /api/apm/stakeholders:
+    get:
+      operationId: ApmStakeholderController_listStakeholders
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_60
+        - bearer: []
+      summary: List all stakeholders
+      tags: &ref_61
+        - apm-stakeholders
+    post:
+      operationId: ApmStakeholderController_createStakeholder
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStakeholderDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_60
+      summary: Create a stakeholder
+      tags: *ref_61
+  /api/apm/stakeholders/lga/{lgaId}:
+    get:
+      operationId: ApmStakeholderController_listStakeholdersByLga
+      parameters:
+        - name: lgaId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_60
+      summary: List stakeholders by LGA
+      tags: *ref_61
+  /api/apm/stakeholders/{id}:
+    get:
+      operationId: ApmStakeholderController_getStakeholder
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_60
+      summary: Get stakeholder details
+      tags: *ref_61
+    put:
+      operationId: ApmStakeholderController_updateStakeholder
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStakeholderDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_60
+      summary: Update a stakeholder
+      tags: *ref_61
+  /api/apm/stakeholders/{id}/activities:
+    post:
+      operationId: ApmStakeholderController_createActivity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConversionActivityDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_60
+      summary: Add activity to stakeholder
+      tags: *ref_61
+    get:
+      operationId: ApmStakeholderController_listActivities
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_60
+      summary: List stakeholder activities
+      tags: *ref_61
+  /api/apm/whatsapp/groups:
+    get:
+      operationId: ApmWhatsAppController_listGroups
+      parameters:
+        - name: level
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_62
+        - bearer: []
+      summary: List WhatsApp groups
+      tags: &ref_63
+        - apm-whatsapp
+    post:
+      operationId: ApmWhatsAppController_createGroup
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWhatsAppGroupDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_62
+      summary: Create WhatsApp group
+      tags: *ref_63
+  /api/apm/data/lgas:
+    get:
+      operationId: ApmDataController_listLgas
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: List all LGAs
+      tags: &ref_64
+        - apm-data
+  /api/apm/data/lgas/{id}:
+    get:
+      operationId: ApmDataController_getLga
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Get LGA by ID
+      tags: *ref_64
+  /api/apm/data/lgas/{lgaId}/wards:
+    get:
+      operationId: ApmDataController_listWards
+      parameters:
+        - name: lgaId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: List wards in an LGA
+      tags: *ref_64
+  /api/apm/data/wards/{id}:
+    get:
+      operationId: ApmDataController_getWard
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Get ward by ID
+      tags: *ref_64
+  /api/apm/data/wards/{wardId}/polling-units:
+    get:
+      operationId: ApmDataController_listPollingUnits
+      parameters:
+        - name: wardId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: List polling units in a ward
+      tags: *ref_64
+  /api/apm/data/polling-units/{id}:
+    get:
+      operationId: ApmDataController_getPollingUnit
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Get polling unit by ID
+      tags: *ref_64
+  /api/apm/data/polling-units/search/{query}:
+    get:
+      operationId: ApmDataController_searchPollingUnits
+      parameters:
+        - name: query
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Search polling units
+      tags: *ref_64
+  /api/apm/canvassing/stats:
+    get:
+      operationId: ApmCanvassingController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_65
+        - bearer: []
+      summary: Get canvassing stats
+      tags: &ref_66
+        - apm-canvassing
+  /api/apm/canvassing/sessions:
+    get:
+      operationId: ApmCanvassingController_listSessions
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_65
+      summary: List canvassing sessions
+      tags: *ref_66
+    post:
+      operationId: ApmCanvassingController_createSession
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCanvassingSessionDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_65
+      summary: Create canvassing session
+      tags: *ref_66
+  /api/apm/canvassing/sessions/{id}:
+    get:
+      operationId: ApmCanvassingController_getSession
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_65
+      summary: Get session detail
+      tags: *ref_66
+    put:
+      operationId: ApmCanvassingController_updateSession
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCanvassingSessionDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_65
+      summary: Update canvassing session
+      tags: *ref_66
+  /api/apm/canvassing/sessions/{id}/visits:
+    get:
+      operationId: ApmCanvassingController_listVisits
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_65
+      summary: List visits in a session
+      tags: *ref_66
+    post:
+      operationId: ApmCanvassingController_addVisit
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCanvassingVisitDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_65
+      summary: Add a visit to a session
+      tags: *ref_66
+  /api/apm/canvassing/sessions/{id}/visit-stats:
+    get:
+      operationId: ApmCanvassingController_getVisitStats
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_65
+      summary: Get visit stats for a session
+      tags: *ref_66
+  /api/apm/canvassing/visits/stats:
+    get:
+      operationId: ApmCanvassingController_getAllVisitStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_65
+      summary: Get overall visit stats
+      tags: *ref_66
+  /api/apm/volunteer-assignments:
+    get:
+      operationId: ApmVolunteerAssignmentController_listAssignments
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_67
+        - bearer: []
+      summary: List volunteer assignments
+      tags: &ref_68
+        - apm-volunteer-assignments
+    post:
+      operationId: ApmVolunteerAssignmentController_createAssignment
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVolunteerAssignmentDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_67
+      summary: Create volunteer assignment
+      tags: *ref_68
+  /api/apm/volunteer-assignments/ward/{wardId}:
+    get:
+      operationId: ApmVolunteerAssignmentController_listByWard
+      parameters:
+        - name: wardId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_67
+      summary: List assignments by ward
+      tags: *ref_68
+  /api/apm/volunteer-assignments/{id}:
+    put:
+      operationId: ApmVolunteerAssignmentController_updateAssignment
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVolunteerAssignmentDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_67
+      summary: Update volunteer assignment
+      tags: *ref_68
+  /api/apm/volunteer-assignments/stats:
+    get:
+      operationId: ApmVolunteerAssignmentController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_67
+      summary: Get volunteer stats
+      tags: *ref_68
+  /api/apm/sentiment:
+    get:
+      operationId: ApmSentimentController_getSentiment
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearer: []
+      summary: Get sentiment analysis dashboard
+      tags:
+        - apm-sentiment
+  /api/apm/tours:
+    get:
+      operationId: ApmTourController_listTours
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_69
+        - bearer: []
+      summary: List candidate tours
+      tags: &ref_70
+        - apm-tours
+    post:
+      operationId: ApmTourController_createTour
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCandidateTourDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_69
+      summary: Create candidate tour
+      tags: *ref_70
+  /api/apm/tours/stats:
+    get:
+      operationId: ApmTourController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_69
+      summary: Tour stats
+      tags: *ref_70
+  /api/apm/tours/{id}:
+    get:
+      operationId: ApmTourController_getTour
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_69
+      summary: Get tour detail
+      tags: *ref_70
+    put:
+      operationId: ApmTourController_updateTour
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCandidateTourDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_69
+      summary: Update candidate tour
+      tags: *ref_70
+  /api/apm/content:
+    get:
+      operationId: ApmContentController_listContent
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_71
+        - bearer: []
+      summary: List content assets
+      tags: &ref_72
+        - apm-content
+    post:
+      operationId: ApmContentController_createContent
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContentAssetDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_71
+      summary: Create content asset
+      tags: *ref_72
+  /api/apm/listening:
+    get:
+      operationId: ApmListeningController_listMentions
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_73
+        - bearer: []
+      summary: List mentions
+      tags: &ref_74
+        - apm-listening
+    post:
+      operationId: ApmListeningController_createMention
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListeningMentionDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_73
+      summary: Create mention
+      tags: *ref_74
+  /api/apm/listening/stats:
+    get:
+      operationId: ApmListeningController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_73
+      summary: Listening stats
+      tags: *ref_74
+  /api/apm/listening/{id}:
+    get:
+      operationId: ApmListeningController_getMention
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_73
+      summary: Get mention detail
+      tags: *ref_74
+  /api/apm/listening/{id}/status:
+    put:
+      operationId: ApmListeningController_updateMentionStatus
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_73
+      summary: Update mention status
+      tags: *ref_74
+  /api/apm/truth-desk/{mentionId}/responses:
+    get:
+      operationId: ApmTruthDeskController_listResponses
+      parameters:
+        - name: mentionId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_75
+        - bearer: []
+      summary: List responses for a mention
+      tags: &ref_76
+        - apm-truth-desk
+  /api/apm/truth-desk:
+    post:
+      operationId: ApmTruthDeskController_createResponse
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRapidResponseDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_75
+      summary: Create rapid response
+      tags: *ref_76
+  /api/apm/agents:
+    get:
+      operationId: ApmAgentController_listAgents
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_77
+        - bearer: []
+      summary: List polling agents
+      tags: &ref_78
+        - apm-agents
+    post:
+      operationId: ApmAgentController_createAgent
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePollingAgentDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_77
+      summary: Create polling agent
+      tags: *ref_78
+  /api/apm/agents/stats:
+    get:
+      operationId: ApmAgentController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_77
+      summary: Agent stats
+      tags: *ref_78
+  /api/apm/agents/{id}:
+    get:
+      operationId: ApmAgentController_getAgent
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_77
+      summary: Get agent detail
+      tags: *ref_78
+    put:
+      operationId: ApmAgentController_updateAgent
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePollingAgentDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_77
+      summary: Update polling agent
+      tags: *ref_78
+  /api/apm/results:
+    get:
+      operationId: ApmResultController_listResults
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_79
+        - bearer: []
+      summary: List result entries
+      tags: &ref_80
+        - apm-results
+    post:
+      operationId: ApmResultController_createResult
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResultEntryDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_79
+      summary: Submit result entry
+      tags: *ref_80
+  /api/apm/results/dashboard:
+    get:
+      operationId: ApmResultController_getDashboard
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_79
+      summary: Result collation dashboard
+      tags: *ref_80
+  /api/apm/results/lga/{lgaId}:
+    get:
+      operationId: ApmResultController_listByLga
+      parameters:
+        - name: lgaId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_79
+      summary: Results by LGA
+      tags: *ref_80
+  /api/apm/results/{id}:
+    get:
+      operationId: ApmResultController_getResult
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_79
+      summary: Get result detail
+      tags: *ref_80
+  /api/apm/results/{id}/verify:
+    put:
+      operationId: ApmResultController_verifyResult
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_79
+      summary: Verify result entry
+      tags: *ref_80
+  /api/apm/incidents:
+    get:
+      operationId: ApmIncidentController_listIncidents
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_81
+        - bearer: []
+      summary: List incident reports
+      tags: &ref_82
+        - apm-incidents
+    post:
+      operationId: ApmIncidentController_createIncident
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIncidentReportDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_81
+      summary: Report an incident
+      tags: *ref_82
+  /api/apm/incidents/stats:
+    get:
+      operationId: ApmIncidentController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_81
+      summary: Incident stats
+      tags: *ref_82
+  /api/apm/incidents/{id}:
+    put:
+      operationId: ApmIncidentController_updateIncident
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIncidentReportDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_81
+      summary: Update incident
+      tags: *ref_82
+  /api/apm/gotv:
+    get:
+      operationId: ApmGotvController_listGotv
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_83
+        - bearer: []
+      summary: List GOTV records
+      tags: &ref_84
+        - apm-gotv
+    post:
+      operationId: ApmGotvController_createGotv
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGotvRecordDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_83
+      summary: Create GOTV record
+      tags: *ref_84
+  /api/apm/gotv/stats:
+    get:
+      operationId: ApmGotvController_getStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_83
+      summary: GOTV stats
+      tags: *ref_84
+  /api/apm/gotv/pu/{pollingUnitId}:
+    get:
+      operationId: ApmGotvController_listByPu
+      parameters:
+        - name: pollingUnitId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_83
+      summary: GOTV records by PU
+      tags: *ref_84
+  /api/apm/gotv/{id}:
+    put:
+      operationId: ApmGotvController_updateGotv
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGotvRecordDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_83
+      summary: Update GOTV record
+      tags: *ref_84
   /api/upload/image:
     post:
       operationId: UploadController_uploadImage
@@ -4549,7 +5637,7 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_56
+      tags: &ref_85
         - Upload
     delete:
       operationId: UploadController_deleteImage
@@ -4557,7 +5645,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_56
+      tags: *ref_85
 info:
   title: RxSoft Backend API
   description: Phase 3 identity module and API contracts
@@ -4654,6 +5742,19 @@ components:
         - roles
         - permissions
         - modules
+    UpdateUserPosConfigDto:
+      type: object
+      properties:
+        stockLocationId:
+          type: object
+        storeId:
+          type: object
+        allowA4Print:
+          type: boolean
+        allowPos:
+          type: boolean
+        loginTimeoutMinutes:
+          type: object
     CreateUserDto:
       type: object
       properties:
@@ -4672,9 +5773,26 @@ components:
           type: array
           items:
             type: string
+        posConfig:
+          description: POS configuration settings
+          allOf:
+            - $ref: '#/components/schemas/UpdateUserPosConfigDto'
       required:
         - username
         - password
+    PosConfigResponse:
+      type: object
+      properties:
+        stockLocationId:
+          type: object
+        storeId:
+          type: object
+        allowPos:
+          type: boolean
+        allowA4Print:
+          type: boolean
+        loginTimeoutMinutes:
+          type: object
     UserResponseDto:
       type: object
       properties:
@@ -4688,6 +5806,8 @@ components:
           type: array
           items:
             type: array
+        posConfig:
+          $ref: '#/components/schemas/PosConfigResponse'
       required:
         - id
         - username
@@ -4716,6 +5836,10 @@ components:
         isActive:
           type: boolean
           example: true
+        posConfig:
+          description: POS configuration settings
+          allOf:
+            - $ref: '#/components/schemas/UpdateUserPosConfigDto'
     AssignRoleDto:
       type: object
       properties:
@@ -4798,19 +5922,6 @@ components:
           type: boolean
         defaultAllowA4Print:
           type: boolean
-    UpdateUserPosConfigDto:
-      type: object
-      properties:
-        stockLocationId:
-          type: object
-        storeId:
-          type: object
-        allowA4Print:
-          type: boolean
-        allowPos:
-          type: boolean
-        loginTimeoutMinutes:
-          type: object
     ItemCategoryResponse:
       type: object
       properties:
@@ -5751,7 +6862,7 @@ components:
           type: string
         status:
           type: string
-          enum: &ref_57
+          enum: &ref_86
             - draft
             - approved
             - partially_received
@@ -5794,7 +6905,7 @@ components:
           type: string
         status:
           type: string
-          enum: *ref_57
+          enum: *ref_86
         note:
           type: string
         invoiceNumber:
@@ -6392,3 +7503,441 @@ components:
       required:
         - name
         - amount
+    UpdateConversionScoreDto:
+      type: object
+      properties:
+        score:
+          type: number
+        status:
+          type: string
+        assessedBy:
+          type: string
+        notes:
+          type: string
+      required:
+        - score
+    UpdatePollingUnitDto:
+      type: object
+      properties:
+        name:
+          type: string
+        registeredVoters:
+          type: number
+        pastResultApm:
+          type: number
+        pastResultPdp:
+          type: number
+        pastResultApc:
+          type: number
+        pastResultOther:
+          type: number
+        riskLevel:
+          type: string
+        conversionStatus:
+          type: string
+        assignedAgentName:
+          type: string
+        assignedAgentPhone:
+          type: string
+        notes:
+          type: string
+    CreateStakeholderDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        lgaId:
+          type: string
+        wardId:
+          type: string
+        affiliation:
+          type: string
+        influenceLevel:
+          type: string
+        conversionStatus:
+          type: string
+        notes:
+          type: string
+      required:
+        - name
+        - lgaId
+    UpdateStakeholderDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        lgaId:
+          type: string
+        wardId:
+          type: string
+        affiliation:
+          type: string
+        influenceLevel:
+          type: string
+        conversionStatus:
+          type: string
+        notes:
+          type: string
+    CreateConversionActivityDto:
+      type: object
+      properties:
+        type:
+          type: string
+        notes:
+          type: string
+        outcome:
+          type: string
+        conductedBy:
+          type: string
+        conductedAt:
+          type: string
+        followUpDate:
+          type: string
+      required:
+        - type
+    CreateWhatsAppGroupDto:
+      type: object
+      properties:
+        level:
+          type: string
+        name:
+          type: string
+        parentId:
+          type: string
+        description:
+          type: string
+        groupLink:
+          type: string
+        adminName:
+          type: string
+        adminPhone:
+          type: string
+        memberCount:
+          type: number
+      required:
+        - level
+        - name
+    CreateCanvassingSessionDto:
+      type: object
+      properties:
+        title:
+          type: string
+        lgaId:
+          type: string
+        wardId:
+          type: string
+        teamLead:
+          type: string
+        teamSize:
+          type: number
+        scheduledDate:
+          type: string
+        notes:
+          type: string
+      required:
+        - title
+        - lgaId
+    UpdateCanvassingSessionDto:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+        teamLead:
+          type: string
+        teamSize:
+          type: number
+        completedDate:
+          type: string
+        notes:
+          type: string
+    CreateCanvassingVisitDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        supportLevel:
+          type: string
+        issues:
+          type: string
+        outcome:
+          type: string
+        contactedAt:
+          type: string
+      required:
+        - name
+    CreateVolunteerAssignmentDto:
+      type: object
+      properties:
+        volunteerId:
+          type: string
+        lgaId:
+          type: string
+        wardId:
+          type: string
+        role:
+          type: string
+        notes:
+          type: string
+      required:
+        - volunteerId
+        - lgaId
+    UpdateVolunteerAssignmentDto:
+      type: object
+      properties:
+        wardId:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+        notes:
+          type: string
+    CreateCandidateTourDto:
+      type: object
+      properties:
+        title:
+          type: string
+        lgaId:
+          type: string
+        wardId:
+          type: string
+        visitType:
+          type: string
+        tourDate:
+          type: string
+        description:
+          type: string
+        expectedAttendees:
+          type: number
+        notes:
+          type: string
+      required:
+        - title
+        - lgaId
+    UpdateCandidateTourDto:
+      type: object
+      properties:
+        title:
+          type: string
+        visitType:
+          type: string
+        tourDate:
+          type: string
+        description:
+          type: string
+        actualAttendees:
+          type: number
+        stakeholdersMet:
+          type: string
+        commitments:
+          type: string
+        complaints:
+          type: string
+        volunteerSignups:
+          type: number
+        mediaCoverage:
+          type: string
+        notes:
+          type: string
+        status:
+          type: string
+    CreateContentAssetDto:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        assetUrl:
+          type: string
+        lgaId:
+          type: string
+        targetAudience:
+          type: string
+        messageKey:
+          type: string
+        language:
+          type: string
+        tags:
+          type: string
+      required:
+        - title
+        - type
+        - assetUrl
+    CreateListeningMentionDto:
+      type: object
+      properties:
+        platform:
+          type: string
+        title:
+          type: string
+        mentionUrl:
+          type: string
+        content:
+          type: string
+        sentiment:
+          type: string
+        reach:
+          type: number
+        mentionedAt:
+          type: string
+        source:
+          type: string
+        category:
+          type: string
+        isUrgent:
+          type: boolean
+      required:
+        - platform
+        - title
+    CreateRapidResponseDto:
+      type: object
+      properties:
+        mentionId:
+          type: string
+        responseType:
+          type: string
+        content:
+          type: string
+        publishedBy:
+          type: string
+        platform:
+          type: string
+      required:
+        - mentionId
+        - content
+    CreatePollingAgentDto:
+      type: object
+      properties:
+        pollingUnitId:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+      required:
+        - pollingUnitId
+        - name
+        - phone
+    UpdatePollingAgentDto:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        trainingStatus:
+          type: string
+        notes:
+          type: string
+        isActive:
+          type: boolean
+    CreateResultEntryDto:
+      type: object
+      properties:
+        pollingUnitId:
+          type: string
+        lgaId:
+          type: string
+        wardId:
+          type: string
+        apmVotes:
+          type: number
+        pdpVotes:
+          type: number
+        apcVotes:
+          type: number
+        otherVotes:
+          type: number
+        registeredVoters:
+          type: number
+        photoUrl:
+          type: string
+        enteredBy:
+          type: string
+        notes:
+          type: string
+      required:
+        - pollingUnitId
+        - lgaId
+        - wardId
+        - apmVotes
+        - pdpVotes
+        - apcVotes
+        - registeredVoters
+    CreateIncidentReportDto:
+      type: object
+      properties:
+        pollingUnitId:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+        reportedBy:
+          type: string
+      required:
+        - type
+        - description
+    UpdateIncidentReportDto:
+      type: object
+      properties:
+        status:
+          type: string
+        legalEscalation:
+          type: boolean
+        securityEscalation:
+          type: boolean
+        notes:
+          type: string
+    CreateGotvRecordDto:
+      type: object
+      properties:
+        pollingUnitId:
+          type: string
+        supporterName:
+          type: string
+        supporterPhone:
+          type: string
+        contactedVia:
+          type: string
+        notes:
+          type: string
+      required:
+        - pollingUnitId
+        - supporterName
+    UpdateGotvRecordDto:
+      type: object
+      properties:
+        contacted:
+          type: boolean
+        turnedOut:
+          type: boolean
+        contactedVia:
+          type: string
+        notes:
+          type: string

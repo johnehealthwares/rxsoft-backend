@@ -1,5 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { UpdateUserPosConfigDto } from '../../user-pos-config/dto/user-pos-config.dto';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'cashier01' })
@@ -28,4 +30,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ description: 'POS configuration settings' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateUserPosConfigDto)
+  posConfig?: UpdateUserPosConfigDto;
 }

@@ -5,6 +5,7 @@ import type { UserRepository } from '../repositories/user.repository';
 import type { PasswordHasherPort } from './password-hasher.port';
 import type { RoleRepository } from '../repositories/role.repository';
 import { User } from '../domains/user.entity';
+import { UserPosConfigService } from '../../user-pos-config/services/user-pos-config.service';
 import { PASSWORD_HASHER, ROLE_REPOSITORY, USER_REPOSITORY } from './identity.di-tokens';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class UpdateUserUseCase {
     private readonly passwordHasher: PasswordHasherPort,
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepository,
+    private readonly userPosConfigService: UserPosConfigService,
   ) {}
 
   async execute(userId: string, payload: UpdateUserDto, organizationId: string): Promise<User> {
@@ -46,6 +48,11 @@ export class UpdateUserUseCase {
     );
 
     await this.userRepository.update(updatedUser, organizationId);
+
+    if (payload.posConfig) {
+      await this.userPosConfigService.update(userId, organizationId, payload.posConfig);
+    }
+
     return updatedUser;
   }
 }

@@ -16,6 +16,27 @@ export class ListQueryDto {
   category?: string;
 
   @IsString() @IsOptional()
+  status?: string;
+
+  @IsString() @IsOptional()
+  trainingStatus?: string;
+
+  @IsString() @IsOptional()
+  severity?: string;
+
+  @IsString() @IsOptional()
+  contactedVia?: string;
+
+  @IsString() @IsOptional()
+  turnedOut?: string;
+
+  @IsString() @IsOptional()
+  contacted?: string;
+
+  @IsString() @IsOptional()
+  lgaId?: string;
+
+  @IsString() @IsOptional()
   sortBy?: string;
 
   @IsString() @IsOptional()

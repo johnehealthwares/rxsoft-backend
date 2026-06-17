@@ -4,6 +4,11 @@ import type { UserRepository } from '../../repositories/user.repository';
 import type { RoleRepository } from '../../repositories/role.repository';
 import type { PasswordHasherPort } from '../password-hasher.port';
 
+const userPosConfigService = {
+  getOrCreate: jest.fn(),
+  update: jest.fn(),
+};
+
 describe('CreateUserUseCase', () => {
   const userRepository: jest.Mocked<UserRepository> = {
     findByUsername: jest.fn(),
@@ -29,7 +34,7 @@ describe('CreateUserUseCase', () => {
     verify: jest.fn(),
   };
 
-  const useCase = new CreateUserUseCase(userRepository, passwordHasher, roleRepository);
+  const useCase = new CreateUserUseCase(userRepository, passwordHasher, roleRepository, userPosConfigService as any);
 
   beforeEach(() => {
     jest.clearAllMocks();

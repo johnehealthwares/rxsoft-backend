@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm/dist/interfaces/typeorm-options.interface';
+import { MongooseModule } from '@nestjs/mongoose';
 import { IdentityModule } from './modules/identity/identity.module';
 import { HealthController } from './modules/health/controllers/health.controller';
 import { CatalogModule } from './modules/catalog/catalog.module';
@@ -29,7 +30,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-
+ 
 const appConfigService = new ConfigService();
 
 export const databaseConfig = {
@@ -45,9 +46,20 @@ export const databaseConfig = {
 };
 
 const useInMemoryRepos = appConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
+const useMongoDb = appConfigService.get<string>('USE_MONGODB', 'false') === 'true';
 const infrastructureImports = useInMemoryRepos
   ? []
   : [
+      ...(useMongoDb
+        ? [
+            MongooseModule.forRootAsync({
+              inject: [ConfigService],
+              useFactory: (configService: ConfigService) => ({
+                uri: configService.get<string>('MONGODB_URI', 'mongodb://localhost:27017/apm-campaign'),
+              }),
+            }),
+          ]
+        : []),
       TypeOrmModule.forRootAsync({
         inject: [ConfigService],
         useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
@@ -101,7 +113,7 @@ const applicationModules = useInMemoryRepos
       ReportsModule,
       AdminAuditModule,
       WebsiteModule,
-      ApmModule,
+      ApmModule.forRoot(),
       UploadModule,
       UserPosConfigModule,
       OrganisationConfigModule,

@@ -1,5 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+class PosConfigResponse {
+  @ApiPropertyOptional()
+  stockLocationId?: string | null;
+
+  @ApiPropertyOptional()
+  storeId?: string | null;
+
+  @ApiPropertyOptional()
+  allowPos?: boolean;
+
+  @ApiPropertyOptional()
+  allowA4Print?: boolean;
+
+  @ApiPropertyOptional()
+  loginTimeoutMinutes?: number | null;
+}
+
 export class UserResponseDto {
   @ApiProperty()
   id!: string;
@@ -12,4 +29,7 @@ export class UserResponseDto {
 
   @ApiProperty({ isArray: true })
   roles!: string[];
+
+  @ApiPropertyOptional({ type: PosConfigResponse })
+  posConfig?: PosConfigResponse;
 }

@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { UpdateUserPosConfigDto } from '../../user-pos-config/dto/user-pos-config.dto';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'cashier01' })
@@ -23,4 +25,10 @@ export class CreateUserDto {
   @ArrayNotEmpty()
   @IsString({ each: true })
   roleCodes?: string[];
+
+  @ApiPropertyOptional({ description: 'POS configuration settings' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateUserPosConfigDto)
+  posConfig?: UpdateUserPosConfigDto;
 }

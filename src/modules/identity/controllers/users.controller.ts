@@ -16,6 +16,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
+import { UserPosConfigService } from '../../user-pos-config/services/user-pos-config.service';
 import { USER_REPOSITORY } from '../services/identity.di-tokens';
 import type { UserRepository } from '../repositories/user.repository';
 
@@ -35,6 +36,7 @@ export class UsersController {
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly deleteUserUseCase: DeleteUserUseCase,
     private readonly listUsersUseCase: ListUsersUseCase,
+    private readonly userPosConfigService: UserPosConfigService,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
   ) {}
@@ -46,7 +48,8 @@ export class UsersController {
   @ApiResponse({ status: 201, type: UserResponseDto })
   async create(@Body() payload: CreateUserDto, @CurrentUser() currentUser: RequestUser): Promise<UserResponseDto> {
     const user = await this.createUserUseCase.execute(payload, currentUser.organizationId);
-    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes };
+    const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
+    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
   }
 
   @Get()
@@ -55,13 +58,15 @@ export class UsersController {
   async list(@Query() query: PaginationQueryDto, @CurrentUser() currentUser: RequestUser): Promise<UsersListResponse> {
     const result = await this.listUsersUseCase.execute(query.offset, query.limit, currentUser.organizationId);
 
+    const data = await Promise.all(
+      result.items.map(async (item) => {
+        const posConfig = await this.userPosConfigService.getOrCreate(item.id, currentUser.organizationId);
+        return { id: item.id, username: item.username, phone: item.phone, roles: item.roleCodes, posConfig };
+      }),
+    );
+
     return {
-      data: result.items.map((item) => ({
-        id: item.id,
-        username: item.username,
-        phone: item.phone,
-        roles: item.roleCodes,
-      })),
+      data,
       meta: {
         page: query.page,
         limit: query.limit,
@@ -79,7 +84,8 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes };
+    const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
+    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
   }
 
   @Put(':id')
@@ -89,7 +95,8 @@ export class UsersController {
   @ApiResponse({ status: 200, type: UserResponseDto })
   async update(@Param('id') id: string, @Body() payload: UpdateUserDto, @CurrentUser() currentUser: RequestUser): Promise<UserResponseDto> {
     const user = await this.updateUserUseCase.execute(id, payload, currentUser.organizationId);
-    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes };
+    const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
+    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
   }
 
   @Delete(':id')
