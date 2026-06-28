@@ -30,6 +30,7 @@ class CreateJournalDto {
     defaultDebitAccountId;
     defaultCreditAccountId;
     isActive;
+    overrideCodeValidation;
 }
 exports.CreateJournalDto = CreateJournalDto;
 __decorate([
@@ -65,6 +66,11 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateJournalDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateJournalDto.prototype, "overrideCodeValidation", void 0);
 class UpdateJournalDto {
     code;
     name;

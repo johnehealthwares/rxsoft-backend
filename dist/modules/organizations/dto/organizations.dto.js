@@ -20,6 +20,7 @@ class CreateOrganizationDto {
     code;
     name;
     isActive;
+    overrideCodeValidation;
 }
 exports.CreateOrganizationDto = CreateOrganizationDto;
 __decorate([
@@ -41,6 +42,11 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateOrganizationDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateOrganizationDto.prototype, "overrideCodeValidation", void 0);
 class UpdateOrganizationDto {
     code;
     name;

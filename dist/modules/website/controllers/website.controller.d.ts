@@ -41,10 +41,10 @@ export declare class WebsiteController {
     removeFromCart(): {
         ok: boolean;
     };
-    createOrder(payload: CreateOrderDto, req: any): Promise<import("../../sales/entities").SaleOrmEntity | null>;
-    listOrders(req: any): Promise<import("../../sales/entities").SaleOrmEntity[]>;
-    trackOrder(trackingCode: string): Promise<import("../../sales/entities").SaleOrmEntity>;
-    getOrder(id: string): Promise<import("../../sales/entities").SaleOrmEntity>;
+    createOrder(payload: CreateOrderDto, req: any): Promise<import("../entities").OrderOrmEntity | null>;
+    listOrders(req: any): Promise<import("../entities").OrderOrmEntity[]>;
+    trackOrder(trackingCode: string): Promise<import("../entities").OrderOrmEntity>;
+    getOrder(id: string): Promise<import("../entities").OrderOrmEntity>;
     listArticles(query: ListQueryDto): Promise<{
         data: import("../entities").BlogArticleOrmEntity[];
         total: number;

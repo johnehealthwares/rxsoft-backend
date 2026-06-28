@@ -15,6 +15,10 @@ export class CreateManufacturerDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdateManufacturerDto {

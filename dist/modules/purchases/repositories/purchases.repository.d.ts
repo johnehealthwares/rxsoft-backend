@@ -65,6 +65,7 @@ export type ReceiveGoodsResult = {
 export type ReceiptListQuery = {
     organizationId: string;
     purchaseOrderId?: string;
+    search?: string;
     offset: number;
     limit: number;
 };
@@ -88,4 +89,5 @@ export interface PurchasesRepository {
         items: GoodsReceiptOrmEntity[];
         total: number;
     }>;
+    findLastReceipt(organizationId: string): Promise<Pick<GoodsReceiptOrmEntity, 'receiptNumber'> | null>;
 }

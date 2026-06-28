@@ -60,6 +60,10 @@ export class CreateGenericProductDto {
   @IsOptional()
   @IsBoolean()
   isControlledSubstance?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdateGenericProductDto {

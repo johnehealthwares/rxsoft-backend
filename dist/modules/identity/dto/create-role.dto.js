@@ -17,6 +17,7 @@ class CreateRoleDto {
     name;
     description;
     permissionCodes;
+    overrideCodeValidation;
 }
 exports.CreateRoleDto = CreateRoleDto;
 __decorate([
@@ -45,4 +46,9 @@ __decorate([
     (0, class_validator_1.IsString)({ each: true }),
     __metadata("design:type", Array)
 ], CreateRoleDto.prototype, "permissionCodes", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateRoleDto.prototype, "overrideCodeValidation", void 0);
 //# sourceMappingURL=create-role.dto.js.map

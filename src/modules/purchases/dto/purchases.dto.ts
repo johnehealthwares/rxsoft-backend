@@ -113,6 +113,10 @@ export class CreatePurchaseDto {
   @Min(0)
   unitCost?: number;
 
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
+
   @ApiPropertyOptional({ type: [PurchaseLineDto] })
   @IsOptional()
   @IsArray()
@@ -122,3 +126,81 @@ export class CreatePurchaseDto {
 }
 
 export class UpdatePurchaseDto extends CreatePurchaseDto {}
+
+export class CreatePurchaseLineDto {
+  @ApiProperty()
+  @IsString()
+  itemId!: string;
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.001)
+  orderedQty!: number;
+
+  @ApiProperty()
+  @IsString()
+  uomId!: string;
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  unitCost!: number;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  discountPercent?: number;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  taxPercent?: number;
+}
+
+export class UpdatePurchaseLineDto {
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(0.001)
+  orderedQty?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  uomId?: string;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  unitCost?: number;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  receivedQty?: number;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  discountPercent?: number;
+
+  @ApiPropertyOptional()
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  taxPercent?: number;
+}

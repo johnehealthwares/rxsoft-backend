@@ -3,15 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, In, IsNull } from 'typeorm';
 import { ItemOrmEntity } from '../../../modules/catalog/entities/item.orm-entity';
 import { ItemCategoryOrmEntity } from '../../../modules/catalog/entities/item-category.orm-entity';
-import { SaleOrmEntity, SaleLineOrmEntity } from '../../../modules/sales/entities';
 import { PartyOrmEntity } from '../../../modules/customers/entities/party.orm-entity';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
-import { DEFAULT_ORGANIZATION_ID, DEFAULT_STORE_ID } from '../../../shared/constants/persistence-scope';
-import {
-  StockBalanceOrmEntity,
-  StockAdjustmentOrmEntity,
-  StoreStockLocationOrmEntity,
-} from '../../../modules/inventory/entities';
 import {
   HealthConcernOrmEntity,
   PrescriptionOrmEntity,
@@ -25,6 +18,9 @@ import {
   NewsletterSubscriberOrmEntity,
   ProductReviewOrmEntity,
   RewardTransactionOrmEntity,
+  OrderOrmEntity,
+  OrderItemOrmEntity,
+  DeliveryOrmEntity,
 } from '../entities';
 import { ListQueryDto, CreateConsultationDto, CreateContactDto, NewsletterSubscribeDto, CreateReviewDto, SearchQueryDto, CreateOrderDto, CreatePrescriptionDto } from '../dto/website.dto';
 
@@ -35,10 +31,6 @@ export class WebsiteService {
     private readonly itemRepo: Repository<ItemOrmEntity>,
     @InjectRepository(ItemCategoryOrmEntity)
     private readonly categoryRepo: Repository<ItemCategoryOrmEntity>,
-    @InjectRepository(SaleOrmEntity)
-    private readonly saleRepo: Repository<SaleOrmEntity>,
-    @InjectRepository(SaleLineOrmEntity)
-    private readonly saleLineRepo: Repository<SaleLineOrmEntity>,
     @InjectRepository(PartyOrmEntity)
     private readonly partyRepo: Repository<PartyOrmEntity>,
     @InjectRepository(HealthConcernOrmEntity)
@@ -65,12 +57,12 @@ export class WebsiteService {
     private readonly reviewRepo: Repository<ProductReviewOrmEntity>,
     @InjectRepository(RewardTransactionOrmEntity)
     private readonly rewardRepo: Repository<RewardTransactionOrmEntity>,
-    @InjectRepository(StockBalanceOrmEntity)
-    private readonly stockBalanceRepo: Repository<StockBalanceOrmEntity>,
-    @InjectRepository(StockAdjustmentOrmEntity)
-    private readonly stockAdjustmentRepo: Repository<StockAdjustmentOrmEntity>,
-    @InjectRepository(StoreStockLocationOrmEntity)
-    private readonly storeStockLocationRepo: Repository<StoreStockLocationOrmEntity>,
+    @InjectRepository(OrderOrmEntity)
+    private readonly orderRepo: Repository<OrderOrmEntity>,
+    @InjectRepository(OrderItemOrmEntity)
+    private readonly orderItemRepo: Repository<OrderItemOrmEntity>,
+    @InjectRepository(DeliveryOrmEntity)
+    private readonly deliveryRepo: Repository<DeliveryOrmEntity>,
     private readonly genericDrugCache: GenericDrugCacheService,
   ) {}
 
@@ -246,141 +238,80 @@ export class WebsiteService {
 
   async listOrders(userId?: string) {
     const where = userId ? { createdBy: userId } : {};
-    return this.saleRepo.find({ where, relations: ['lines'], order: { createdAt: 'DESC' } });
+    return this.orderRepo.find({ where, relations: ['items', 'delivery'], order: { createdAt: 'DESC' } });
   }
 
   async getOrder(id: string) {
-    const order = await this.saleRepo.findOne({ where: { id }, relations: ['lines'] });
+    const order = await this.orderRepo.findOne({ where: { id }, relations: ['items', 'delivery'] });
     if (!order) throw new NotFoundException('Order not found');
     return order;
   }
 
-  async trackOrder(trackingCode: string) {
-    const order = await this.saleRepo.findOne({ where: { saleNumber: trackingCode }, relations: ['lines'] });
+  async trackOrder(orderNumber: string) {
+    const order = await this.orderRepo.findOne({ where: { orderNumber }, relations: ['items', 'delivery'] });
     if (!order) throw new NotFoundException('Order not found');
     return order;
   }
 
   async createOrder(payload: CreateOrderDto, userId?: string) {
-    const sale = this.saleRepo.create({
-      organizationId: DEFAULT_ORGANIZATION_ID,
-      saleNumber: `ORD-${Date.now()}`,
-      saleChannel: 'mobile',
-      storeId: DEFAULT_STORE_ID,
-      customerId: payload.customerId ?? userId ?? null,
-      status: 'draft',
-      orderStatus: 'pending',
-      deliveryAddress: payload.deliveryAddress,
-      city: payload.city ?? null,
-      state: payload.state ?? null,
-      phone: payload.phone ?? null,
-      shippingMethod: payload.shippingMethod ?? null,
-      notes: payload.notes ?? null,
-      subtotalAmount: 0,
-      discountAmount: 0,
-      taxAmount: 0,
-      totalAmount: 0,
-      paidAmount: 0,
-      changeAmount: 0,
-      saleDate: new Date(),
-      soldByUserId: userId ?? 'system',
-      createdBy: userId,
-    } as any);
-    const savedSale = (await this.saleRepo.save(sale)) as unknown as SaleOrmEntity;
+    const items = payload.items?.length
+      ? await this.itemRepo.findBy({ id: In(payload.items.map((i) => i.itemId)) })
+      : [];
+    const itemMap = new Map(items.map((i) => [i.id, i]));
 
-    if (payload.items?.length) {
-      const items = await this.itemRepo.findBy({ id: In(payload.items.map((i) => i.itemId)) });
-      const itemMap = new Map(items.map((i) => [i.id, i]));
-
-      let lineNumber = 1;
-      for (const line of payload.items) {
-        const item = itemMap.get(line.itemId);
-        if (!item) continue;
-
-        const qty = line.quantity;
-        const price = line.unitPrice ?? 0;
-        const total = price * qty;
-
-        const lineEntity = this.saleLineRepo.create({
-          sale: savedSale,
-          lineNumber,
-          item,
-          quantity: qty,
-          unitPrice: price,
-          lineSubtotal: total,
-          lineTotal: total,
-          uom: { id: item.baseUomId } as any,
-          lot: null,
-        } as any);
-        await this.saleLineRepo.save(lineEntity);
-        lineNumber++;
-      }
-
-      const ssl = await this.storeStockLocationRepo.findOne({
-        where: {
-          organizationId: DEFAULT_ORGANIZATION_ID,
-          storeId: DEFAULT_STORE_ID,
-          purpose: 'sale_issue',
-          isActive: true,
-        },
-        relations: ['stockLocation'],
-      });
-      const locationId = ssl?.stockLocation?.id;
-      if (ssl && locationId) {
-        for (const line of payload.items) {
-          const item = itemMap.get(line.itemId);
-          if (!item) continue;
-
-          let balance = await this.stockBalanceRepo.findOne({
-            where: {
-              organizationId: DEFAULT_ORGANIZATION_ID,
-              item: { id: line.itemId },
-              location: { id: locationId },
-            },
-            relations: ['item', 'location'],
-          });
-
-          if (!balance) {
-            balance = this.stockBalanceRepo.create({
-              organizationId: DEFAULT_ORGANIZATION_ID,
-              item: { id: line.itemId },
-              location: { id: locationId },
-              lot: null,
-              quantityOnHand: 0,
-              quantityReserved: 0,
-              averageCost: 0,
-            });
-          }
-
-          balance.quantityReserved = Number((balance.quantityReserved + line.quantity).toFixed(4));
-          const savedBalance = await this.stockBalanceRepo.save(balance);
-
-          await this.stockAdjustmentRepo.save(
-            this.stockAdjustmentRepo.create({
-              stockBalance: savedBalance,
-              reason: `order_reservation:${savedSale.saleNumber}`,
-              deltaQuantity: 0,
-              performedByUserId: userId ?? 'system',
-              performedAt: new Date(),
-            }),
-          );
-        }
-      }
+    let subtotal = 0;
+    const orderItems: { itemId: string; quantity: number; unitPrice: number }[] = [];
+    for (const line of payload.items ?? []) {
+      const item = itemMap.get(line.itemId);
+      if (!item) continue;
+      const price = line.unitPrice ?? 0;
+      subtotal += price * line.quantity;
+      orderItems.push({ itemId: line.itemId, quantity: line.quantity, unitPrice: price });
     }
 
-    return this.saleRepo.findOne({ where: { id: savedSale.id }, relations: ['lines'] });
-  }
+    let customerId = payload.customerId ?? null;
+    if (!customerId && userId) {
+      const party = await this.partyRepo.findOne({ where: { userId } });
+      if (party) customerId = party.id;
+    }
 
-  async getOrderLinesWithItems(orderId: string): Promise<Array<{ itemId: string; lotId: string | null; quantity: number }>> {
-    const lines = await this.saleLineRepo.find({
-      where: { sale: { id: orderId } },
-      relations: ['item'],
+    const order = this.orderRepo.create({
+      orderNumber: `ORD-${Date.now()}`,
+      customerId,
+      paymentMethod: payload.paymentMethod,
+      notes: payload.notes ?? null,
+      orderStatus: 'pending',
+      createdBy: userId ?? null,
+      subtotalAmount: subtotal,
+      totalAmount: subtotal,
     });
-    return lines.map((l) => ({
-      itemId: l.item.id,
-      lotId: l.lot?.id ?? null,
-      quantity: l.quantity,
-    }));
+
+    const savedOrder = await this.orderRepo.save(order);
+
+    if (orderItems.length > 0) {
+      await this.orderItemRepo.save(
+        orderItems.map((oi) =>
+          this.orderItemRepo.create({ order: savedOrder, ...oi }),
+        ),
+      );
+    }
+
+    if (payload.delivery) {
+      const delivery = this.deliveryRepo.create({
+        order: savedOrder,
+        address: payload.delivery.address,
+        city: payload.delivery.city ?? null,
+        state: payload.delivery.state ?? null,
+        phone: payload.delivery.phone ?? null,
+        shippingMethod: payload.delivery.shippingMethod ?? null,
+      });
+      await this.deliveryRepo.save(delivery);
+    }
+
+    return this.orderRepo.findOne({
+      where: { id: savedOrder.id },
+      relations: ['items', 'delivery'],
+    });
   }
 
   // ── Blog ───────────────────────────────────────────────────────

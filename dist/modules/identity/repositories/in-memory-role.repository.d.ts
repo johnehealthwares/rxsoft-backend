@@ -1,6 +1,7 @@
 import { RoleRepository } from './role.repository';
 import { Role } from '../domains/role.entity';
 export declare class InMemoryRoleRepository implements RoleRepository {
+    findLastCreated(organizationId: string): Promise<Pick<Role, 'code'> | null>;
     private readonly organizationId;
     private roles;
     private nextId;

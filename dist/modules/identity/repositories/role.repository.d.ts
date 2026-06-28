@@ -7,4 +7,5 @@ export interface RoleRepository {
     create(role: Role): Promise<Role>;
     update(role: Role): Promise<Role>;
     delete(id: string, organizationId: string): Promise<void>;
+    findLastCreated(organizationId: string): Promise<Pick<Role, 'code'> | null>;
 }

@@ -22,7 +22,7 @@ const account_receivable_entity_1 = require("../domains/account-receivable.entit
 const receivable_transaction_entity_1 = require("../domains/receivable-transaction.entity");
 const entities_2 = require("../entities");
 function toDomain(entity) {
-    return new account_receivable_entity_1.AccountReceivable(entity.id, entity.organizationId, entity.customerId, entity.saleId, entity.receivableNumber, entity.originalAmount, entity.outstandingAmount, entity.status, entity.openedAt, entity.closedAt);
+    return new account_receivable_entity_1.AccountReceivable(entity.id, entity.organizationId, entity.customerId, entity.customer?.name ?? null, entity.saleId, entity.receivableNumber, entity.originalAmount, entity.outstandingAmount, entity.status, entity.openedAt, entity.closedAt);
 }
 function toTransactionDomain(entity) {
     return new receivable_transaction_entity_1.ReceivableTransaction(entity.id, entity.receivable.id, entity.transactionType, entity.amount, entity.transactionDate, entity.paymentMethod?.id ?? null, entity.referenceNumber, entity.receivedByUser?.id ?? null, entity.note);
@@ -37,6 +37,7 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
     async list(query) {
         const qb = this.receivableRepository
             .createQueryBuilder('receivable')
+            .leftJoinAndSelect('receivable.customer', 'customer')
             .where('receivable.organizationId = :organizationId', { organizationId: query.organizationId })
             .orderBy('receivable.openedAt', 'DESC')
             .skip(query.offset)

@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateItemDto } from '../dto/create-item.dto';
+import { ReplaceItemDto } from '../dto/replace-item.dto';
 import { ListItemDependenciesDto } from '../dto/list-item-dependencies.dto';
 import { ListItemsDto } from '../dto/list-items.dto';
 import { ItemResponseDto } from '../dto/item-response.dto';
@@ -23,6 +24,8 @@ import { UpdateItemUseCase } from '../services/update-item.use-case';
 import { PatchItemUseCase } from '../services/patch-item.use-case';
 import { PatchItemDto } from '../dto/patch-item.dto';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
+import { ITEM_REPOSITORY } from '../services/catalog.di-tokens';
+import type { ItemRepository, ItemMetricsQuery } from '../repositories/item.repository';
 
 type ItemListResponse = {
   data: ItemResponseDto[];
@@ -51,6 +54,8 @@ export class ItemsController {
     private readonly itemRepo: Repository<ItemOrmEntity>,
     @InjectRepository(UomOrmEntity)
     private readonly uomRepo: Repository<UomOrmEntity>,
+    @Inject(ITEM_REPOSITORY)
+    private readonly itemRepository: ItemRepository,
   ) {}
 
   private toResponse(item: Item): ItemResponseDto {
@@ -61,7 +66,7 @@ export class ItemsController {
       id: item.id,
       code: item.code,
       name: item.name,
-      category: {
+      category: item.category && {
         id: item.category.id,
         code: item.category.code,
         name: item.category.name,
@@ -177,6 +182,21 @@ export class ItemsController {
     };
   }
 
+  @Get('metrics')
+  @Roles('super_admin', 'admin')
+  @ApiOperation({ summary: 'Get item metrics' })
+  async metrics(
+    @Query() query: ListItemsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    const metricsQuery: ItemMetricsQuery = {
+      organizationId: currentUser.organizationId,
+      search: query.search,
+      categoryCode: query.categoryCode,
+    };
+    return this.itemRepository.getMetrics(metricsQuery);
+  }
+
   @Get(':itemId')
   @Roles('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk')
   @ApiOperation({ summary: 'Get item details by id' })
@@ -205,11 +225,11 @@ export class ItemsController {
 
   @Put(":itemId")
   @Roles('admin', 'super_admin', 'pharmacist')
-  @AuditAction('catalog.item.create')
-  @ApiOperation({ summary: 'Create a catalog item' })
-  @ApiResponse({ status: 201, type: ItemResponseDto })
+  @AuditAction('catalog.item.update')
+  @ApiOperation({ summary: 'Replace a catalog item (full update)' })
+  @ApiResponse({ status: 200, type: ItemResponseDto })
   async replace(
-    @Body() payload: CreateItemDto,
+    @Body() payload: ReplaceItemDto,
     @CurrentUser() currentUser: RequestUser,
     @Param('itemId') itemId: string,
   ): Promise<ItemResponseDto> {

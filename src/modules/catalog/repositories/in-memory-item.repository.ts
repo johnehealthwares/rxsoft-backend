@@ -4,6 +4,8 @@ import { ItemCategory } from '../domains/item-category.entity';
 import {
   ItemDependencySearchQuery,
   ItemListQuery,
+  ItemMetrics,
+  ItemMetricsQuery,
   ItemRepository,
   UomLookup,
 } from './item.repository';
@@ -165,6 +167,40 @@ export class InMemoryItemRepository implements ItemRepository {
     return {
       items: items.slice(query.offset, query.offset + query.limit),
       total,
+    };
+  }
+
+  async findLastCreated(organizationId: string): Promise<Item | null> {
+    const items = [...this.items.values()]
+      .filter((p) => p.organizationId === organizationId && p.isActive)
+      .sort((a, b) => {
+        const da = this.createdAtById.get(a.id) ?? new Date(0);
+        const db = this.createdAtById.get(b.id) ?? new Date(0);
+        return db.getTime() - da.getTime();
+      });
+    return items[0] ?? null;
+  }
+
+  async getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics> {
+    let items = [...this.items.values()].filter((p) => p.organizationId === query.organizationId);
+
+    if (query.search) {
+      const q = query.search.toLowerCase();
+      items = items.filter(
+        (p) => p.name.toLowerCase().includes(q) || (p.code ? p.code.toLowerCase().includes(q) : false),
+      );
+    }
+    if (query.categoryCode) {
+      const cc = query.categoryCode.toLowerCase();
+      items = items.filter((p) => p.category?.code?.toLowerCase() === cc);
+    }
+
+    return {
+      total: items.length,
+      active: items.filter((p) => p.isActive).length,
+      inactive: items.filter((p) => !p.isActive).length,
+      noCategory: items.filter((p) => !p.category?.code || p.category.code.toLowerCase() === 'not found').length,
+      noGenericProductCode: items.filter((p) => !p.genericProductCode).length,
     };
   }
 

@@ -12,6 +12,7 @@ export declare class CreateJournalDto {
     defaultDebitAccountId?: string;
     defaultCreditAccountId?: string;
     isActive?: boolean;
+    overrideCodeValidation?: boolean;
 }
 export declare class UpdateJournalDto {
     code?: string;

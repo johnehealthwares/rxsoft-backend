@@ -7,6 +7,7 @@ export declare class PartyOrmEntity {
     phone: string | null;
     email: string | null;
     addressLine1: string | null;
+    userId: string | null;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;

@@ -20,6 +20,7 @@ class CreateUomDto {
     factor;
     rounding;
     isActive;
+    overrideCodeValidation;
 }
 exports.CreateUomDto = CreateUomDto;
 __decorate([
@@ -68,4 +69,9 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateUomDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateUomDto.prototype, "overrideCodeValidation", void 0);
 //# sourceMappingURL=create-uom.dto.js.map

@@ -8,6 +8,7 @@ import { CreateUomDto } from '../dto/create-uom.dto';
 import { ListUomsDto } from '../dto/list-uoms.dto';
 import { UpdateUomDto } from '../dto/update-uom.dto';
 import { UomOrmEntity } from '../entities/uom.orm-entity';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 import { ForeignProperty } from '../../../modules/catalog/dto/item-response.dto';
 import { applyFilters } from '../../../database/list';
 
@@ -106,6 +107,22 @@ export class UomsService {
   }
 
   async create(payload: CreateUomDto, organizationId: string): Promise<UomType> {
+    if (payload.code) {
+      const last = await this.uomRepository!.findOne({
+        where: { organizationId },
+        order: { createdAt: 'DESC' },
+        select: ['code'],
+      });
+      const { valid, expectedCode } = validateSequentialCode({
+        providedCode: payload.code,
+        lastCode: last?.code ?? undefined,
+        override: payload.overrideCodeValidation,
+      });
+      if (!valid) {
+        throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+      }
+    }
+
     if (!this.uomRepository) {
       const now = new Date();
       const record: UomRecord = {

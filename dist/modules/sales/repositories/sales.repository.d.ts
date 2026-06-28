@@ -6,6 +6,23 @@ export type SalesListQuery = {
     status?: 'draft' | 'posted' | 'voided' | 'refunded';
     search?: string;
 };
+export type SalesMetricsQuery = {
+    organizationId: string;
+    search?: string;
+};
+export type SalesMetrics = {
+    totalSales: number;
+    totalRevenue: number;
+    inProgress: number;
+    byChannel: Record<string, {
+        count: number;
+        revenue: number;
+    }>;
+    byCategory: Record<string, {
+        count: number;
+        revenue: number;
+    }>;
+};
 export type CreateSaleRepositoryPayload = {
     organizationId: string;
     saleNumber: string;
@@ -77,4 +94,6 @@ export interface SalesRepository {
     }>;
     createWithSettlement(payload: CreateSaleRepositoryPayload): Promise<CreateSaleResult>;
     createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult>;
+    findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null>;
+    getMetrics(query: SalesMetricsQuery): Promise<SalesMetrics>;
 }

@@ -19,6 +19,7 @@ exports.ListManufacturersDto = ListManufacturersDto;
 class CreateManufacturerDto {
     code;
     name;
+    overrideCodeValidation;
 }
 exports.CreateManufacturerDto = CreateManufacturerDto;
 __decorate([
@@ -34,6 +35,11 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateManufacturerDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateManufacturerDto.prototype, "overrideCodeValidation", void 0);
 class UpdateManufacturerDto {
     code;
     name;

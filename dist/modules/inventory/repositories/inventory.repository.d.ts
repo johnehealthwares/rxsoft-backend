@@ -21,13 +21,27 @@ export type StockMovement = {
     id: string;
     organizationId: string;
     itemId: string;
+    item?: {
+        id: string;
+        code: string;
+        name: string;
+    } | null;
     lotId: string | null;
     fromLocationId: string | null;
+    fromLocation?: {
+        id: string;
+        name: string;
+    } | null;
     toLocationId: string | null;
+    toLocation?: {
+        id: string;
+        name: string;
+    } | null;
     movementType: 'in' | 'out' | 'transfer' | 'adjustment';
     quantity: number;
     unitCost: number | null;
     occurredAt: Date;
+    createdAt: Date;
     createdByUserId: string | null;
 };
 export type StockMovementQuery = {
@@ -59,6 +73,7 @@ export type AdjustStockByReferencePayload = {
     deltaQuantity: number;
     reason: string;
     performedByUserId: string;
+    uomId?: string | null;
     reorderMinQty?: number | null;
     reorderMaxQty?: number | null;
 };

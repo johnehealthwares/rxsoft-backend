@@ -3,6 +3,7 @@ import type { GenericProductType } from '../../../shared/domain';
 import { HealthcareConceptsService } from '../../../services/healthcare-concepts.service';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
 import type { ListGenericProductsDto } from '../dto/generic-products.dto';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 const toGenericProductType = (cached: any): GenericProductType => ({
   id: cached.id,
@@ -79,6 +80,14 @@ export class GenericProductsService {
   }
 
   async create(payload: any, _organizationId?: string): Promise<GenericProductType> {
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: undefined,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
     const result = await this.healthcare.createGenericProduct(payload);
     if (!result) throw new BadRequestException('Failed to create generic product');
     this.cache.invalidate(result.code);

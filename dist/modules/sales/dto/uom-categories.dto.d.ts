@@ -1,6 +1,7 @@
 export declare class CreateUomCategoryDto {
     code?: string;
     name: string;
+    overrideCodeValidation?: boolean;
 }
 declare const UpdateUomCategoryDto_base: import("@nestjs/common").Type<Partial<CreateUomCategoryDto>>;
 export declare class UpdateUomCategoryDto extends UpdateUomCategoryDto_base {

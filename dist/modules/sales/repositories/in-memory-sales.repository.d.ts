@@ -1,6 +1,7 @@
 import { Sale } from '../domains/sale.entity';
-import { CreateSaleRefundRepositoryPayload, CreateSaleRefundResult, CreateSaleRepositoryPayload, CreateSaleResult, SalesListQuery, SalesRepository } from './sales.repository';
+import { CreateSaleRefundRepositoryPayload, CreateSaleRefundResult, CreateSaleRepositoryPayload, CreateSaleResult, SalesListQuery, SalesMetrics, SalesMetricsQuery, SalesRepository } from './sales.repository';
 export declare class InMemorySalesRepository implements SalesRepository {
+    findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null>;
     private readonly sales;
     private readonly receivables;
     list(query: SalesListQuery): Promise<{
@@ -8,5 +9,6 @@ export declare class InMemorySalesRepository implements SalesRepository {
         total: number;
     }>;
     createWithSettlement(payload: CreateSaleRepositoryPayload): Promise<CreateSaleResult>;
+    getMetrics(query: SalesMetricsQuery): Promise<SalesMetrics>;
     createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult>;
 }

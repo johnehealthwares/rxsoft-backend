@@ -17,11 +17,14 @@ const common_1 = require("@nestjs/common");
 const catalog_di_tokens_1 = require("./catalog.di-tokens");
 const item_entity_1 = require("../domains/item.entity");
 const cache_service_1 = require("../../../common/cache/cache.service");
+const generic_drug_cache_service_1 = require("../../../services/generic-drug-cache.service");
 let PatchItemUseCase = class PatchItemUseCase {
     productRepository;
+    genericDrugCache;
     cacheService;
-    constructor(productRepository, cacheService) {
+    constructor(productRepository, genericDrugCache, cacheService) {
         this.productRepository = productRepository;
+        this.genericDrugCache = genericDrugCache;
         this.cacheService = cacheService;
     }
     async execute(itemId, payload, organizationId) {
@@ -29,8 +32,36 @@ let PatchItemUseCase = class PatchItemUseCase {
         if (!existing) {
             throw new common_1.NotFoundException('Item not found');
         }
-        const patched = new item_entity_1.Item(existing.id, existing.organizationId, existing.code, payload.name ?? existing.name, existing.genericProductCode, existing.categoryId, existing.category, existing.baseUomId, existing.purchaseUomId, existing.saleUomId, existing.baseUom, existing.purchaseUom, existing.saleUom, payload.barcode ?? existing.barcode, existing.trackLot, existing.trackExpiry, existing.shelfLifeDays, payload.isActive ?? existing.isActive);
-        const res = this.productRepository.save(patched);
+        if (payload.genericProductCode !== undefined) {
+            const genericProduct = this.genericDrugCache.getByCode(payload.genericProductCode);
+            if (!genericProduct) {
+                throw new common_1.BadRequestException('Generic product does not exist');
+            }
+        }
+        let category = existing.category;
+        if (payload.categoryId !== undefined) {
+            category = await this.productRepository.findCategoryById(payload.categoryId, organizationId);
+            if (!category) {
+                throw new common_1.BadRequestException('Category does not exist');
+            }
+        }
+        if (payload.baseUomId !== undefined) {
+            const baseUom = await this.productRepository.findUomById(payload.baseUomId, organizationId);
+            if (!baseUom)
+                throw new common_1.BadRequestException('Base UOM does not exist');
+        }
+        if (payload.purchaseUomId !== undefined) {
+            const purchaseUom = await this.productRepository.findUomById(payload.purchaseUomId, organizationId);
+            if (!purchaseUom)
+                throw new common_1.BadRequestException('Purchase UOM does not exist');
+        }
+        if (payload.saleUomId !== undefined) {
+            const saleUom = await this.productRepository.findUomById(payload.saleUomId, organizationId);
+            if (!saleUom)
+                throw new common_1.BadRequestException('Sale UOM does not exist');
+        }
+        const patched = new item_entity_1.Item(existing.id, existing.organizationId, payload.code ?? existing.code, payload.name ?? existing.name, payload.genericProductCode ?? existing.genericProductCode, payload.categoryId ?? existing.categoryId, category, payload.baseUomId ?? existing.baseUomId, payload.purchaseUomId ?? existing.purchaseUomId, payload.saleUomId ?? existing.saleUomId, existing.baseUom, existing.purchaseUom, existing.saleUom, payload.barcode ?? existing.barcode, payload.trackLot ?? existing.trackLot, payload.trackExpiry ?? existing.trackExpiry, payload.shelfLifeDays ?? existing.shelfLifeDays, payload.isActive ?? existing.isActive, payload.imageUrl ?? existing.imageUrl, payload.smallImageUrl ?? existing.smallImageUrl, payload.mediumImageUrl ?? existing.mediumImageUrl, payload.largeImageUrl ?? existing.largeImageUrl);
+        const res = await this.productRepository.save(patched);
         await this.cacheService?.invalidateByPrefix(`catalog:list:${organizationId}:`);
         await this.cacheService?.del(`catalog:get:${organizationId}:${existing.id}`);
         return res;
@@ -40,7 +71,8 @@ exports.PatchItemUseCase = PatchItemUseCase;
 exports.PatchItemUseCase = PatchItemUseCase = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(catalog_di_tokens_1.ITEM_REPOSITORY)),
-    __param(1, (0, common_1.Optional)()),
-    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService])
+    __param(2, (0, common_1.Optional)()),
+    __metadata("design:paramtypes", [Object, generic_drug_cache_service_1.GenericDrugCacheService,
+        cache_service_1.AppCacheService])
 ], PatchItemUseCase);
 //# sourceMappingURL=patch-item.use-case.js.map

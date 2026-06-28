@@ -27,4 +27,5 @@ export declare class TypeormPurchasesRepository implements PurchasesRepository {
         items: GoodsReceiptOrmEntity[];
         total: number;
     }>;
+    findLastReceipt(organizationId: string): Promise<Pick<GoodsReceiptOrmEntity, 'receiptNumber'> | null>;
 }

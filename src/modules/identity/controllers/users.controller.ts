@@ -49,7 +49,7 @@ export class UsersController {
   async create(@Body() payload: CreateUserDto, @CurrentUser() currentUser: RequestUser): Promise<UserResponseDto> {
     const user = await this.createUserUseCase.execute(payload, currentUser.organizationId);
     const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
-    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
+    return { id: user.id, username: user.username, phone: user.phone, roles: user.roles, posConfig };
   }
 
   @Get()
@@ -61,7 +61,7 @@ export class UsersController {
     const data = await Promise.all(
       result.items.map(async (item) => {
         const posConfig = await this.userPosConfigService.getOrCreate(item.id, currentUser.organizationId);
-        return { id: item.id, username: item.username, phone: item.phone, roles: item.roleCodes, posConfig };
+        return { id: item.id, username: item.username, phone: item.phone, roles: item.roles, posConfig };
       }),
     );
 
@@ -85,7 +85,7 @@ export class UsersController {
       throw new NotFoundException('User not found');
     }
     const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
-    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
+    return { id: user.id, username: user.username, phone: user.phone, roles: user.roles, posConfig };
   }
 
   @Put(':id')
@@ -96,7 +96,7 @@ export class UsersController {
   async update(@Param('id') id: string, @Body() payload: UpdateUserDto, @CurrentUser() currentUser: RequestUser): Promise<UserResponseDto> {
     const user = await this.updateUserUseCase.execute(id, payload, currentUser.organizationId);
     const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
-    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
+    return { id: user.id, username: user.username, phone: user.phone, roles: user.roles, posConfig };
   }
 
   @Delete(':id')
@@ -115,6 +115,6 @@ export class UsersController {
   @ApiResponse({ status: 200, type: UserResponseDto })
   async assignRole(@Param('userId') userId: string, @Body() payload: AssignRoleDto, @CurrentUser() currentUser: RequestUser): Promise<UserResponseDto> {
     const user = await this.assignRoleUseCase.execute(userId, payload, currentUser.organizationId);
-    return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes };
+    return { id: user.id, username: user.username, phone: user.phone, roles: user.roles };
   }
 }

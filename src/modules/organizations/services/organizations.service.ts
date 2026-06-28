@@ -4,6 +4,7 @@ import { IsNull, Repository } from 'typeorm';
 import { toOrganizationType } from '../../../shared/domain/mappers';
 import { CreateOrganizationDto, ListOrganizationsDto, UpdateOrganizationDto } from '../dto/organizations.dto';
 import { OrganizationOrmEntity } from '../entities/organization.orm-entity';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 export type OrganizationType = ReturnType<typeof toOrganizationType>;
 
@@ -39,6 +40,20 @@ export class OrganizationsService {
   }
 
   async create(payload: CreateOrganizationDto): Promise<OrganizationType> {
+    const last = await this.organizationRepository.findOne({
+      where: { deletedAt: IsNull() },
+      order: { createdAt: 'DESC' },
+      select: ['code'],
+    });
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: last?.code,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
+
     const duplicate = await this.organizationRepository.findOne({
       where: { code: payload.code, deletedAt: IsNull() },
     });

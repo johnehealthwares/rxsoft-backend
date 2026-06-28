@@ -41,6 +41,20 @@ export type UomLookup = {
   isActive: boolean;
 };
 
+export type ItemMetricsQuery = {
+  organizationId: string;
+  search?: string;
+  categoryCode?: string;
+};
+
+export type ItemMetrics = {
+  total: number;
+  active: number;
+  inactive: number;
+  noCategory: number;
+  noGenericProductCode: number;
+};
+
 export interface ItemRepository {
   list(query: ItemListQuery): Promise<{ items: Item[]; total: number }>;
   findById(id: string, organizationId: string, includeAll?: boolean): Promise<Item | null>;
@@ -51,4 +65,6 @@ export interface ItemRepository {
   listCategories(query: ItemDependencySearchQuery): Promise<{ items: ItemCategoryLookup[]; total: number }>;
   listUoms(query: ItemDependencySearchQuery): Promise<{ items: UomLookup[]; total: number }>;
   save(product: Item): Promise<Item>;
+  findLastCreated(organizationId: string): Promise<Item | null>;
+  getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics>;
 }

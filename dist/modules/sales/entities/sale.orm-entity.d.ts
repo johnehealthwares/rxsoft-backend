@@ -12,14 +12,8 @@ export declare class SaleOrmEntity {
     customer: PartyOrmEntity | null;
     customerId: string | null;
     status: 'draft' | 'posted' | 'voided' | 'refunded';
-    orderStatus: 'pending' | 'confirmed' | 'processing' | 'dispatched' | 'in_transit' | 'delivered' | 'cancelled' | null;
-    deliveryAddress: string | null;
-    city: string | null;
-    state: string | null;
-    phone: string | null;
-    shippingMethod: string | null;
     notes: string | null;
-    assignedLocationId: string | null;
+    stockLocationId: string | null;
     subtotalAmount: number;
     discountAmount: number;
     taxAmount: number;

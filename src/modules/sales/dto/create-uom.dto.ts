@@ -40,4 +40,8 @@ export class CreateUomDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }

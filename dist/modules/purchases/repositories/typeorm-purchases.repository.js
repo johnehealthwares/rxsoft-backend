@@ -404,18 +404,28 @@ let TypeormPurchasesRepository = class TypeormPurchasesRepository {
         });
     }
     async listReceipts(query) {
-        const where = { organizationId: query.organizationId };
+        const qb = this.goodsReceiptRepository
+            .createQueryBuilder('receipt')
+            .leftJoinAndSelect('receipt.lines', 'lines')
+            .leftJoinAndSelect('receipt.purchaseOrder', 'purchaseOrder')
+            .where('receipt.organization_id = :organizationId', { organizationId: query.organizationId });
         if (query.purchaseOrderId) {
-            where.purchaseOrder = { id: query.purchaseOrderId };
+            qb.andWhere('receipt.purchase_order_id = :purchaseOrderId', { purchaseOrderId: query.purchaseOrderId });
         }
-        const [items, total] = await this.goodsReceiptRepository.findAndCount({
-            where: where,
-            relations: ['lines', 'purchaseOrder'],
-            order: { createdAt: 'DESC' },
-            skip: query.offset,
-            take: query.limit,
-        });
+        if (query.search) {
+            qb.andWhere('(receipt.receipt_number ILIKE :search OR purchaseOrder.purchase_order_number ILIKE :search)', { search: `%${query.search}%` });
+        }
+        qb.orderBy('receipt.created_at', 'DESC').skip(query.offset).take(query.limit);
+        const [items, total] = await qb.getManyAndCount();
         return { items, total };
+    }
+    async findLastReceipt(organizationId) {
+        const receipt = await this.goodsReceiptRepository.findOne({
+            where: { organizationId },
+            order: { createdAt: 'DESC' },
+            select: ['receiptNumber'],
+        });
+        return receipt ?? null;
     }
 };
 exports.TypeormPurchasesRepository = TypeormPurchasesRepository;

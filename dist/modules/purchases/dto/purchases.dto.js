@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdatePurchaseDto = exports.CreatePurchaseDto = exports.PurchaseLineDto = void 0;
+exports.UpdatePurchaseLineDto = exports.CreatePurchaseLineDto = exports.UpdatePurchaseDto = exports.CreatePurchaseDto = exports.PurchaseLineDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
@@ -85,6 +85,7 @@ class CreatePurchaseDto {
     itemId;
     quantity;
     unitCost;
+    overrideCodeValidation;
     lines;
 }
 exports.CreatePurchaseDto = CreatePurchaseDto;
@@ -169,6 +170,11 @@ __decorate([
     __metadata("design:type", Number)
 ], CreatePurchaseDto.prototype, "unitCost", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreatePurchaseDto.prototype, "overrideCodeValidation", void 0);
+__decorate([
     (0, swagger_1.ApiPropertyOptional)({ type: [PurchaseLineDto] }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
@@ -179,4 +185,108 @@ __decorate([
 class UpdatePurchaseDto extends CreatePurchaseDto {
 }
 exports.UpdatePurchaseDto = UpdatePurchaseDto;
+class CreatePurchaseLineDto {
+    itemId;
+    orderedQty;
+    uomId;
+    unitCost;
+    discountPercent;
+    taxPercent;
+}
+exports.CreatePurchaseLineDto = CreatePurchaseLineDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePurchaseLineDto.prototype, "itemId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0.001),
+    __metadata("design:type", Number)
+], CreatePurchaseLineDto.prototype, "orderedQty", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePurchaseLineDto.prototype, "uomId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreatePurchaseLineDto.prototype, "unitCost", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreatePurchaseLineDto.prototype, "discountPercent", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreatePurchaseLineDto.prototype, "taxPercent", void 0);
+class UpdatePurchaseLineDto {
+    orderedQty;
+    uomId;
+    unitCost;
+    receivedQty;
+    discountPercent;
+    taxPercent;
+}
+exports.UpdatePurchaseLineDto = UpdatePurchaseLineDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0.001),
+    __metadata("design:type", Number)
+], UpdatePurchaseLineDto.prototype, "orderedQty", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdatePurchaseLineDto.prototype, "uomId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], UpdatePurchaseLineDto.prototype, "unitCost", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], UpdatePurchaseLineDto.prototype, "receivedQty", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], UpdatePurchaseLineDto.prototype, "discountPercent", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], UpdatePurchaseLineDto.prototype, "taxPercent", void 0);
 //# sourceMappingURL=purchases.dto.js.map

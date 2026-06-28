@@ -62,6 +62,7 @@ export class InventoryService {
       deltaQuantity: payload.deltaQuantity,
       reason: payload.reason,
       performedByUserId,
+      uomId: payload.uomId ?? null,
       reorderMinQty: payload.reorderMinQty ?? null,
       reorderMaxQty: payload.reorderMaxQty ?? null,
     });

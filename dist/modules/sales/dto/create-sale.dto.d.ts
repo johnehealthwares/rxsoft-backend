@@ -19,6 +19,7 @@ export declare class CreateSaleDto {
     lines: CreateSaleLineDto[];
     payments: CreateSalePaymentDto[];
     hold?: boolean;
+    overrideCodeValidation?: boolean;
 }
 export type CreateSaleLineInput = CreateSaleLineDto;
 export type CreateSalePaymentInput = CreateSalePaymentDto;

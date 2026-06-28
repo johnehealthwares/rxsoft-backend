@@ -1,3 +1,5 @@
+import { Role } from "./role.entity";
+
 export class User {
   constructor(
     public readonly id: string,
@@ -6,6 +8,8 @@ export class User {
     public passwordHash: string,
     public readonly isActive: boolean,
     public roleCodes: string[] = [],
+    public roles: Role[] = [],
     public readonly phone?: string,
+    public readonly email?: string,
   ) {}
 }

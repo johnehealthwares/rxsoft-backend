@@ -6,6 +6,7 @@ import type { ManufacturerType } from '../../../shared/domain';
 import { toManufacturerType } from '../../../shared/domain/mappers';
 import { CreateManufacturerDto, ListManufacturersDto, UpdateManufacturerDto } from '../dto/manufacturers.dto';
 import { ManufacturerOrmEntity } from '../entities/manufacturer.orm-entity';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class ManufacturersService {
@@ -51,6 +52,18 @@ export class ManufacturersService {
   }
 
   async create(payload: CreateManufacturerDto, organizationId = DEFAULT_ORGANIZATION_ID): Promise<ManufacturerType> {
+    if (payload.code) {
+      const last = await this.getLastCreated(organizationId);
+      const { valid, expectedCode } = validateSequentialCode({
+        providedCode: payload.code,
+        lastCode: last?.code,
+        override: payload.overrideCodeValidation,
+      });
+      if (!valid) {
+        throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+      }
+    }
+
     const duplicate = await this.manufacturerRepository.findOne({
       where: { organizationId, name: payload.name, deletedAt: IsNull() },
     });

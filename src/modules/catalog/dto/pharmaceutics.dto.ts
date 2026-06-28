@@ -75,6 +75,10 @@ export class CreatePharmaceuticsDto {
   @IsArray()
   @IsString({ each: true })
   drugComponentIds?: string[];
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdatePharmaceuticsDto extends CreatePharmaceuticsDto {}

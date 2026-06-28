@@ -10,6 +10,12 @@ exports.InMemoryRoleRepository = void 0;
 const common_1 = require("@nestjs/common");
 const role_entity_1 = require("../domains/role.entity");
 let InMemoryRoleRepository = class InMemoryRoleRepository {
+    async findLastCreated(organizationId) {
+        if (organizationId !== this.organizationId)
+            return null;
+        const last = this.roles[this.roles.length - 1];
+        return last ? { code: last.code } : null;
+    }
     organizationId = 'org1';
     roles = [
         new role_entity_1.Role('1', this.organizationId, 'super_admin', 'Super Admin', 'Full system access', ['*']),

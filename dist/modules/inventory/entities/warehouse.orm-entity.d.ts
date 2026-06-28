@@ -5,6 +5,7 @@ export declare class WarehouseOrmEntity {
     storeId: string | null;
     code: string;
     name: string;
+    address: string | null;
     stockLocations: StockLocationOrmEntity[];
     isActive: boolean;
     createdAt: Date;

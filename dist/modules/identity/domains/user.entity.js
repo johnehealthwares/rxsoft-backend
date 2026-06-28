@@ -8,14 +8,16 @@ class User {
     passwordHash;
     isActive;
     roleCodes;
+    roles;
     phone;
-    constructor(id, organizationId, username, passwordHash, isActive, roleCodes = [], phone) {
+    constructor(id, organizationId, username, passwordHash, isActive, roleCodes = [], roles = [], phone) {
         this.id = id;
         this.organizationId = organizationId;
         this.username = username;
         this.passwordHash = passwordHash;
         this.isActive = isActive;
         this.roleCodes = roleCodes;
+        this.roles = roles;
         this.phone = phone;
     }
 }

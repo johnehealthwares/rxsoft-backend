@@ -16,6 +16,7 @@ class CreateCategoryDto {
     code;
     name;
     parentId;
+    overrideCodeValidation;
 }
 exports.CreateCategoryDto = CreateCategoryDto;
 __decorate([
@@ -34,6 +35,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateCategoryDto.prototype, "parentId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateCategoryDto.prototype, "overrideCodeValidation", void 0);
 class UpdateCategoryDto {
     code;
     name;

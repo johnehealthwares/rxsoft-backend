@@ -3,6 +3,7 @@ import { AppCacheService } from '../../../common/cache/cache.service';
 import { ReceiveGoodsDto } from '../dto/goods-receipt.dto';
 import { PURCHASES_REPOSITORY } from './purchases.di-tokens';
 import type { PurchasesRepository } from '../repositories/purchases.repository';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class ReceiveGoodsUseCase {
@@ -41,9 +42,22 @@ export class ReceiveGoodsUseCase {
       }
     }
 
+    const receiptNumber = payload.receiptNumber;
+    if (receiptNumber) {
+      const last = await this.purchasesRepository.findLastReceipt(organizationId);
+      const { valid, expectedCode } = validateSequentialCode({
+        providedCode: receiptNumber,
+        lastCode: last?.receiptNumber,
+        override: payload.overrideCodeValidation,
+      });
+      if (!valid) {
+        throw new BadRequestException(`Invalid code '${receiptNumber}'. Expected '${expectedCode}'.`);
+      }
+    }
+
     const result = await this.purchasesRepository.receiveGoods({
       organizationId,
-      receiptNumber: payload.receiptNumber ?? `GR-${Date.now()}`,
+      receiptNumber: receiptNumber ?? `GR-${Date.now()}`,
       purchaseOrderId: payload.purchaseOrderId,
       receivedDate: new Date(payload.receivedDate),
       createdByUserId: userId,

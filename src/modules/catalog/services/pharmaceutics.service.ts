@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { PharmaceuticsType } from '../../../shared/domain';
 import { HealthcareConceptsService } from '../../../services/healthcare-concepts.service';
 import type { ListPharmaceuticsDto } from '../dto/pharmaceutics.dto';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class PharmaceuticsService {
@@ -24,6 +25,14 @@ export class PharmaceuticsService {
   }
 
   async create(payload: any, _organizationId?: string): Promise<PharmaceuticsType> {
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: undefined,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
     return payload as any;
   }
 

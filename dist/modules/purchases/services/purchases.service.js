@@ -19,6 +19,7 @@ const typeorm_2 = require("typeorm");
 const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
 const entities_1 = require("../../inventory/entities");
 const entities_2 = require("../entities");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let PurchasesService = class PurchasesService {
     dataSource;
     purchaseOrderRepository;
@@ -34,6 +35,7 @@ let PurchasesService = class PurchasesService {
         const qb = this.purchaseOrderRepository
             .createQueryBuilder('purchase')
             .leftJoinAndSelect('purchase.lines', 'line')
+            .leftJoinAndSelect('line.item', 'lineItem')
             .leftJoinAndSelect('purchase.warehouse', 'warehouse')
             .leftJoinAndSelect('purchase.supplier', 'supplier')
             .where('purchase.organization_id = :organizationId', { organizationId });
@@ -81,6 +83,24 @@ let PurchasesService = class PurchasesService {
         };
     }
     async createPurchase(payload, currentUser) {
+        console.log({ payload });
+        const userPurchaseOrderNumber = payload.purchaseOrderNumber?.trim() || payload.invoiceNumber?.trim();
+        if (userPurchaseOrderNumber) {
+            const last = await this.purchaseOrderRepository.findOne({
+                where: { organizationId: currentUser.organizationId },
+                order: { createdAt: 'DESC' },
+                select: ['purchaseOrderNumber'],
+            });
+            const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+                providedCode: userPurchaseOrderNumber,
+                lastCode: last?.purchaseOrderNumber,
+                override: payload.overrideCodeValidation,
+            });
+            if (!valid) {
+                throw new common_1.BadRequestException(`Invalid code '${userPurchaseOrderNumber}'. Expected '${expectedCode}'.`);
+            }
+        }
+        console.log('here');
         return this.dataSource.transaction(async (manager) => {
             const purchaseOrderRepo = manager.getRepository(entities_2.PurchaseOrderOrmEntity);
             const purchaseOrderLineRepo = manager.getRepository(entities_2.PurchaseOrderLineOrmEntity);
@@ -88,7 +108,7 @@ let PurchasesService = class PurchasesService {
             const warehouse = await this.resolveWarehouse(payload.warehouseId ?? payload.branchId ?? '', warehouseRepo, currentUser.organizationId);
             const linesPayload = this.normalizeLines(payload);
             const totals = this.calculateTotals(linesPayload);
-            const purchaseOrderNumber = payload.purchaseOrderNumber?.trim() || payload.invoiceNumber?.trim() || `PO-${Date.now()}`;
+            const purchaseOrderNumber = userPurchaseOrderNumber || `PO-${Date.now()}`;
             const purchaseOrder = await purchaseOrderRepo.save(purchaseOrderRepo.create({
                 organizationId: currentUser.organizationId,
                 purchaseOrderNumber,
@@ -106,7 +126,8 @@ let PurchasesService = class PurchasesService {
                 approvedAt: payload.status === 'approved' || payload.status === 'received' ? new Date() : null,
                 note: payload.note ?? null,
             }));
-            await purchaseOrderLineRepo.save(linesPayload.map((line) => purchaseOrderLineRepo.create({
+            console.log('here...1', { purchaseOrder });
+            const pol = await purchaseOrderLineRepo.save(linesPayload.map((line) => purchaseOrderLineRepo.create({
                 purchaseOrder,
                 itemId: line.itemId,
                 orderedQty: line.orderedQty,
@@ -118,7 +139,8 @@ let PurchasesService = class PurchasesService {
                 lineSubtotal: this.computeLineSubtotal(line),
                 lineTotal: this.computeLineTotal(line),
             })));
-            return this.getById(purchaseOrder.id, currentUser.organizationId);
+            console.log('here...2', { pol });
+            return this.getById(purchaseOrder.id, currentUser.organizationId, manager);
         });
     }
     async resolveWarehouse(idOrCode, repo, organizationId) {
@@ -140,10 +162,11 @@ let PurchasesService = class PurchasesService {
             isActive: true,
         }));
     }
-    async getById(purchaseId, organizationId = persistence_scope_1.DEFAULT_ORGANIZATION_ID) {
-        const row = await this.purchaseOrderRepository.findOne({
+    async getById(purchaseId, organizationId = persistence_scope_1.DEFAULT_ORGANIZATION_ID, manager) {
+        const repo = manager ? manager.getRepository(entities_2.PurchaseOrderOrmEntity) : this.purchaseOrderRepository;
+        const row = await repo.findOne({
             where: { id: purchaseId, organizationId },
-            relations: ['lines', 'warehouse', 'supplier'],
+            relations: ['lines', 'lines.item', 'warehouse', 'supplier'],
         });
         if (!row) {
             throw new common_1.NotFoundException('Purchase order not found');
@@ -225,13 +248,174 @@ let PurchasesService = class PurchasesService {
                 })));
             }
             const saved = await purchaseOrderRepo.save(order);
-            return this.getById(saved.id, currentUser.organizationId);
+            return this.getById(saved.id, currentUser.organizationId, manager);
         });
     }
     async removePurchase(purchaseId, organizationId = persistence_scope_1.DEFAULT_ORGANIZATION_ID) {
         const result = await this.purchaseOrderRepository.delete({ id: purchaseId, organizationId });
         if (!result.affected)
             throw new common_1.NotFoundException('Purchase order not found');
+    }
+    async addLine(purchaseId, payload, currentUser) {
+        return this.dataSource.transaction(async (manager) => {
+            const poRepo = manager.getRepository(entities_2.PurchaseOrderOrmEntity);
+            const poLineRepo = manager.getRepository(entities_2.PurchaseOrderLineOrmEntity);
+            const order = await poRepo.findOne({
+                where: { id: purchaseId, organizationId: currentUser.organizationId },
+                relations: ['lines', 'lines.item'],
+            });
+            if (!order)
+                throw new common_1.NotFoundException('Purchase order not found');
+            if (order.status !== 'draft') {
+                throw new common_1.ForbiddenException('Lines can only be added to draft purchase orders');
+            }
+            const line = poLineRepo.create({
+                purchaseOrder: order,
+                itemId: payload.itemId,
+                orderedQty: payload.orderedQty,
+                receivedQty: 0,
+                uomId: payload.uomId,
+                unitCost: payload.unitCost,
+                discountPercent: payload.discountPercent ?? 0,
+                taxPercent: payload.taxPercent ?? 0,
+                lineSubtotal: this.computeLineSubtotal(payload),
+                lineTotal: this.computeLineTotal(payload),
+            });
+            const saved = await poLineRepo.save(line);
+            order.lines.push(saved);
+            const totals = this.calculateTotals(order.lines.map((l) => ({
+                itemId: l.itemId,
+                orderedQty: Number(l.orderedQty),
+                receivedQty: Number(l.receivedQty),
+                uomId: l.uomId,
+                unitCost: Number(l.unitCost),
+                discountPercent: Number(l.discountPercent),
+                taxPercent: Number(l.taxPercent),
+            })));
+            order.subtotalAmount = totals.subtotalAmount;
+            order.taxAmount = totals.taxAmount;
+            order.totalAmount = totals.totalAmount;
+            await poRepo.save(order);
+            return this.getById(purchaseId, currentUser.organizationId, manager);
+        });
+    }
+    async updateLine(purchaseId, lineId, payload, currentUser) {
+        return this.dataSource.transaction(async (manager) => {
+            const poRepo = manager.getRepository(entities_2.PurchaseOrderOrmEntity);
+            const poLineRepo = manager.getRepository(entities_2.PurchaseOrderLineOrmEntity);
+            const order = await poRepo.findOne({
+                where: { id: purchaseId, organizationId: currentUser.organizationId },
+                relations: ['lines', 'lines.item'],
+            });
+            if (!order)
+                throw new common_1.NotFoundException('Purchase order not found');
+            const line = order.lines.find((l) => l.id === lineId);
+            if (!line)
+                throw new common_1.NotFoundException('Purchase order line not found');
+            const status = order.status;
+            const isReceived = Number(line.receivedQty) >= Number(line.orderedQty);
+            if (status === 'received' || status === 'cancelled') {
+                throw new common_1.ForbiddenException('Cannot modify lines on received or cancelled purchase orders');
+            }
+            if (status === 'approved' || status === 'partially_received') {
+                const allowedFields = new Set();
+                allowedFields.add('unitCost');
+                if (!isReceived) {
+                    allowedFields.add('receivedQty');
+                }
+                if (payload.orderedQty !== undefined && !allowedFields.has('orderedQty')) {
+                    throw new common_1.ForbiddenException('Cannot change ordered quantity in approved status');
+                }
+                if (payload.uomId !== undefined && !allowedFields.has('uomId')) {
+                    throw new common_1.ForbiddenException('Cannot change UOM in approved status');
+                }
+                if (payload.discountPercent !== undefined && !allowedFields.has('discountPercent')) {
+                    throw new common_1.ForbiddenException('Cannot change discount in approved status');
+                }
+                if (payload.taxPercent !== undefined && !allowedFields.has('taxPercent')) {
+                    throw new common_1.ForbiddenException('Cannot change tax in approved status');
+                }
+            }
+            if (payload.orderedQty !== undefined)
+                line.orderedQty = payload.orderedQty;
+            if (payload.uomId !== undefined)
+                line.uomId = payload.uomId;
+            if (payload.unitCost !== undefined)
+                line.unitCost = payload.unitCost;
+            if (payload.receivedQty !== undefined)
+                line.receivedQty = payload.receivedQty;
+            if (payload.discountPercent !== undefined)
+                line.discountPercent = payload.discountPercent;
+            if (payload.taxPercent !== undefined)
+                line.taxPercent = payload.taxPercent;
+            line.lineSubtotal = this.computeLineSubtotal({
+                itemId: line.itemId,
+                orderedQty: Number(line.orderedQty),
+                uomId: line.uomId,
+                unitCost: Number(line.unitCost),
+                discountPercent: Number(line.discountPercent),
+                taxPercent: Number(line.taxPercent),
+            });
+            line.lineTotal = this.computeLineTotal({
+                itemId: line.itemId,
+                orderedQty: Number(line.orderedQty),
+                uomId: line.uomId,
+                unitCost: Number(line.unitCost),
+                discountPercent: Number(line.discountPercent),
+                taxPercent: Number(line.taxPercent),
+            });
+            await poLineRepo.save(line);
+            const totals = this.calculateTotals(order.lines.map((l) => ({
+                itemId: l.itemId,
+                orderedQty: Number(l.orderedQty),
+                receivedQty: Number(l.receivedQty),
+                uomId: l.uomId,
+                unitCost: Number(l.unitCost),
+                discountPercent: Number(l.discountPercent),
+                taxPercent: Number(l.taxPercent),
+            })));
+            order.subtotalAmount = totals.subtotalAmount;
+            order.taxAmount = totals.taxAmount;
+            order.totalAmount = totals.totalAmount;
+            await poRepo.save(order);
+            return this.getById(purchaseId, currentUser.organizationId, manager);
+        });
+    }
+    async removeLine(purchaseId, lineId, currentUser) {
+        return this.dataSource.transaction(async (manager) => {
+            const poRepo = manager.getRepository(entities_2.PurchaseOrderOrmEntity);
+            const poLineRepo = manager.getRepository(entities_2.PurchaseOrderLineOrmEntity);
+            const order = await poRepo.findOne({
+                where: { id: purchaseId, organizationId: currentUser.organizationId },
+                relations: ['lines', 'lines.item'],
+            });
+            if (!order)
+                throw new common_1.NotFoundException('Purchase order not found');
+            if (order.status !== 'draft') {
+                throw new common_1.ForbiddenException('Lines can only be deleted from draft purchase orders');
+            }
+            const line = order.lines.find((l) => l.id === lineId);
+            if (!line)
+                throw new common_1.NotFoundException('Purchase order line not found');
+            await poLineRepo.remove(line);
+            order.lines = order.lines.filter((l) => l.id !== lineId);
+            const totals = order.lines.length
+                ? this.calculateTotals(order.lines.map((l) => ({
+                    itemId: l.itemId,
+                    orderedQty: Number(l.orderedQty),
+                    receivedQty: Number(l.receivedQty),
+                    uomId: l.uomId,
+                    unitCost: Number(l.unitCost),
+                    discountPercent: Number(l.discountPercent),
+                    taxPercent: Number(l.taxPercent),
+                })))
+                : { subtotalAmount: 0, taxAmount: 0, totalAmount: 0 };
+            order.subtotalAmount = totals.subtotalAmount;
+            order.taxAmount = totals.taxAmount;
+            order.totalAmount = totals.totalAmount;
+            await poRepo.save(order);
+            return this.getById(purchaseId, currentUser.organizationId, manager);
+        });
     }
     resolveSortColumn(sortBy) {
         const map = {
@@ -285,6 +469,8 @@ let PurchasesService = class PurchasesService {
         return {
             id: line.id,
             itemId: line.itemId,
+            itemCode: line.item?.code ?? '',
+            itemName: line.item?.name ?? '',
             orderedQty: Number(line.orderedQty),
             receivedQty: Number(line.receivedQty),
             uomId: line.uomId,

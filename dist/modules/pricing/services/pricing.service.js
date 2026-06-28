@@ -22,6 +22,7 @@ const item_orm_entity_1 = require("../../catalog/entities/item.orm-entity");
 const stock_location_orm_entity_1 = require("../../inventory/entities/stock-location.orm-entity");
 const entities_1 = require("../entities");
 const list_1 = require("../../../database/list");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let PricingService = class PricingService {
     priceListRepository;
     priceListItemRepository;
@@ -56,6 +57,19 @@ let PricingService = class PricingService {
         return (0, mappers_1.toPriceListType)(item);
     }
     async createPriceList(payload, organizationId = persistence_scope_1.DEFAULT_ORGANIZATION_ID) {
+        const last = await this.priceListRepository.findOne({
+            where: { organizationId },
+            order: { createdAt: 'DESC' },
+            select: ['code'],
+        });
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: last?.code,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         const duplicate = await this.priceListRepository.findOne({
             where: { organizationId, code: payload.code },
         });

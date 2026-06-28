@@ -20,6 +20,7 @@ const persistence_scope_1 = require("../../../shared/constants/persistence-scope
 const mappers_1 = require("../../../shared/domain/mappers");
 const warehouse_orm_entity_1 = require("../entities/warehouse.orm-entity");
 const stock_location_orm_entity_1 = require("../entities/stock-location.orm-entity");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let StockLocationsService = class StockLocationsService {
     stockLocationRepository;
     warehouseRepository;
@@ -55,6 +56,21 @@ let StockLocationsService = class StockLocationsService {
         return (0, mappers_1.toStockLocationType)(item);
     }
     async create(payload, organizationId = persistence_scope_1.DEFAULT_ORGANIZATION_ID) {
+        if (payload.code) {
+            const last = await this.stockLocationRepository.findOne({
+                where: { organizationId },
+                order: { createdAt: 'DESC' },
+                select: ['code'],
+            });
+            const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+                providedCode: payload.code,
+                lastCode: last?.code ?? undefined,
+                override: payload.overrideCodeValidation,
+            });
+            if (!valid) {
+                throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+            }
+        }
         const duplicate = await this.stockLocationRepository.findOne({
             where: { organizationId, name: payload.name },
         });

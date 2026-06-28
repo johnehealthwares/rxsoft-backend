@@ -4,6 +4,12 @@ import { Role } from '../domains/role.entity';
 
 @Injectable()
 export class InMemoryRoleRepository implements RoleRepository {
+  async findLastCreated(organizationId: string): Promise<Pick<Role, 'code'> | null> {
+    if (organizationId !== this.organizationId) return null;
+    const last = this.roles[this.roles.length - 1];
+    return last ? { code: last.code } : null;
+  }
+
   private readonly organizationId = 'org1';
   private roles: Role[] = [
     new Role('1', this.organizationId, 'super_admin', 'Super Admin', 'Full system access', ['*']),

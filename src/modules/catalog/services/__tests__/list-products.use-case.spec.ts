@@ -13,6 +13,9 @@ describe('ListItemsUseCase', () => {
     listGenericProducts: jest.fn(),
     listUoms: jest.fn(),
     save: jest.fn(),
+    findByBarcode: jest.fn(),
+    findLastCreated: jest.fn().mockResolvedValue(null),
+  };
   };
 
   const useCase = new ListItemsUseCase(itemRepository);

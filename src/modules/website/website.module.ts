@@ -22,6 +22,9 @@ import {
   NewsletterSubscriberOrmEntity,
   ProductReviewOrmEntity,
   RewardTransactionOrmEntity,
+  OrderOrmEntity,
+  OrderItemOrmEntity,
+  DeliveryOrmEntity,
 } from './entities';
 import {
   StockBalanceOrmEntity,
@@ -57,6 +60,9 @@ import { OptionalAuthGuard } from './guards/optional-auth.guard';
       NewsletterSubscriberOrmEntity,
       ProductReviewOrmEntity,
       RewardTransactionOrmEntity,
+      OrderOrmEntity,
+      OrderItemOrmEntity,
+      DeliveryOrmEntity,
       StockBalanceOrmEntity,
       StockAdjustmentOrmEntity,
       StoreStockLocationOrmEntity,

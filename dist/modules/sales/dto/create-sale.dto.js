@@ -82,6 +82,7 @@ class CreateSaleDto {
     lines;
     payments;
     hold;
+    overrideCodeValidation;
 }
 exports.CreateSaleDto = CreateSaleDto;
 __decorate([
@@ -132,4 +133,9 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], CreateSaleDto.prototype, "hold", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateSaleDto.prototype, "overrideCodeValidation", void 0);
 //# sourceMappingURL=create-sale.dto.js.map

@@ -18,6 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const mappers_1 = require("../../../shared/domain/mappers");
 const entities_1 = require("../entities");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let AccountingService = class AccountingService {
     glAccountRepository;
     journalRepository;
@@ -49,6 +50,19 @@ let AccountingService = class AccountingService {
         return (0, mappers_1.toJournalType)(journal);
     }
     async createJournal(payload, organizationId) {
+        const last = await this.journalRepository.findOne({
+            where: { organizationId },
+            order: { createdAt: 'DESC' },
+            select: ['code'],
+        });
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: last?.code,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         await this.ensureAccount(payload.defaultDebitAccountId, organizationId);
         await this.ensureAccount(payload.defaultCreditAccountId, organizationId);
         const duplicate = await this.journalRepository.findOne({ where: { organizationId, code: payload.code } });

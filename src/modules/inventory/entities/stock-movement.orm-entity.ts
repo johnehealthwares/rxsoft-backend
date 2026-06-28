@@ -46,6 +46,9 @@ export class StockMovementOrmEntity {
   @Column({ name: 'to_location_id', type: 'uuid', nullable: true })
   toLocationId!: string | null;
 
+  @Column({ name: 'uom_id', type: 'uuid', nullable: true })
+  uomId!: string | null;
+
   @Column({ name: 'movement_type', type: 'text' })
   movementType!: 'in' | 'out' | 'transfer' | 'adjustment';
 

@@ -21,6 +21,7 @@ class CreatePaymentMethodDto {
     name;
     methodType;
     isActive;
+    overrideCodeValidation;
 }
 exports.CreatePaymentMethodDto = CreatePaymentMethodDto;
 __decorate([
@@ -44,6 +45,11 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreatePaymentMethodDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreatePaymentMethodDto.prototype, "overrideCodeValidation", void 0);
 class UpdatePaymentMethodDto {
     code;
     name;

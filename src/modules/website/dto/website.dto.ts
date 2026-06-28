@@ -78,12 +78,9 @@ export class CreateOrderItemDto {
   unitPrice?: number;
 }
 
-export class CreateOrderDto {
-  @ApiPropertyOptional() @IsUUID() @IsOptional()
-  customerId?: string;
-
+export class CreateDeliveryDto {
   @ApiProperty() @IsString()
-  deliveryAddress!: string;
+  address!: string;
 
   @ApiPropertyOptional() @IsString() @IsOptional()
   city?: string;
@@ -96,6 +93,11 @@ export class CreateOrderDto {
 
   @ApiPropertyOptional() @IsString() @IsOptional()
   shippingMethod?: string;
+}
+
+export class CreateOrderDto {
+  @ApiPropertyOptional() @IsUUID() @IsOptional()
+  customerId?: string;
 
   @ApiProperty() @IsString()
   paymentMethod!: string;
@@ -108,6 +110,9 @@ export class CreateOrderDto {
 
   @ApiProperty({ type: [CreateOrderItemDto] }) @IsArray() @ValidateNested({ each: true }) @Type(() => CreateOrderItemDto) @ArrayMinSize(1)
   items!: CreateOrderItemDto[];
+
+  @ApiPropertyOptional({ type: CreateDeliveryDto }) @ValidateNested() @Type(() => CreateDeliveryDto) @IsOptional()
+  delivery?: CreateDeliveryDto;
 }
 
 export class CreateContactDto {
@@ -301,6 +306,17 @@ export class UpdateArticleDto {
 
 export class UpdatePrescriptionStatusDto {
   @ApiProperty({ enum: ['Pending', 'Under Review', 'Approved', 'Rejected', 'Fulfilled'] })
+  @IsString() @IsNotEmpty()
+  status!: string;
+}
+
+export class PostOrderAsSaleDto {
+  @ApiPropertyOptional() @IsUUID() @IsOptional()
+  stockLocationId?: string;
+}
+
+export class UpdateOrderStatusDto {
+  @ApiProperty({ enum: ['pending', 'confirmed', 'processing', 'dispatched', 'in_transit', 'delivered', 'cancelled'] })
   @IsString() @IsNotEmpty()
   status!: string;
 }

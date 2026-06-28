@@ -34,6 +34,10 @@ export class CreateJournalDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdateJournalDto {

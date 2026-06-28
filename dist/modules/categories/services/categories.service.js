@@ -18,6 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const mappers_1 = require("../../../shared/domain/mappers");
 const entities_1 = require("../../catalog/entities");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let CategoriesService = class CategoriesService {
     categoryRepository;
     constructor(categoryRepository) {
@@ -32,6 +33,7 @@ let CategoriesService = class CategoriesService {
         if (query.search) {
             qb.andWhere('(category.code ILIKE :search OR category.name ILIKE :search)', { search: `%${query.search}%` });
         }
+        qb.skip(query.offset).take(query.limit);
         const [data, total] = await qb.getManyAndCount();
         return { data: data.map(mappers_1.toItemCategoryType), total };
     }
@@ -45,6 +47,19 @@ let CategoriesService = class CategoriesService {
         return { id: entity.id, code: entity.code, createdAt: entity.createdAt.toISOString() };
     }
     async createCategory(payload, organizationId) {
+        const last = await this.categoryRepository.findOne({
+            where: { organizationId, deletedAt: (0, typeorm_2.IsNull)() },
+            order: { createdAt: 'DESC' },
+            select: ['code'],
+        });
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: last?.code,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         const duplicate = await this.categoryRepository.findOne({
             where: { code: payload.code, organizationId, deletedAt: (0, typeorm_2.IsNull)() },
         });

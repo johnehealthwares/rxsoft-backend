@@ -27,6 +27,9 @@ export class PartyOrmEntity {
   @Column({ name: 'address_line_1', type: 'text', nullable: true })
   addressLine1!: string | null;
 
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId!: string | null;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 

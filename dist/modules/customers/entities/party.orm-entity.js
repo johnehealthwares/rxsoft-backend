@@ -20,6 +20,7 @@ let PartyOrmEntity = class PartyOrmEntity {
     phone;
     email;
     addressLine1;
+    userId;
     isActive;
     createdAt;
     updatedAt;
@@ -58,6 +59,10 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'address_line_1', type: 'text', nullable: true }),
     __metadata("design:type", Object)
 ], PartyOrmEntity.prototype, "addressLine1", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'user_id', type: 'uuid', nullable: true }),
+    __metadata("design:type", Object)
+], PartyOrmEntity.prototype, "userId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'is_active', type: 'boolean', default: true }),
     __metadata("design:type", Boolean)

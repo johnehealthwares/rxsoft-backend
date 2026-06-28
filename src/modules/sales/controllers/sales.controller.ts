@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -15,6 +15,8 @@ import { SaleResponseDto } from '../dto/sale-response.dto';
 import { CreateSaleRefundUseCase } from '../services/create-sale-refund.use-case';
 import { CreateSaleUseCase } from '../services/create-sale.use-case';
 import { ListSalesUseCase } from '../services/list-sales.use-case';
+import { SALES_REPOSITORY } from '../services/sales.di-tokens';
+import type { SalesRepository, SalesMetricsQuery } from '../repositories/sales.repository';
 
 type SalesListResponse = {
   data: SaleResponseDto[];
@@ -30,6 +32,8 @@ export class SalesController {
     private readonly listSalesUseCase: ListSalesUseCase,
     private readonly createSaleUseCase: CreateSaleUseCase,
     private readonly createSaleRefundUseCase: CreateSaleRefundUseCase,
+    @Inject(SALES_REPOSITORY)
+    private readonly salesRepository: SalesRepository,
   ) {}
 
   @Get()
@@ -46,11 +50,13 @@ export class SalesController {
         id: sale.id,
         saleNumber: sale.saleNumber,
         saleChannel: sale.saleChannel,
+        storeId: sale.storeId,
+        storeName: sale.storeName,
         status: sale.status,
         totalAmount: sale.totalAmount,
         paidAmount: sale.paidAmount,
         changeAmount: sale.changeAmount,
-        saleDate: sale.saleDate.toISOString(),
+        saleDate: new Date(sale.saleDate).toISOString(),
       })),
       meta: {
         page: query.page,
@@ -58,6 +64,20 @@ export class SalesController {
         total: result.total,
       },
     };
+  }
+
+  @Get('metrics')
+  @Roles('super_admin', 'admin')
+  @ApiOperation({ summary: 'Get sales metrics' })
+  async metrics(
+    @Query() query: ListSalesDto,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    const metricsQuery: SalesMetricsQuery = {
+      organizationId: currentUser.organizationId,
+      search: query.search,
+    };
+    return this.salesRepository.getMetrics(metricsQuery);
   }
 
   @Post()
@@ -79,6 +99,8 @@ export class SalesController {
       id: result.sale.id,
       saleNumber: result.sale.saleNumber,
       saleChannel: result.sale.saleChannel,
+      storeId: result.sale.storeId,
+      storeName: result.sale.storeName,
       status: result.sale.status,
       totalAmount: result.sale.totalAmount,
       paidAmount: result.sale.paidAmount,

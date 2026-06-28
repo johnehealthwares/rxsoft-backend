@@ -15,6 +15,8 @@ class SaleResponseDto {
     id;
     saleNumber;
     saleChannel;
+    storeId;
+    storeName;
     status;
     totalAmount;
     paidAmount;
@@ -34,6 +36,14 @@ __decorate([
     (0, swagger_1.ApiProperty)({ enum: ['pos', 'invoice', 'mobile'] }),
     __metadata("design:type", String)
 ], SaleResponseDto.prototype, "saleChannel", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], SaleResponseDto.prototype, "storeId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Object)
+], SaleResponseDto.prototype, "storeName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: ['draft', 'posted', 'voided', 'refunded'] }),
     __metadata("design:type", String)

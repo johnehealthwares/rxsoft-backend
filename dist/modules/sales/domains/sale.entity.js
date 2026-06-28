@@ -6,16 +6,20 @@ class Sale {
     organizationId;
     saleNumber;
     saleChannel;
+    storeId;
+    storeName;
     status;
     totalAmount;
     paidAmount;
     changeAmount;
     saleDate;
-    constructor(id, organizationId, saleNumber, saleChannel, status, totalAmount, paidAmount, changeAmount, saleDate) {
+    constructor(id, organizationId, saleNumber, saleChannel, storeId, storeName, status, totalAmount, paidAmount, changeAmount, saleDate) {
         this.id = id;
         this.organizationId = organizationId;
         this.saleNumber = saleNumber;
         this.saleChannel = saleChannel;
+        this.storeId = storeId;
+        this.storeName = storeName;
         this.status = status;
         this.totalAmount = totalAmount;
         this.paidAmount = paidAmount;

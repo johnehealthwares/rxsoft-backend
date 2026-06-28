@@ -16,6 +16,7 @@ const class_validator_1 = require("class-validator");
 class CreateUomCategoryDto {
     code;
     name;
+    overrideCodeValidation;
 }
 exports.CreateUomCategoryDto = CreateUomCategoryDto;
 __decorate([
@@ -31,6 +32,11 @@ __decorate([
     (0, class_validator_1.MaxLength)(64),
     __metadata("design:type", String)
 ], CreateUomCategoryDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateUomCategoryDto.prototype, "overrideCodeValidation", void 0);
 class UpdateUomCategoryDto extends (0, swagger_1.PartialType)(CreateUomCategoryDto) {
 }
 exports.UpdateUomCategoryDto = UpdateUomCategoryDto;

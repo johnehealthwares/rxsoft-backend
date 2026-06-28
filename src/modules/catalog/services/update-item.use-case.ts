@@ -5,7 +5,7 @@ import { PricingService } from '../../pricing/services/pricing.service';
 import { ITEM_REPOSITORY } from './catalog.di-tokens';
 import type { ItemRepository } from '../repositories/item.repository';
 import { Item } from '../domains/item.entity';
-import { CreateItemDto } from '../dto/create-item.dto';
+import { ReplaceItemDto } from '../dto/replace-item.dto';
 import { validateUoms } from './utils';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
 
@@ -23,7 +23,7 @@ export class UpdateItemUseCase {
     private readonly cacheService?: AppCacheService,
   ) { }
 
-  async execute(productId: string, payload: CreateItemDto, organizationId: string, performedByUserId?: string): Promise<Item> {
+  async execute(productId: string, payload: ReplaceItemDto, organizationId: string, performedByUserId?: string): Promise<Item> {
      
 
     const category = await this.productRepository.findCategoryById(payload.categoryId, organizationId);
@@ -82,6 +82,10 @@ export class UpdateItemUseCase {
       payload.trackExpiry ?? true,
       payload.shelfLifeDays ?? null,
       payload.isActive ?? true,
+      payload.imageUrl ?? null,
+      payload.smallImageUrl ?? null,
+      payload.mediumImageUrl ?? null,
+      payload.largeImageUrl ?? null,
     );
 
 

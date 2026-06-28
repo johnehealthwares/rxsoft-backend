@@ -85,6 +85,10 @@ export class CreateItemDto {
   @IsString()
   largeImageUrl?: string;
 
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
+
   @IsOptional()
   priceListItems?: CreatePriceListItemDto[];
 

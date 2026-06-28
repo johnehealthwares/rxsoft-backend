@@ -12,6 +12,7 @@ export interface TokenPayload {
   roles: string[];
   permissions: string[];
   phone?: string;
+  email: string;
 }
 
 export interface TokenIssuerPort {

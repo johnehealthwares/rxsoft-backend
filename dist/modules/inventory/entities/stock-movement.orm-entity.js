@@ -28,6 +28,7 @@ let StockMovementOrmEntity = class StockMovementOrmEntity {
     fromLocationId;
     toLocation;
     toLocationId;
+    uomId;
     movementType;
     quantity;
     unitCost;
@@ -88,6 +89,10 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'to_location_id', type: 'uuid', nullable: true }),
     __metadata("design:type", Object)
 ], StockMovementOrmEntity.prototype, "toLocationId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'uom_id', type: 'uuid', nullable: true }),
+    __metadata("design:type", Object)
+], StockMovementOrmEntity.prototype, "uomId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'movement_type', type: 'text' }),
     __metadata("design:type", String)

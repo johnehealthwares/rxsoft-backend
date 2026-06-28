@@ -13,15 +13,27 @@ exports.UserResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class PosConfigResponse {
     stockLocationId;
+    stockLocation;
     storeId;
     allowPos;
     allowA4Print;
     loginTimeoutMinutes;
+    defaultCustomerId;
+    defaultCustomer;
+    defaultPriceListId;
+    defaultPriceList;
+    autoSelectLocation;
+    autoSelectCustomer;
+    autoSelectPriceList;
 }
 __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     __metadata("design:type", Object)
 ], PosConfigResponse.prototype, "stockLocationId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Object)
+], PosConfigResponse.prototype, "stockLocation", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     __metadata("design:type", Object)
@@ -38,6 +50,34 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     __metadata("design:type", Object)
 ], PosConfigResponse.prototype, "loginTimeoutMinutes", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Object)
+], PosConfigResponse.prototype, "defaultCustomerId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Object)
+], PosConfigResponse.prototype, "defaultCustomer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Object)
+], PosConfigResponse.prototype, "defaultPriceListId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Object)
+], PosConfigResponse.prototype, "defaultPriceList", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Boolean)
+], PosConfigResponse.prototype, "autoSelectLocation", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Boolean)
+], PosConfigResponse.prototype, "autoSelectCustomer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Boolean)
+], PosConfigResponse.prototype, "autoSelectPriceList", void 0);
 class UserResponseDto {
     id;
     username;

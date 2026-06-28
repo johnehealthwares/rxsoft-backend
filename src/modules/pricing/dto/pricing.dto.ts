@@ -26,6 +26,10 @@ export class CreatePriceListDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdatePriceListDto {

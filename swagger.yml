@@ -505,6 +505,69 @@ paths:
       security: *ref_9
       summary: Search UOMs by name or code
       tags: *ref_10
+  /api/items/metrics:
+    get:
+      operationId: ItemsController_metrics
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by item name/code
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Search by item name/code
+          schema:
+            type: string
+        - name: categoryCode
+          required: false
+          in: query
+          schema:
+            example: ANALGESICS
+            type: string
+        - name: includeAll
+          required: false
+          in: query
+          schema:
+            example: true
+            type: boolean
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: name
+            type: string
+            enum:
+              - name
+              - code
+              - createdAt
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: asc
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: ''
+      security: *ref_9
+      summary: Get item metrics
+      tags: *ref_10
   /api/items/{itemId}:
     get:
       operationId: ItemsController_get
@@ -537,16 +600,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateItemDto'
+              $ref: '#/components/schemas/ReplaceItemDto'
       responses:
-        '201':
+        '200':
           description: ''
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
       security: *ref_9
-      summary: Create a catalog item
+      summary: Replace a catalog item (full update)
       tags: *ref_10
     patch:
       operationId: ItemsController_patch
@@ -1185,6 +1248,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: isActive
+          required: false
+          in: query
+          schema:
+            type: boolean
       responses:
         '200':
           description: ''
@@ -1258,6 +1326,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: isActive
+          required: false
+          in: query
+          schema:
+            type: boolean
       responses:
         '200':
           description: ''
@@ -2167,6 +2240,41 @@ paths:
       security: *ref_29
       summary: Create posted sale and receivable on underpayment
       tags: *ref_30
+  /api/sales/metrics:
+    get:
+      operationId: SalesController_metrics
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - draft
+              - posted
+              - voided
+              - refunded
+      responses:
+        '200':
+          description: ''
+      security: *ref_29
+      summary: Get sales metrics
+      tags: *ref_30
   /api/sales/{saleId}/refunds:
     post:
       operationId: SalesController_createRefund
@@ -2815,6 +2923,69 @@ paths:
           description: ''
       security: *ref_39
       tags: *ref_40
+  /api/purchases/{purchaseId}/lines:
+    post:
+      operationId: PurchasesController_addLine
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePurchaseLineDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_39
+      tags: *ref_40
+  /api/purchases/{purchaseId}/lines/{lineId}:
+    put:
+      operationId: PurchasesController_updateLine
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: lineId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePurchaseLineDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_39
+      tags: *ref_40
+    delete:
+      operationId: PurchasesController_removeLine
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: lineId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_39
+      tags: *ref_40
   /api/purchases/{id}/receive:
     post:
       operationId: InflowController_receiveGoods
@@ -2892,12 +3063,44 @@ paths:
           required: false
           in: query
           schema:
-            type: number
+            $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            type: number
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -4231,7 +4434,7 @@ paths:
         '200':
           description: ''
       security: *ref_53
-      summary: List all website orders (saleChannel=mobile)
+      summary: List all website orders
       tags: *ref_54
   /api/website/admin/orders/{id}:
     get:
@@ -4257,17 +4460,23 @@ paths:
           in: path
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderStatusDto'
       responses:
         '200':
           description: ''
       security: *ref_53
       summary: Update order status with transition validation
       tags: *ref_54
-  /api/website/admin/orders/{id}/assign-location:
+  /api/website/admin/complete-sale/{saleId}:
     post:
-      operationId: WebsiteAdminController_assignLocation
+      operationId: WebsiteAdminController_completeSale
       parameters:
-        - name: id
+        - name: saleId
           required: true
           in: path
           schema:
@@ -4276,22 +4485,28 @@ paths:
         '201':
           description: ''
       security: *ref_53
-      summary: Assign a stock location to fulfill an order
+      summary: Complete a draft sale — deplete stock and post
       tags: *ref_54
-  /api/website/admin/orders/{id}/process:
+  /api/website/admin/orders/{id}/post-sale:
     post:
-      operationId: WebsiteAdminController_processOrder
+      operationId: WebsiteAdminController_postOrderAsSale
       parameters:
         - name: id
           required: true
           in: path
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostOrderAsSaleDto'
       responses:
         '201':
           description: ''
       security: *ref_53
-      summary: Process order — deplete reserved stock and update status
+      summary: Post an order as a draft sale
       tags: *ref_54
   /api/apm/homepage:
     get:
@@ -5646,6 +5861,124 @@ paths:
         '200':
           description: ''
       tags: *ref_85
+  /api/warehouses:
+    get:
+      operationId: WarehousesController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_86
+        - bearer: []
+      summary: List warehouses with pagination
+      tags: &ref_87
+        - warehouses
+    post:
+      operationId: WarehousesController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWarehouseDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_86
+      summary: Create a warehouse
+      tags: *ref_87
+  /api/warehouses/{warehouseId}:
+    get:
+      operationId: WarehousesController_get
+      parameters:
+        - name: warehouseId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_86
+      summary: Get warehouse by ID
+      tags: *ref_87
+    put:
+      operationId: WarehousesController_update
+      parameters:
+        - name: warehouseId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWarehouseDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_86
+      summary: Update a warehouse
+      tags: *ref_87
+    delete:
+      operationId: WarehousesController_remove
+      parameters:
+        - name: warehouseId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_86
+      summary: Delete a warehouse
+      tags: *ref_87
 info:
   title: RxSoft Backend API
   description: Phase 3 identity module and API contracts
@@ -5755,6 +6088,16 @@ components:
           type: boolean
         loginTimeoutMinutes:
           type: object
+        defaultCustomerId:
+          type: object
+        defaultPriceListId:
+          type: object
+        autoSelectLocation:
+          type: boolean
+        autoSelectCustomer:
+          type: boolean
+        autoSelectPriceList:
+          type: boolean
     CreateUserDto:
       type: object
       properties:
@@ -5785,6 +6128,8 @@ components:
       properties:
         stockLocationId:
           type: object
+        stockLocation:
+          type: object
         storeId:
           type: object
         allowPos:
@@ -5793,6 +6138,20 @@ components:
           type: boolean
         loginTimeoutMinutes:
           type: object
+        defaultCustomerId:
+          type: object
+        defaultCustomer:
+          type: object
+        defaultPriceListId:
+          type: object
+        defaultPriceList:
+          type: object
+        autoSelectLocation:
+          type: boolean
+        autoSelectCustomer:
+          type: boolean
+        autoSelectPriceList:
+          type: boolean
     UserResponseDto:
       type: object
       properties:
@@ -5867,6 +6226,9 @@ components:
           type: array
           items:
             type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
         - name
@@ -5911,6 +6273,9 @@ components:
           type: array
           items:
             type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
     UpdateOrganisationConfigDto:
       type: object
       properties:
@@ -6103,23 +6468,118 @@ components:
           type: string
         largeImageUrl:
           type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
         - name
         - categoryId
         - baseUomId
+    ReplaceItemDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: PCM001
+        name:
+          type: string
+          example: Paracetamol 500mg Tablet
+        categoryId:
+          type: string
+          example: 2f9e3c8a-7fb2-4f43-98b7-5f2a0d4f9021
+        genericProductCode:
+          type: string
+          example: GEN001
+        baseUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        purchaseUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        saleUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        barcode:
+          type: string
+          example: '1234567890123'
+        trackLot:
+          type: boolean
+          default: true
+        trackExpiry:
+          type: boolean
+          default: true
+        shelfLifeDays:
+          type: number
+          example: 730
+        isActive:
+          type: boolean
+          default: true
+        imageUrl:
+          type: string
+        smallImageUrl:
+          type: string
+        mediumImageUrl:
+          type: string
+        largeImageUrl:
+          type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
+      required:
+        - code
+        - name
+        - categoryId
+        - baseUomId
+        - purchaseUomId
+        - saleUomId
     PatchItemDto:
       type: object
       properties:
-        isActive:
-          type: boolean
-          example: true
+        code:
+          type: string
+          example: PCM001
         name:
           type: string
-          example: Paracetamol 500mg
+          example: Paracetamol 500mg Tablet
+        categoryId:
+          type: string
+          example: 2f9e3c8a-7fb2-4f43-98b7-5f2a0d4f9021
+        genericProductCode:
+          type: string
+          example: GEN001
+        baseUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        purchaseUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        saleUomId:
+          type: string
+          example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
         barcode:
           type: string
-          example: '4901234567890'
+          example: '1234567890123'
+        trackLot:
+          type: boolean
+          default: true
+        trackExpiry:
+          type: boolean
+          default: true
+        shelfLifeDays:
+          type: number
+          example: 730
+        isActive:
+          type: boolean
+          default: true
+        imageUrl:
+          type: string
+        smallImageUrl:
+          type: string
+        mediumImageUrl:
+          type: string
+        largeImageUrl:
+          type: string
     CreateGenericProductDto:
       type: object
       properties:
@@ -6145,6 +6605,9 @@ components:
           type: boolean
           default: false
         isControlledSubstance:
+          type: boolean
+          default: false
+        overrideCodeValidation:
           type: boolean
           default: false
       required:
@@ -6209,6 +6672,9 @@ components:
           type: array
           items:
             type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
     UpdatePharmaceuticsDto:
@@ -6244,6 +6710,9 @@ components:
           type: array
           items:
             type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
     CreateDrugComponentDto:
@@ -6284,6 +6753,8 @@ components:
         deltaQuantity:
           type: number
         reason:
+          type: string
+        uomId:
           type: string
         reorderMinQty:
           type: number
@@ -6339,6 +6810,9 @@ components:
         isActive:
           type: boolean
           default: true
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - name
     UpdateStockLocationDto:
@@ -6397,6 +6871,9 @@ components:
         isActive:
           type: boolean
           default: true
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
         - name
@@ -6458,6 +6935,9 @@ components:
           type: string
         parentId:
           type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
         - name
@@ -6573,6 +7053,9 @@ components:
         hold:
           type: boolean
           default: false
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - saleNumber
         - saleChannel
@@ -6592,6 +7075,10 @@ components:
             - pos
             - invoice
             - mobile
+        storeId:
+          type: string
+        storeName:
+          type: object
         status:
           type: string
           enum:
@@ -6618,6 +7105,7 @@ components:
         - id
         - saleNumber
         - saleChannel
+        - storeId
         - status
         - totalAmount
         - paidAmount
@@ -6700,6 +7188,9 @@ components:
         isActive:
           type: boolean
           default: true
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - name
     UpdateUomDto:
@@ -6735,6 +7226,9 @@ components:
         name:
           type: string
           example: Units
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - name
     UpdateUomCategoryDto:
@@ -6746,6 +7240,9 @@ components:
         name:
           type: string
           example: Units
+        overrideCodeValidation:
+          type: boolean
+          default: false
     CreatePaymentMethodDto:
       type: object
       properties:
@@ -6763,6 +7260,9 @@ components:
             - insurance
         isActive:
           type: boolean
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
         - name
@@ -6862,7 +7362,7 @@ components:
           type: string
         status:
           type: string
-          enum: &ref_86
+          enum: &ref_88
             - draft
             - approved
             - partially_received
@@ -6878,6 +7378,9 @@ components:
           type: number
         unitCost:
           type: number
+        overrideCodeValidation:
+          type: boolean
+          default: false
         lines:
           type: array
           items:
@@ -6905,7 +7408,7 @@ components:
           type: string
         status:
           type: string
-          enum: *ref_86
+          enum: *ref_88
         note:
           type: string
         invoiceNumber:
@@ -6916,6 +7419,9 @@ components:
           type: number
         unitCost:
           type: number
+        overrideCodeValidation:
+          type: boolean
+          default: false
         lines:
           type: array
           items:
@@ -6923,6 +7429,41 @@ components:
       required:
         - supplierId
         - warehouseId
+    CreatePurchaseLineDto:
+      type: object
+      properties:
+        itemId:
+          type: string
+        orderedQty:
+          type: number
+        uomId:
+          type: string
+        unitCost:
+          type: number
+        discountPercent:
+          type: number
+        taxPercent:
+          type: number
+      required:
+        - itemId
+        - orderedQty
+        - uomId
+        - unitCost
+    UpdatePurchaseLineDto:
+      type: object
+      properties:
+        orderedQty:
+          type: number
+        uomId:
+          type: string
+        unitCost:
+          type: number
+        receivedQty:
+          type: number
+        discountPercent:
+          type: number
+        taxPercent:
+          type: number
     ReceiveGoodsLineDto:
       type: object
       properties:
@@ -6948,6 +7489,9 @@ components:
           type: string
         receiptNumber:
           type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
         note:
           type: string
         lines:
@@ -6977,6 +7521,9 @@ components:
           type: string
         isActive:
           type: boolean
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
         - name
@@ -6996,6 +7543,9 @@ components:
           type: string
         name:
           type: string
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - name
     UpdateManufacturerDto:
@@ -7026,6 +7576,9 @@ components:
           type: string
         isActive:
           type: boolean
+        overrideCodeValidation:
+          type: boolean
+          default: false
       required:
         - code
         - name
@@ -7189,12 +7742,10 @@ components:
       required:
         - itemId
         - quantity
-    CreateOrderDto:
+    CreateDeliveryDto:
       type: object
       properties:
-        customerId:
-          type: string
-        deliveryAddress:
+        address:
           type: string
         city:
           type: string
@@ -7203,6 +7754,13 @@ components:
         phone:
           type: string
         shippingMethod:
+          type: string
+      required:
+        - address
+    CreateOrderDto:
+      type: object
+      properties:
+        customerId:
           type: string
         paymentMethod:
           type: string
@@ -7216,8 +7774,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CreateOrderItemDto'
+        delivery:
+          $ref: '#/components/schemas/CreateDeliveryDto'
       required:
-        - deliveryAddress
         - paymentMethod
         - items
     CreateContactDto:
@@ -7389,6 +7948,26 @@ components:
             - Fulfilled
       required:
         - status
+    UpdateOrderStatusDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - pending
+            - confirmed
+            - processing
+            - dispatched
+            - in_transit
+            - delivered
+            - cancelled
+      required:
+        - status
+    PostOrderAsSaleDto:
+      type: object
+      properties:
+        stockLocationId:
+          type: string
     EventRegistrationDto:
       type: object
       properties:
@@ -7941,3 +8520,32 @@ components:
           type: string
         notes:
           type: string
+    CreateWarehouseDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        address:
+          type: object
+        isActive:
+          type: boolean
+          default: true
+        overrideCodeValidation:
+          type: boolean
+          default: false
+      required:
+        - code
+        - name
+    UpdateWarehouseDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        address:
+          type: object
+        isActive:
+          type: boolean

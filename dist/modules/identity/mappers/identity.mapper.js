@@ -14,7 +14,7 @@ class IdentityMapper {
     }
     static toDomainUser(orm) {
         const roleCodes = (orm.roles ?? []).map((role) => role.code);
-        return new user_entity_1.User(orm.id, orm.organizationId, orm.username, orm.passwordHash, orm.isActive, roleCodes, orm.phone);
+        return new user_entity_1.User(orm.id, orm.organizationId, orm.username, orm.passwordHash, orm.isActive, roleCodes, orm.roles.map(this.toDomainRole), orm.phone);
     }
 }
 exports.IdentityMapper = IdentityMapper;

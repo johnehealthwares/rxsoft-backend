@@ -17,6 +17,7 @@ export declare class CreateItemDto {
     smallImageUrl?: string;
     mediumImageUrl?: string;
     largeImageUrl?: string;
+    overrideCodeValidation?: boolean;
     priceListItems?: CreatePriceListItemDto[];
     stockItems?: AdjustStockByReferenceDto[];
 }

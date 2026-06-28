@@ -40,7 +40,7 @@ let CreateUserUseCase = class CreateUserUseCase {
             throw new common_1.BadRequestException('One or more roles are invalid');
         }
         const passwordHash = await this.passwordHasher.hash(payload.password);
-        const user = new user_entity_1.User((0, node_crypto_1.randomUUID)(), organizationId, payload.username, passwordHash, true, roleCodes, payload.phone);
+        const user = new user_entity_1.User((0, node_crypto_1.randomUUID)(), organizationId, payload.username, passwordHash, true, roleCodes, roles, payload.phone);
         const created = await this.userRepository.create(user);
         if (payload.posConfig) {
             await this.userPosConfigService.update(created.id, organizationId, payload.posConfig);

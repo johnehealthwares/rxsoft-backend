@@ -21,6 +21,7 @@ function toDomain(entity: AccountReceivableOrmEntity): AccountReceivable {
     entity.id,
     entity.organizationId,
     entity.customerId,
+    entity.customer?.name ?? null,
     entity.saleId,
     entity.receivableNumber,
     entity.originalAmount,
@@ -56,6 +57,7 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
   async list(query: ReceivableListQuery): Promise<{ items: AccountReceivable[]; total: number }> {
     const qb = this.receivableRepository
       .createQueryBuilder('receivable')
+      .leftJoinAndSelect('receivable.customer', 'customer')
       .where('receivable.organizationId = :organizationId', { organizationId: query.organizationId })
       .orderBy('receivable.openedAt', 'DESC')
       .skip(query.offset)

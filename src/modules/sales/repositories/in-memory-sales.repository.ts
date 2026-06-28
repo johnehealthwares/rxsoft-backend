@@ -7,17 +7,26 @@ import {
   CreateSaleRepositoryPayload,
   CreateSaleResult,
   SalesListQuery,
+  SalesMetrics,
+  SalesMetricsQuery,
   SalesRepository,
 } from './sales.repository';
 
 @Injectable()
 export class InMemorySalesRepository implements SalesRepository {
+  async findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null> {
+    const sale = this.sales.find((s) => s.organizationId === organizationId);
+    return sale ? { saleNumber: sale.saleNumber } : null;
+  }
+
   private readonly sales: Sale[] = [
     new Sale(
       's1',
       'org1',
       'SALE-0001',
       'pos',
+      'store-1',
+      null,
       'posted',
       125.5,
       130,
@@ -50,6 +59,8 @@ export class InMemorySalesRepository implements SalesRepository {
       payload.organizationId,
       payload.saleNumber,
       payload.saleChannel,
+      payload.storeId,
+      null,
       payload.status ?? 'posted',
       payload.totalAmount,
       payload.paidAmount,
@@ -81,6 +92,32 @@ export class InMemorySalesRepository implements SalesRepository {
       receivableId: null,
       outstandingAmount: 0,
     };
+  }
+
+  async getMetrics(query: SalesMetricsQuery): Promise<SalesMetrics> {
+    let items = this.sales.filter((s) => s.organizationId === query.organizationId);
+
+    if (query.search) {
+      const q = query.search.toLowerCase();
+      items = items.filter(
+        (s) => s.saleNumber.toLowerCase().includes(q) || s.saleChannel.toLowerCase().includes(q) || s.storeId.toLowerCase().includes(q),
+      );
+    }
+
+    const posted = items.filter((s) => s.status === 'posted');
+    const totalSales = posted.length;
+    const inProgress = items.filter((s) => s.status === 'draft').length;
+    const totalRevenue = posted.reduce((sum, s) => sum + s.totalAmount, 0);
+
+    const byChannel: Record<string, { count: number; revenue: number }> = {};
+    const byCategory: Record<string, { count: number; revenue: number }> = {};
+    for (const s of posted) {
+      if (!byChannel[s.saleChannel]) byChannel[s.saleChannel] = { count: 0, revenue: 0 };
+      byChannel[s.saleChannel].count++;
+      byChannel[s.saleChannel].revenue += s.totalAmount;
+    }
+
+    return { totalSales, totalRevenue, inProgress: 0, byChannel, byCategory };
   }
 
   async createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult> {

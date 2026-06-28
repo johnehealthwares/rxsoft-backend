@@ -21,12 +21,13 @@ describe('CreateUserUseCase', () => {
 
   const roleRepository: jest.Mocked<RoleRepository> = {
     findByCode: jest.fn(),
+    findById: jest.fn(),
     listByCodes: jest.fn(),
     listAll: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
-    findById: jest.fn(),
+    findLastCreated: jest.fn().mockResolvedValue(null),
   };
 
   const passwordHasher: jest.Mocked<PasswordHasherPort> = {

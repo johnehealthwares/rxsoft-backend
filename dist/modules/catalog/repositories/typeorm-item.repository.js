@@ -45,16 +45,20 @@ let TypeormItemRepository = class TypeormItemRepository {
             .leftJoinAndSelect('product.purchaseUom', 'purchaseUom')
             .leftJoinAndSelect('product.saleUom', 'saleUom')
             .where('product.organization_id = :organizationId', { organizationId: query.organizationId });
-        if (!query.showAll)
-            qb.andWhere('product.isActive = :isActive', { isActive: true });
         if (query.search) {
-            const filters = JSON.parse(query.search);
-            await (0, list_1.applyFilters)(qb, 'product', filters);
+            if (query.search.includes('{')) {
+                const filters = JSON.parse(query.search);
+                await (0, list_1.applyFilters)(qb, 'product', filters);
+            }
+            else {
+                qb.andWhere('product.name ILIKE :productName', { productName: `%${query.search}%` });
+            }
         }
         qb
             .skip(query.offset)
             .take(query.limit)
-            .orderBy(`product.${query.sortBy === 'createdAt' ? 'createdAt' : query.sortBy}`, query.sortOrder.toUpperCase());
+            .orderBy(`product.${query.sortBy === 'createdAt' ? 'createdAt' : query.sortBy}`, query.sortOrder.toUpperCase())
+            .addOrderBy('product.isActive', 'DESC');
         if (query.categoryCode) {
             qb.andWhere('LOWER(category.code) = LOWER(:categoryCode)', {
                 categoryCode: query.categoryCode,
@@ -76,8 +80,6 @@ let TypeormItemRepository = class TypeormItemRepository {
                 saleUom: true,
             },
         };
-        if (!includeAll)
-            query.where['isActive'] = true;
         const item = await this.repository.findOne(query);
         return item ? catalog_mapper_1.CatalogMapper.toDomainItem(item) : null;
     }
@@ -154,6 +156,54 @@ let TypeormItemRepository = class TypeormItemRepository {
             total,
         };
     }
+    async findLastCreated(organizationId) {
+        const entity = await this.repository.findOne({
+            where: { organizationId, isActive: true },
+            order: { createdAt: 'DESC' },
+            relations: {
+                category: true,
+                baseUom: true,
+                purchaseUom: true,
+                saleUom: true,
+            },
+        });
+        return entity ? catalog_mapper_1.CatalogMapper.toDomainItem(entity) : null;
+    }
+    async getMetrics(query) {
+        const applySearch = async (qb) => {
+            if (query.search) {
+                if (query.search.includes('{')) {
+                    await (0, list_1.applyFilters)(qb, 'product', JSON.parse(query.search));
+                }
+                else {
+                    qb.andWhere('(product.name ILIKE :search OR product.code ILIKE :search)', {
+                        search: `%${query.search}%`,
+                    });
+                }
+            }
+            if (query.categoryCode) {
+                qb.andWhere('LOWER(category.code) = LOWER(:categoryCode)', {
+                    categoryCode: query.categoryCode,
+                });
+            }
+        };
+        const countWith = async (where, params) => {
+            const qb = this.repository
+                .createQueryBuilder('product')
+                .leftJoin('product.category', 'category')
+                .where('product.organization_id = :organizationId', { organizationId: query.organizationId });
+            await applySearch(qb);
+            if (where)
+                qb.andWhere(where, params);
+            return qb.getCount();
+        };
+        const total = await countWith();
+        const active = await countWith('product.is_active = :isActive', { isActive: true });
+        const inactive = await countWith('product.is_active = :isActive', { isActive: false });
+        const noCategory = await countWith('(category.code IS NULL OR LOWER(category.code) = LOWER(:noCatCode))', { noCatCode: 'NOT FOUND' });
+        const noGeneric = await countWith('product.generic_product_code IS NULL');
+        return { total, active, inactive, noCategory, noGenericProductCode: noGeneric };
+    }
     async save(product) {
         const category = await this.categoryRepository.findOneBy({
             id: product.category.id,
@@ -180,6 +230,10 @@ let TypeormItemRepository = class TypeormItemRepository {
             baseUom: { id: product.baseUomId },
             purchaseUom: product.purchaseUomId ? { id: product.purchaseUomId } : null,
             saleUom: product.saleUomId ? { id: product.saleUomId } : null,
+            imageUrl: product.imageUrl,
+            smallImageUrl: product.smallImageUrl,
+            mediumImageUrl: product.mediumImageUrl,
+            largeImageUrl: product.largeImageUrl,
         });
         const saved = await this.repository.save(entity);
         return catalog_mapper_1.CatalogMapper.toDomainItem(saved);

@@ -31,6 +31,7 @@ class CreatePharmaceuticsDto {
     drugInteractions;
     dosage;
     drugComponentIds;
+    overrideCodeValidation;
 }
 exports.CreatePharmaceuticsDto = CreatePharmaceuticsDto;
 __decorate([
@@ -118,6 +119,11 @@ __decorate([
     (0, class_validator_1.IsString)({ each: true }),
     __metadata("design:type", Array)
 ], CreatePharmaceuticsDto.prototype, "drugComponentIds", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreatePharmaceuticsDto.prototype, "overrideCodeValidation", void 0);
 class UpdatePharmaceuticsDto extends CreatePharmaceuticsDto {
 }
 exports.UpdatePharmaceuticsDto = UpdatePharmaceuticsDto;

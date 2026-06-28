@@ -4,6 +4,7 @@ export class AccountReceivable {
     public readonly id: string,
     public readonly organizationId: string,
     public readonly customerId: string,
+    public readonly customerName: string | null,
     public readonly saleId: string,
     public readonly receivableNumber: string,
     public readonly originalAmount: number,

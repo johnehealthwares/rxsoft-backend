@@ -26,8 +26,11 @@ const website_dto_1 = require("../dto/website.dto");
 const health_concern_orm_entity_1 = require("../entities/health-concern.orm-entity");
 const blog_article_orm_entity_1 = require("../entities/blog-article.orm-entity");
 const prescription_orm_entity_1 = require("../entities/prescription.orm-entity");
+const order_orm_entity_1 = require("../entities/order.orm-entity");
+const item_orm_entity_1 = require("../../../modules/catalog/entities/item.orm-entity");
 const entities_1 = require("../../sales/entities");
 const entities_2 = require("../../inventory/entities");
+const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
 const ORDER_STATUS_TRANSITIONS = {
     pending: ['confirmed', 'cancelled'],
     confirmed: ['processing', 'cancelled'],
@@ -42,16 +45,22 @@ let WebsiteAdminController = class WebsiteAdminController {
     healthConcernRepo;
     blogRepo;
     prescriptionRepo;
+    orderRepo;
+    itemRepo;
     saleRepo;
+    saleLineRepo;
     stockBalanceRepo;
     stockAdjustmentRepo;
     storeStockLocationRepo;
-    constructor(websiteService, healthConcernRepo, blogRepo, prescriptionRepo, saleRepo, stockBalanceRepo, stockAdjustmentRepo, storeStockLocationRepo) {
+    constructor(websiteService, healthConcernRepo, blogRepo, prescriptionRepo, orderRepo, itemRepo, saleRepo, saleLineRepo, stockBalanceRepo, stockAdjustmentRepo, storeStockLocationRepo) {
         this.websiteService = websiteService;
         this.healthConcernRepo = healthConcernRepo;
         this.blogRepo = blogRepo;
         this.prescriptionRepo = prescriptionRepo;
+        this.orderRepo = orderRepo;
+        this.itemRepo = itemRepo;
         this.saleRepo = saleRepo;
+        this.saleLineRepo = saleLineRepo;
         this.stockBalanceRepo = stockBalanceRepo;
         this.stockAdjustmentRepo = stockAdjustmentRepo;
         this.storeStockLocationRepo = storeStockLocationRepo;
@@ -119,13 +128,12 @@ let WebsiteAdminController = class WebsiteAdminController {
         return this.prescriptionRepo.findOne({ where: { id }, relations: ['files'] });
     }
     async listOrders(status, page, limit) {
-        const where = { saleChannel: 'mobile' };
-        if (status) {
+        const where = {};
+        if (status)
             where.orderStatus = status;
-        }
-        const [data, total] = await this.saleRepo.findAndCount({
+        const [data, total] = await this.orderRepo.findAndCount({
             where: where,
-            relations: ['lines'],
+            relations: ['items', 'delivery', 'sale'],
             order: { createdAt: 'DESC' },
             skip: ((page ?? 1) - 1) * (limit ?? 20),
             take: limit ?? 20,
@@ -133,110 +141,119 @@ let WebsiteAdminController = class WebsiteAdminController {
         return { data, total, page: page ?? 1, limit: limit ?? 20 };
     }
     async getOrder(id) {
-        const order = await this.saleRepo.findOne({
-            where: { id, saleChannel: 'mobile' },
-            relations: ['lines'],
+        const order = await this.orderRepo.findOne({
+            where: { id },
+            relations: ['items', 'delivery', 'sale'],
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
-    async updateOrderStatus(id, dto, currentUser) {
-        const order = await this.saleRepo.findOne({
-            where: { id, saleChannel: 'mobile' },
-            relations: ['lines'],
-        });
+    async updateOrderStatus(id, dto) {
+        const order = await this.orderRepo.findOne({ where: { id } });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        const allowed = ORDER_STATUS_TRANSITIONS[order.orderStatus ?? 'pending'] ?? [];
+        const allowed = ORDER_STATUS_TRANSITIONS[order.orderStatus] ?? [];
         if (!allowed.includes(dto.status)) {
-            throw new common_1.BadRequestException(`Cannot transition from ${order.orderStatus ?? 'pending'} to ${dto.status}. Allowed: ${allowed.join(', ') || 'none'}`);
-        }
-        if (dto.status === 'cancelled' && order.assignedLocationId) {
-            const linesWithDetails = await this.websiteService.getOrderLinesWithItems(order.id);
-            const locId = order.assignedLocationId;
-            for (const line of linesWithDetails) {
-                const balance = await this.stockBalanceRepo.findOne({
-                    where: {
-                        organizationId: currentUser.organizationId,
-                        item: { id: line.itemId },
-                        location: { id: locId },
-                    },
-                });
-                if (balance && balance.quantityReserved > 0) {
-                    balance.quantityReserved = Number(Math.max(0, balance.quantityReserved - line.quantity).toFixed(4));
-                    await this.stockBalanceRepo.save(balance);
-                }
-            }
-            order.assignedLocationId = null;
+            throw new common_1.BadRequestException(`Cannot transition from ${order.orderStatus} to ${dto.status}. Allowed: ${allowed.join(', ') || 'none'}`);
         }
         order.orderStatus = dto.status;
-        return this.saleRepo.save(order);
+        return this.orderRepo.save(order);
     }
-    async assignLocation(id, dto) {
-        const order = await this.saleRepo.findOne({
-            where: { id, saleChannel: 'mobile' },
-        });
-        if (!order)
-            throw new common_1.NotFoundException('Order not found');
-        order.assignedLocationId = dto.stockLocationId;
-        return this.saleRepo.save(order);
-    }
-    async processOrder(id, currentUser) {
-        const order = await this.saleRepo.findOne({
-            where: { id, saleChannel: 'mobile', orderStatus: 'confirmed' },
-        });
-        if (!order)
-            throw new common_1.NotFoundException('Order must be in confirmed status to process');
-        const locationId = order.assignedLocationId;
+    async completeSale(saleId, currentUser) {
+        const sale = await this.saleRepo.findOne({ where: { id: saleId, status: 'draft' }, relations: ['lines', 'lines.item'] });
+        if (!sale)
+            throw new common_1.NotFoundException('Draft sale not found');
+        const locationId = sale.stockLocationId;
         if (!locationId) {
             const ssl = await this.storeStockLocationRepo.findOne({
-                where: {
-                    organizationId: currentUser.organizationId,
-                    storeId: order.storeId,
-                    purpose: 'sale_issue',
-                    isActive: true,
-                },
+                where: { organizationId: currentUser.organizationId, storeId: sale.storeId, purpose: 'sale_issue', isActive: true },
                 relations: ['stockLocation'],
             });
-            if (!ssl) {
-                throw new common_1.BadRequestException('No sale_issue stock location configured and no location assigned to order');
-            }
-            order.assignedLocationId = ssl.stockLocation.id;
+            if (!ssl)
+                throw new common_1.BadRequestException('No sale_issue stock location configured');
+            sale.stockLocationId = ssl.stockLocation.id;
         }
-        const linesWithDetails = await this.websiteService.getOrderLinesWithItems(order.id);
-        for (const line of linesWithDetails) {
-            const locId2 = order.assignedLocationId;
-            if (!locId2)
-                continue;
+        const finalLocId = sale.stockLocationId;
+        if (!sale.lines?.length)
+            throw new common_1.BadRequestException('Sale has no lines');
+        for (const line of sale.lines) {
             const balance = await this.stockBalanceRepo.findOne({
-                where: {
-                    organizationId: currentUser.organizationId,
-                    item: { id: line.itemId },
-                    location: { id: locId2 },
-                },
+                where: { organizationId: currentUser.organizationId, item: { id: line.item.id }, location: { id: finalLocId } },
                 relations: ['item', 'location'],
             });
             if (!balance)
                 continue;
-            const qtyToDeplete = line.quantity;
-            const reserved = Math.min(balance.quantityReserved, qtyToDeplete);
-            balance.quantityReserved = Number((balance.quantityReserved - reserved).toFixed(4));
-            balance.quantityOnHand = Number((balance.quantityOnHand - (qtyToDeplete - reserved)).toFixed(4));
-            if (balance.quantityOnHand < 0) {
-                throw new common_1.BadRequestException(`Insufficient stock for item ${line.itemId}`);
-            }
+            balance.quantityOnHand = Number(Math.max(0, balance.quantityOnHand - line.quantity).toFixed(4));
             const savedBalance = await this.stockBalanceRepo.save(balance);
             await this.stockAdjustmentRepo.save(this.stockAdjustmentRepo.create({
                 stockBalance: savedBalance,
-                reason: `order_fulfillment:${order.saleNumber}`,
-                deltaQuantity: -qtyToDeplete,
+                reason: `sale_fulfillment:${sale.saleNumber}`,
+                deltaQuantity: -line.quantity,
                 performedByUserId: currentUser.sub,
                 performedAt: new Date(),
             }));
         }
+        sale.status = 'posted';
+        await this.saleRepo.save(sale);
+        await this.orderRepo.update({ saleId: sale.id }, { orderStatus: 'dispatched' });
+        return { id: sale.id, status: sale.status };
+    }
+    async postOrderAsSale(id, dto, currentUser) {
+        const order = await this.orderRepo.findOne({
+            where: { id, orderStatus: 'confirmed' },
+            relations: ['items'],
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order must be in confirmed status to post as sale');
+        if (!order.items?.length) {
+            throw new common_1.BadRequestException('Order has no items');
+        }
+        const items = await this.itemRepo.findBy({ id: (0, typeorm_2.In)(order.items.map((i) => i.itemId)) });
+        const itemMap = new Map(items.map((i) => [i.id, i]));
+        const sale = this.saleRepo.create({
+            organizationId: currentUser.organizationId,
+            saleNumber: `S-ORD-${order.orderNumber.replace('ORD-', '')}`,
+            saleChannel: 'mobile',
+            storeId: persistence_scope_1.DEFAULT_STORE_ID,
+            customerId: order.customerId,
+            status: 'draft',
+            notes: order.notes,
+            stockLocationId: dto.stockLocationId ?? null,
+            subtotalAmount: order.subtotalAmount,
+            discountAmount: 0,
+            taxAmount: 0,
+            totalAmount: order.totalAmount,
+            paidAmount: 0,
+            changeAmount: 0,
+            saleDate: new Date(),
+            soldByUserId: currentUser.sub,
+            createdBy: currentUser.sub,
+        });
+        const savedSale = await this.saleRepo.save(sale);
+        let lineNumber = 1;
+        for (const orderItem of order.items) {
+            const catalogItem = itemMap.get(orderItem.itemId);
+            await this.saleLineRepo.save(this.saleLineRepo.create({
+                sale: savedSale,
+                lineNumber,
+                item: { id: orderItem.itemId },
+                quantity: orderItem.quantity,
+                unitPrice: orderItem.unitPrice,
+                lineSubtotal: orderItem.unitPrice * orderItem.quantity,
+                lineTotal: orderItem.unitPrice * orderItem.quantity,
+                uom: { id: catalogItem?.baseUomId ?? persistence_scope_1.DEFAULT_UOM_ID },
+                lot: null,
+            }));
+            lineNumber++;
+        }
+        order.saleId = savedSale.id;
         order.orderStatus = 'processing';
-        return this.saleRepo.save(order);
+        await this.orderRepo.save(order);
+        return this.orderRepo.findOne({
+            where: { id: order.id },
+            relations: ['items', 'delivery', 'sale'],
+        });
     }
 };
 exports.WebsiteAdminController = WebsiteAdminController;
@@ -330,7 +347,7 @@ __decorate([
 ], WebsiteAdminController.prototype, "updatePrescriptionStatus", null);
 __decorate([
     (0, common_1.Get)('orders'),
-    (0, swagger_1.ApiOperation)({ summary: 'List all website orders (saleChannel=mobile)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'List all website orders' }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'page', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'limit', required: false }),
@@ -354,29 +371,29 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Update order status with transition validation' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
-    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:paramtypes", [String, website_dto_1.UpdateOrderStatusDto]),
     __metadata("design:returntype", Promise)
 ], WebsiteAdminController.prototype, "updateOrderStatus", null);
 __decorate([
-    (0, common_1.Post)('orders/:id/assign-location'),
-    (0, swagger_1.ApiOperation)({ summary: 'Assign a stock location to fulfill an order' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
-], WebsiteAdminController.prototype, "assignLocation", null);
-__decorate([
-    (0, common_1.Post)('orders/:id/process'),
-    (0, swagger_1.ApiOperation)({ summary: 'Process order — deplete reserved stock and update status' }),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Post)('complete-sale/:saleId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Complete a draft sale — deplete stock and post' }),
+    __param(0, (0, common_1.Param)('saleId')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
-], WebsiteAdminController.prototype, "processOrder", null);
+], WebsiteAdminController.prototype, "completeSale", null);
+__decorate([
+    (0, common_1.Post)('orders/:id/post-sale'),
+    (0, swagger_1.ApiOperation)({ summary: 'Post an order as a draft sale' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, website_dto_1.PostOrderAsSaleDto, Object]),
+    __metadata("design:returntype", Promise)
+], WebsiteAdminController.prototype, "postOrderAsSale", null);
 exports.WebsiteAdminController = WebsiteAdminController = __decorate([
     (0, swagger_1.ApiTags)('website-admin'),
     (0, swagger_1.ApiBearerAuth)(),
@@ -386,11 +403,17 @@ exports.WebsiteAdminController = WebsiteAdminController = __decorate([
     __param(1, (0, typeorm_1.InjectRepository)(health_concern_orm_entity_1.HealthConcernOrmEntity)),
     __param(2, (0, typeorm_1.InjectRepository)(blog_article_orm_entity_1.BlogArticleOrmEntity)),
     __param(3, (0, typeorm_1.InjectRepository)(prescription_orm_entity_1.PrescriptionOrmEntity)),
-    __param(4, (0, typeorm_1.InjectRepository)(entities_1.SaleOrmEntity)),
-    __param(5, (0, typeorm_1.InjectRepository)(entities_2.StockBalanceOrmEntity)),
-    __param(6, (0, typeorm_1.InjectRepository)(entities_2.StockAdjustmentOrmEntity)),
-    __param(7, (0, typeorm_1.InjectRepository)(entities_2.StoreStockLocationOrmEntity)),
+    __param(4, (0, typeorm_1.InjectRepository)(order_orm_entity_1.OrderOrmEntity)),
+    __param(5, (0, typeorm_1.InjectRepository)(item_orm_entity_1.ItemOrmEntity)),
+    __param(6, (0, typeorm_1.InjectRepository)(entities_1.SaleOrmEntity)),
+    __param(7, (0, typeorm_1.InjectRepository)(entities_1.SaleLineOrmEntity)),
+    __param(8, (0, typeorm_1.InjectRepository)(entities_2.StockBalanceOrmEntity)),
+    __param(9, (0, typeorm_1.InjectRepository)(entities_2.StockAdjustmentOrmEntity)),
+    __param(10, (0, typeorm_1.InjectRepository)(entities_2.StoreStockLocationOrmEntity)),
     __metadata("design:paramtypes", [website_service_1.WebsiteService,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

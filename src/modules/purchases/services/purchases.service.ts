@@ -1,12 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DEFAULT_ORGANIZATION_ID, DEFAULT_SYSTEM_USER_ID, DEFAULT_UOM_ID } from '../../../shared/constants/persistence-scope';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { WarehouseOrmEntity } from '../../inventory/entities';
-import { CreatePurchaseDto, PurchaseLineDto, UpdatePurchaseDto } from '../dto/purchases.dto';
+import { CreatePurchaseDto, CreatePurchaseLineDto, PurchaseLineDto, UpdatePurchaseDto, UpdatePurchaseLineDto } from '../dto/purchases.dto';
 import { PurchaseOrderLineOrmEntity, PurchaseOrderOrmEntity } from '../entities';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 type PurchaseSummaryType = {
   id: string;
@@ -25,6 +26,8 @@ type PurchaseSummaryType = {
   lines: Array<{
     id: string;
     itemId: string;
+    itemCode: string;
+    itemName: string;
     orderedQty: number;
     receivedQty: number;
     uomId: string;
@@ -55,6 +58,7 @@ export class PurchasesService {
     const qb = this.purchaseOrderRepository
       .createQueryBuilder('purchase')
       .leftJoinAndSelect('purchase.lines', 'line')
+      .leftJoinAndSelect('line.item', 'lineItem')
       .leftJoinAndSelect('purchase.warehouse', 'warehouse')
       .leftJoinAndSelect('purchase.supplier', 'supplier')
       .where('purchase.organization_id = :organizationId', { organizationId });
@@ -107,6 +111,24 @@ export class PurchasesService {
   }
 
   async createPurchase(payload: CreatePurchaseDto, currentUser: RequestUser): Promise<PurchaseSummaryType> {
+    console.log({payload})
+    const userPurchaseOrderNumber = payload.purchaseOrderNumber?.trim() || payload.invoiceNumber?.trim();
+    if (userPurchaseOrderNumber) {
+      const last = await this.purchaseOrderRepository.findOne({
+        where: { organizationId: currentUser.organizationId },
+        order: { createdAt: 'DESC' },
+        select: ['purchaseOrderNumber'],
+      });
+      const { valid, expectedCode } = validateSequentialCode({
+        providedCode: userPurchaseOrderNumber,
+        lastCode: last?.purchaseOrderNumber,
+        override: payload.overrideCodeValidation,
+      });
+      if (!valid) {
+        throw new BadRequestException(`Invalid code '${userPurchaseOrderNumber}'. Expected '${expectedCode}'.`);
+      }
+    }
+    console.log('here')
     return this.dataSource.transaction(async (manager) => {
       const purchaseOrderRepo = manager.getRepository(PurchaseOrderOrmEntity);
       const purchaseOrderLineRepo = manager.getRepository(PurchaseOrderLineOrmEntity);
@@ -115,7 +137,7 @@ export class PurchasesService {
       const warehouse = await this.resolveWarehouse(payload.warehouseId ?? payload.branchId ?? '', warehouseRepo, currentUser.organizationId);
       const linesPayload = this.normalizeLines(payload);
       const totals = this.calculateTotals(linesPayload);
-      const purchaseOrderNumber = payload.purchaseOrderNumber?.trim() || payload.invoiceNumber?.trim() || `PO-${Date.now()}`;
+      const purchaseOrderNumber = userPurchaseOrderNumber || `PO-${Date.now()}`;
 
       const purchaseOrder = await purchaseOrderRepo.save(
         purchaseOrderRepo.create({
@@ -136,8 +158,9 @@ export class PurchasesService {
           note: payload.note ?? null,
         }),
       );
+            console.log('here...1', {purchaseOrder})
 
-      await purchaseOrderLineRepo.save(
+      const pol = await purchaseOrderLineRepo.save(
         linesPayload.map((line) =>
           purchaseOrderLineRepo.create({
             purchaseOrder,
@@ -153,8 +176,8 @@ export class PurchasesService {
           }),
         ),
       );
-
-      return this.getById(purchaseOrder.id, currentUser.organizationId);
+      console.log('here...2', {pol})
+      return this.getById(purchaseOrder.id, currentUser.organizationId, manager);
     });
   }
 
@@ -181,10 +204,11 @@ export class PurchasesService {
     );
   }
 
-  async getById(purchaseId: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<PurchaseSummaryType> {
-    const row = await this.purchaseOrderRepository.findOne({
+  async getById(purchaseId: string, organizationId = DEFAULT_ORGANIZATION_ID, manager?: EntityManager): Promise<PurchaseSummaryType> {
+    const repo = manager ? manager.getRepository(PurchaseOrderOrmEntity) : this.purchaseOrderRepository;
+    const row = await repo.findOne({
       where: { id: purchaseId, organizationId },
-      relations: ['lines', 'warehouse', 'supplier'],
+      relations: ['lines', 'lines.item', 'warehouse', 'supplier'],
     });
 
     if (!row) {
@@ -269,13 +293,192 @@ export class PurchasesService {
       }
 
       const saved = await purchaseOrderRepo.save(order);
-      return this.getById(saved.id, currentUser.organizationId);
+      return this.getById(saved.id, currentUser.organizationId, manager);
     });
   }
 
   async removePurchase(purchaseId: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<void> {
     const result = await this.purchaseOrderRepository.delete({ id: purchaseId, organizationId });
     if (!result.affected) throw new NotFoundException('Purchase order not found');
+  }
+
+  async addLine(purchaseId: string, payload: CreatePurchaseLineDto, currentUser: RequestUser): Promise<PurchaseSummaryType> {
+    return this.dataSource.transaction(async (manager) => {
+      const poRepo = manager.getRepository(PurchaseOrderOrmEntity);
+      const poLineRepo = manager.getRepository(PurchaseOrderLineOrmEntity);
+
+      const order = await poRepo.findOne({
+        where: { id: purchaseId, organizationId: currentUser.organizationId },
+        relations: ['lines', 'lines.item'],
+      });
+      if (!order) throw new NotFoundException('Purchase order not found');
+      if (order.status !== 'draft') {
+        throw new ForbiddenException('Lines can only be added to draft purchase orders');
+      }
+
+      const line = poLineRepo.create({
+        purchaseOrder: order,
+        itemId: payload.itemId,
+        orderedQty: payload.orderedQty,
+        receivedQty: 0,
+        uomId: payload.uomId,
+        unitCost: payload.unitCost,
+        discountPercent: payload.discountPercent ?? 0,
+        taxPercent: payload.taxPercent ?? 0,
+        lineSubtotal: this.computeLineSubtotal(payload),
+        lineTotal: this.computeLineTotal(payload),
+      });
+      const saved = await poLineRepo.save(line);
+      order.lines.push(saved);
+
+      const totals = this.calculateTotals(
+        order.lines.map((l) => ({
+          itemId: l.itemId,
+          orderedQty: Number(l.orderedQty),
+          receivedQty: Number(l.receivedQty),
+          uomId: l.uomId,
+          unitCost: Number(l.unitCost),
+          discountPercent: Number(l.discountPercent),
+          taxPercent: Number(l.taxPercent),
+        })),
+      );
+      order.subtotalAmount = totals.subtotalAmount;
+      order.taxAmount = totals.taxAmount;
+      order.totalAmount = totals.totalAmount;
+      await poRepo.save(order);
+
+      return this.getById(purchaseId, currentUser.organizationId, manager);
+    });
+  }
+
+  async updateLine(purchaseId: string, lineId: string, payload: UpdatePurchaseLineDto, currentUser: RequestUser): Promise<PurchaseSummaryType> {
+    return this.dataSource.transaction(async (manager) => {
+      const poRepo = manager.getRepository(PurchaseOrderOrmEntity);
+      const poLineRepo = manager.getRepository(PurchaseOrderLineOrmEntity);
+
+      const order = await poRepo.findOne({
+        where: { id: purchaseId, organizationId: currentUser.organizationId },
+        relations: ['lines', 'lines.item'],
+      });
+      if (!order) throw new NotFoundException('Purchase order not found');
+
+      const line = order.lines.find((l) => l.id === lineId);
+      if (!line) throw new NotFoundException('Purchase order line not found');
+
+      const status = order.status;
+      const isReceived = Number(line.receivedQty) >= Number(line.orderedQty);
+
+      if (status === 'received' || status === 'cancelled') {
+        throw new ForbiddenException('Cannot modify lines on received or cancelled purchase orders');
+      }
+
+      if (status === 'approved' || status === 'partially_received') {
+        const allowedFields = new Set<string>();
+        allowedFields.add('unitCost');
+        if (!isReceived) {
+          allowedFields.add('receivedQty');
+        }
+        if (payload.orderedQty !== undefined && !allowedFields.has('orderedQty')) {
+          throw new ForbiddenException('Cannot change ordered quantity in approved status');
+        }
+        if (payload.uomId !== undefined && !allowedFields.has('uomId')) {
+          throw new ForbiddenException('Cannot change UOM in approved status');
+        }
+        if (payload.discountPercent !== undefined && !allowedFields.has('discountPercent')) {
+          throw new ForbiddenException('Cannot change discount in approved status');
+        }
+        if (payload.taxPercent !== undefined && !allowedFields.has('taxPercent')) {
+          throw new ForbiddenException('Cannot change tax in approved status');
+        }
+      }
+
+      if (payload.orderedQty !== undefined) line.orderedQty = payload.orderedQty;
+      if (payload.uomId !== undefined) line.uomId = payload.uomId;
+      if (payload.unitCost !== undefined) line.unitCost = payload.unitCost;
+      if (payload.receivedQty !== undefined) line.receivedQty = payload.receivedQty;
+      if (payload.discountPercent !== undefined) line.discountPercent = payload.discountPercent;
+      if (payload.taxPercent !== undefined) line.taxPercent = payload.taxPercent;
+
+      line.lineSubtotal = this.computeLineSubtotal({
+        itemId: line.itemId,
+        orderedQty: Number(line.orderedQty),
+        uomId: line.uomId,
+        unitCost: Number(line.unitCost),
+        discountPercent: Number(line.discountPercent),
+        taxPercent: Number(line.taxPercent),
+      });
+      line.lineTotal = this.computeLineTotal({
+        itemId: line.itemId,
+        orderedQty: Number(line.orderedQty),
+        uomId: line.uomId,
+        unitCost: Number(line.unitCost),
+        discountPercent: Number(line.discountPercent),
+        taxPercent: Number(line.taxPercent),
+      });
+
+      await poLineRepo.save(line);
+
+      const totals = this.calculateTotals(
+        order.lines.map((l) => ({
+          itemId: l.itemId,
+          orderedQty: Number(l.orderedQty),
+          receivedQty: Number(l.receivedQty),
+          uomId: l.uomId,
+          unitCost: Number(l.unitCost),
+          discountPercent: Number(l.discountPercent),
+          taxPercent: Number(l.taxPercent),
+        })),
+      );
+      order.subtotalAmount = totals.subtotalAmount;
+      order.taxAmount = totals.taxAmount;
+      order.totalAmount = totals.totalAmount;
+      await poRepo.save(order);
+
+      return this.getById(purchaseId, currentUser.organizationId, manager);
+    });
+  }
+
+  async removeLine(purchaseId: string, lineId: string, currentUser: RequestUser): Promise<PurchaseSummaryType> {
+    return this.dataSource.transaction(async (manager) => {
+      const poRepo = manager.getRepository(PurchaseOrderOrmEntity);
+      const poLineRepo = manager.getRepository(PurchaseOrderLineOrmEntity);
+
+      const order = await poRepo.findOne({
+        where: { id: purchaseId, organizationId: currentUser.organizationId },
+        relations: ['lines', 'lines.item'],
+      });
+      if (!order) throw new NotFoundException('Purchase order not found');
+      if (order.status !== 'draft') {
+        throw new ForbiddenException('Lines can only be deleted from draft purchase orders');
+      }
+
+      const line = order.lines.find((l) => l.id === lineId);
+      if (!line) throw new NotFoundException('Purchase order line not found');
+
+      await poLineRepo.remove(line);
+      order.lines = order.lines.filter((l) => l.id !== lineId);
+
+      const totals = order.lines.length
+        ? this.calculateTotals(
+            order.lines.map((l) => ({
+              itemId: l.itemId,
+              orderedQty: Number(l.orderedQty),
+              receivedQty: Number(l.receivedQty),
+              uomId: l.uomId,
+              unitCost: Number(l.unitCost),
+              discountPercent: Number(l.discountPercent),
+              taxPercent: Number(l.taxPercent),
+            })),
+          )
+        : { subtotalAmount: 0, taxAmount: 0, totalAmount: 0 };
+
+      order.subtotalAmount = totals.subtotalAmount;
+      order.taxAmount = totals.taxAmount;
+      order.totalAmount = totals.totalAmount;
+      await poRepo.save(order);
+
+      return this.getById(purchaseId, currentUser.organizationId, manager);
+    });
   }
 
   private resolveSortColumn(sortBy: string): string {
@@ -338,6 +541,8 @@ export class PurchasesService {
     return {
       id: line.id,
       itemId: line.itemId,
+      itemCode: line.item?.code ?? '',
+      itemName: line.item?.name ?? '',
       orderedQty: Number(line.orderedQty),
       receivedQty: Number(line.receivedQty),
       uomId: line.uomId,

@@ -38,6 +38,10 @@ export class ReceiveGoodsDto {
   @IsString()
   receiptNumber?: string;
 
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

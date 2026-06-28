@@ -13,3 +13,6 @@ export { NewsletterSubscriberOrmEntity } from './newsletter-subscriber.orm-entit
 export { ProductReviewOrmEntity } from './product-review.orm-entity';
 export { RewardTransactionOrmEntity } from './reward-transaction.orm-entity';
 export type { RewardTransactionType } from './reward-transaction.orm-entity';
+export { OrderOrmEntity } from './order.orm-entity';
+export { OrderItemOrmEntity } from './order-item.orm-entity';
+export { DeliveryOrmEntity } from './delivery.orm-entity';

@@ -5,6 +5,8 @@ import { Item } from '../domains/item.entity';
 import {
   ItemDependencySearchQuery,
   ItemListQuery,
+  ItemMetrics,
+  ItemMetricsQuery,
   ItemRepository,
   UomLookup,
 } from './item.repository';
@@ -12,7 +14,7 @@ import { ItemOrmEntity } from '../entities/item.orm-entity';
 import { ItemCategoryOrmEntity } from '../entities/item-category.orm-entity';
 import { CatalogMapper } from '../mappers/catalog.mapper';
 import { UomOrmEntity } from '../../sales/entities';
-import { applyFilters } from 'src/database/list';
+import { applyFilters, applyFilter } from 'src/database/list';
 
 const SEARCH_MAP: Record<string, string> = {
   name: 'product.name',
@@ -42,11 +44,16 @@ export class TypeormItemRepository implements ItemRepository {
       .leftJoinAndSelect('product.saleUom', 'saleUom')
       .where('product.organization_id = :organizationId', { organizationId: query.organizationId })
 
-    if (!query.showAll) qb.andWhere('product.isActive = :isActive', { isActive: true })
+    // if (!query.showAll) qb.andWhere('product.isActive = :isActive', { isActive: true })
 
     if (query.search) {
-      const filters = JSON.parse(query.search);
-      await applyFilters(qb, 'product', filters)
+      if (query.search.includes('{')) {
+        const filters = JSON.parse(query.search);
+        await applyFilters(qb, 'product', filters)
+      } else {
+        qb.andWhere('product.name ILIKE :productName', {productName: `%${query.search}%`} )
+      }
+
     }
     qb
       .skip(query.offset)
@@ -54,14 +61,14 @@ export class TypeormItemRepository implements ItemRepository {
       .orderBy(
         `product.${query.sortBy === 'createdAt' ? 'createdAt' : query.sortBy}`,
         query.sortOrder.toUpperCase() as 'ASC' | 'DESC',
-      );
+      )
+      .addOrderBy('product.isActive', 'DESC');
 
     if (query.categoryCode) {
       qb.andWhere('LOWER(category.code) = LOWER(:categoryCode)', {
         categoryCode: query.categoryCode,
       });
     }
-
     const [items, total] = await qb.getManyAndCount();
 
     return {
@@ -70,7 +77,7 @@ export class TypeormItemRepository implements ItemRepository {
     };
   }
 
-  async findById(id: string, organizationId: string, includeAll: boolean ): Promise<Item | null> {
+  async findById(id: string, organizationId: string, includeAll: boolean): Promise<Item | null> {
     const query: any = {
       where: { id, organizationId },
       relations: {
@@ -80,7 +87,7 @@ export class TypeormItemRepository implements ItemRepository {
         saleUom: true,
       },
     }
-    if(!includeAll) query.where['isActive'] = true
+    // if (!includeAll) query.where['isActive'] = true
     const item = await this.repository.findOne(query);
 
     return item ? CatalogMapper.toDomainItem(item) : null;
@@ -175,6 +182,60 @@ export class TypeormItemRepository implements ItemRepository {
     };
   }
 
+  async findLastCreated(organizationId: string): Promise<Item | null> {
+    const entity = await this.repository.findOne({
+      where: { organizationId, isActive: true },
+      order: { createdAt: 'DESC' },
+      relations: {
+        category: true,
+        baseUom: true,
+        purchaseUom: true,
+        saleUom: true,
+      },
+    });
+    return entity ? CatalogMapper.toDomainItem(entity) : null;
+  }
+
+  async getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics> {
+    const applySearch = async (qb: import('typeorm').SelectQueryBuilder<any>) => {
+      if (query.search) {
+        if (query.search.includes('{')) {
+          await applyFilters(qb, 'product', JSON.parse(query.search));
+        } else {
+          qb.andWhere('(product.name ILIKE :search OR product.code ILIKE :search)', {
+            search: `%${query.search}%`,
+          });
+        }
+      }
+      if (query.categoryCode) {
+        qb.andWhere('LOWER(category.code) = LOWER(:categoryCode)', {
+          categoryCode: query.categoryCode,
+        });
+      }
+    };
+
+    const countWith = async (where?: string, params?: Record<string, unknown>) => {
+      const qb = this.repository
+        .createQueryBuilder('product')
+        .leftJoin('product.category', 'category')
+        .where('product.organization_id = :organizationId', { organizationId: query.organizationId });
+      await applySearch(qb);
+      if (where) qb.andWhere(where, params);
+      return qb.getCount();
+    };
+
+    const total = await countWith();
+    const active = await countWith('product.is_active = :isActive', { isActive: true });
+    const inactive = await countWith('product.is_active = :isActive', { isActive: false });
+    const noCategory = await countWith(
+      '(category.code IS NULL OR LOWER(category.code) = LOWER(:noCatCode))',
+      { noCatCode: 'NOT FOUND' },
+    );
+    const noGeneric = await countWith('product.generic_product_code IS NULL');
+
+    return { total, active, inactive, noCategory, noGenericProductCode: noGeneric };
+  }
+
   async save(product: Item): Promise<Item> {
     const category = await this.categoryRepository.findOneBy({
       id: product.category.id,
@@ -203,6 +264,10 @@ export class TypeormItemRepository implements ItemRepository {
       baseUom: { id: product.baseUomId } as UomOrmEntity,
       purchaseUom: product.purchaseUomId ? ({ id: product.purchaseUomId } as UomOrmEntity) : null,
       saleUom: product.saleUomId ? ({ id: product.saleUomId } as UomOrmEntity) : null,
+      imageUrl: product.imageUrl,
+      smallImageUrl: product.smallImageUrl,
+      mediumImageUrl: product.mediumImageUrl,
+      largeImageUrl: product.largeImageUrl,
     });
 
     const saved = await this.repository.save(entity);

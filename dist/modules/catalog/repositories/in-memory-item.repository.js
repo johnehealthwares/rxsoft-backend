@@ -112,6 +112,34 @@ let InMemoryItemRepository = class InMemoryItemRepository {
             total,
         };
     }
+    async findLastCreated(organizationId) {
+        const items = [...this.items.values()]
+            .filter((p) => p.organizationId === organizationId && p.isActive)
+            .sort((a, b) => {
+            const da = this.createdAtById.get(a.id) ?? new Date(0);
+            const db = this.createdAtById.get(b.id) ?? new Date(0);
+            return db.getTime() - da.getTime();
+        });
+        return items[0] ?? null;
+    }
+    async getMetrics(query) {
+        let items = [...this.items.values()].filter((p) => p.organizationId === query.organizationId);
+        if (query.search) {
+            const q = query.search.toLowerCase();
+            items = items.filter((p) => p.name.toLowerCase().includes(q) || (p.code ? p.code.toLowerCase().includes(q) : false));
+        }
+        if (query.categoryCode) {
+            const cc = query.categoryCode.toLowerCase();
+            items = items.filter((p) => p.category?.code?.toLowerCase() === cc);
+        }
+        return {
+            total: items.length,
+            active: items.filter((p) => p.isActive).length,
+            inactive: items.filter((p) => !p.isActive).length,
+            noCategory: items.filter((p) => !p.category?.code || p.category.code.toLowerCase() === 'not found').length,
+            noGenericProductCode: items.filter((p) => !p.genericProductCode).length,
+        };
+    }
     async save(product) {
         this.items.set(product.id, product);
         this.createdAtById.set(product.id, new Date());

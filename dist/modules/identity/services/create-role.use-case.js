@@ -17,12 +17,23 @@ const common_1 = require("@nestjs/common");
 const node_crypto_1 = require("node:crypto");
 const identity_di_tokens_1 = require("./identity.di-tokens");
 const role_entity_1 = require("../domains/role.entity");
+const common_2 = require("@nestjs/common");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let CreateRoleUseCase = class CreateRoleUseCase {
     roleRepository;
     constructor(roleRepository) {
         this.roleRepository = roleRepository;
     }
     async execute(payload, organizationId) {
+        const last = await this.roleRepository.findLastCreated(organizationId);
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: last?.code,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_2.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         const existing = await this.roleRepository.findByCode(payload.code, organizationId);
         if (existing) {
             throw new common_1.ConflictException(`Role with code "${payload.code}" already exists`);

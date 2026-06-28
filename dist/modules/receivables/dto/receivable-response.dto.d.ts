@@ -1,6 +1,10 @@
 export declare class ReceivableResponseDto {
     id: string;
     customerId: string;
+    customer: {
+        id: string;
+        name: string;
+    } | null;
     saleId: string;
     receivableNumber: string;
     originalAmount: number;

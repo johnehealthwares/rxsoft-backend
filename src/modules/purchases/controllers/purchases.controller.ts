@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
@@ -7,7 +7,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
-import { CreatePurchaseDto, UpdatePurchaseDto } from '../dto/purchases.dto';
+import { CreatePurchaseDto, CreatePurchaseLineDto, UpdatePurchaseDto, UpdatePurchaseLineDto } from '../dto/purchases.dto';
 import { PurchasesService } from '../services/purchases.service';
 
 type PurchaseSummaryType = Awaited<ReturnType<PurchasesService['getById']>>;
@@ -70,5 +70,39 @@ export class PurchasesController {
   @AuditAction('purchase.delete')
   async remove(@Param('purchaseId') purchaseId: string, @CurrentUser() currentUser: RequestUser): Promise<void> {
     await this.purchasesService.removePurchase(purchaseId, currentUser.organizationId);
+  }
+
+  @Post(':purchaseId/lines')
+  @Roles('super_admin', 'admin', 'manager')
+  @AuditAction('purchase.line.create')
+  async addLine(
+    @Param('purchaseId') purchaseId: string,
+    @Body() payload: CreatePurchaseLineDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<PurchaseSummaryType> {
+    return this.purchasesService.addLine(purchaseId, payload, currentUser);
+  }
+
+  @Put(':purchaseId/lines/:lineId')
+  @Roles('super_admin', 'admin', 'manager')
+  @AuditAction('purchase.line.update')
+  async updateLine(
+    @Param('purchaseId') purchaseId: string,
+    @Param('lineId') lineId: string,
+    @Body() payload: UpdatePurchaseLineDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<PurchaseSummaryType> {
+    return this.purchasesService.updateLine(purchaseId, lineId, payload, currentUser);
+  }
+
+  @Delete(':purchaseId/lines/:lineId')
+  @Roles('super_admin', 'admin', 'manager')
+  @AuditAction('purchase.line.delete')
+  async removeLine(
+    @Param('purchaseId') purchaseId: string,
+    @Param('lineId') lineId: string,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<PurchaseSummaryType> {
+    return this.purchasesService.removeLine(purchaseId, lineId, currentUser);
   }
 }

@@ -7,6 +7,7 @@ import { toStockLocationType } from '../../../shared/domain/mappers';
 import { WarehouseOrmEntity } from '../entities/warehouse.orm-entity';
 import { StockLocationOrmEntity } from '../entities/stock-location.orm-entity';
 import { CreateStockLocationDto, ListStockLocationsDto, UpdateStockLocationDto } from '../dto/stock-locations.dto';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class StockLocationsService {
@@ -54,6 +55,22 @@ export class StockLocationsService {
     payload: CreateStockLocationDto,
     organizationId = DEFAULT_ORGANIZATION_ID,
   ): Promise<StockLocationType> {
+    if (payload.code) {
+      const last = await this.stockLocationRepository.findOne({
+        where: { organizationId },
+        order: { createdAt: 'DESC' },
+        select: ['code'],
+      });
+      const { valid, expectedCode } = validateSequentialCode({
+        providedCode: payload.code,
+        lastCode: last?.code ?? undefined,
+        override: payload.overrideCodeValidation,
+      });
+      if (!valid) {
+        throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+      }
+    }
+
     const duplicate = await this.stockLocationRepository.findOne({
       where: { organizationId, name: payload.name },
     });

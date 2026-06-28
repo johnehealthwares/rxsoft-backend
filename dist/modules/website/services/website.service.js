@@ -18,17 +18,12 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const item_orm_entity_1 = require("../../../modules/catalog/entities/item.orm-entity");
 const item_category_orm_entity_1 = require("../../../modules/catalog/entities/item-category.orm-entity");
-const entities_1 = require("../../../modules/sales/entities");
 const party_orm_entity_1 = require("../../../modules/customers/entities/party.orm-entity");
 const generic_drug_cache_service_1 = require("../../../services/generic-drug-cache.service");
-const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
-const entities_2 = require("../../../modules/inventory/entities");
-const entities_3 = require("../entities");
+const entities_1 = require("../entities");
 let WebsiteService = class WebsiteService {
     itemRepo;
     categoryRepo;
-    saleRepo;
-    saleLineRepo;
     partyRepo;
     healthConcernRepo;
     prescriptionRepo;
@@ -42,15 +37,13 @@ let WebsiteService = class WebsiteService {
     newsletterRepo;
     reviewRepo;
     rewardRepo;
-    stockBalanceRepo;
-    stockAdjustmentRepo;
-    storeStockLocationRepo;
+    orderRepo;
+    orderItemRepo;
+    deliveryRepo;
     genericDrugCache;
-    constructor(itemRepo, categoryRepo, saleRepo, saleLineRepo, partyRepo, healthConcernRepo, prescriptionRepo, prescriptionFileRepo, consultationRepo, testimonialRepo, blogRepo, deliveryAreaRepo, branchRepo, contactRepo, newsletterRepo, reviewRepo, rewardRepo, stockBalanceRepo, stockAdjustmentRepo, storeStockLocationRepo, genericDrugCache) {
+    constructor(itemRepo, categoryRepo, partyRepo, healthConcernRepo, prescriptionRepo, prescriptionFileRepo, consultationRepo, testimonialRepo, blogRepo, deliveryAreaRepo, branchRepo, contactRepo, newsletterRepo, reviewRepo, rewardRepo, orderRepo, orderItemRepo, deliveryRepo, genericDrugCache) {
         this.itemRepo = itemRepo;
         this.categoryRepo = categoryRepo;
-        this.saleRepo = saleRepo;
-        this.saleLineRepo = saleLineRepo;
         this.partyRepo = partyRepo;
         this.healthConcernRepo = healthConcernRepo;
         this.prescriptionRepo = prescriptionRepo;
@@ -64,9 +57,9 @@ let WebsiteService = class WebsiteService {
         this.newsletterRepo = newsletterRepo;
         this.reviewRepo = reviewRepo;
         this.rewardRepo = rewardRepo;
-        this.stockBalanceRepo = stockBalanceRepo;
-        this.stockAdjustmentRepo = stockAdjustmentRepo;
-        this.storeStockLocationRepo = storeStockLocationRepo;
+        this.orderRepo = orderRepo;
+        this.orderItemRepo = orderItemRepo;
+        this.deliveryRepo = deliveryRepo;
         this.genericDrugCache = genericDrugCache;
     }
     async getHomepage() {
@@ -198,129 +191,70 @@ let WebsiteService = class WebsiteService {
     }
     async listOrders(userId) {
         const where = userId ? { createdBy: userId } : {};
-        return this.saleRepo.find({ where, relations: ['lines'], order: { createdAt: 'DESC' } });
+        return this.orderRepo.find({ where, relations: ['items', 'delivery'], order: { createdAt: 'DESC' } });
     }
     async getOrder(id) {
-        const order = await this.saleRepo.findOne({ where: { id }, relations: ['lines'] });
+        const order = await this.orderRepo.findOne({ where: { id }, relations: ['items', 'delivery'] });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
-    async trackOrder(trackingCode) {
-        const order = await this.saleRepo.findOne({ where: { saleNumber: trackingCode }, relations: ['lines'] });
+    async trackOrder(orderNumber) {
+        const order = await this.orderRepo.findOne({ where: { orderNumber }, relations: ['items', 'delivery'] });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
     async createOrder(payload, userId) {
-        const sale = this.saleRepo.create({
-            organizationId: persistence_scope_1.DEFAULT_ORGANIZATION_ID,
-            saleNumber: `ORD-${Date.now()}`,
-            saleChannel: 'mobile',
-            storeId: persistence_scope_1.DEFAULT_STORE_ID,
-            customerId: payload.customerId ?? userId ?? null,
-            status: 'draft',
-            orderStatus: 'pending',
-            deliveryAddress: payload.deliveryAddress,
-            city: payload.city ?? null,
-            state: payload.state ?? null,
-            phone: payload.phone ?? null,
-            shippingMethod: payload.shippingMethod ?? null,
-            notes: payload.notes ?? null,
-            subtotalAmount: 0,
-            discountAmount: 0,
-            taxAmount: 0,
-            totalAmount: 0,
-            paidAmount: 0,
-            changeAmount: 0,
-            saleDate: new Date(),
-            soldByUserId: userId ?? 'system',
-            createdBy: userId,
-        });
-        const savedSale = (await this.saleRepo.save(sale));
-        if (payload.items?.length) {
-            const items = await this.itemRepo.findBy({ id: (0, typeorm_2.In)(payload.items.map((i) => i.itemId)) });
-            const itemMap = new Map(items.map((i) => [i.id, i]));
-            let lineNumber = 1;
-            for (const line of payload.items) {
-                const item = itemMap.get(line.itemId);
-                if (!item)
-                    continue;
-                const qty = line.quantity;
-                const price = line.unitPrice ?? 0;
-                const total = price * qty;
-                const lineEntity = this.saleLineRepo.create({
-                    sale: savedSale,
-                    lineNumber,
-                    item,
-                    quantity: qty,
-                    unitPrice: price,
-                    lineSubtotal: total,
-                    lineTotal: total,
-                    uom: { id: item.baseUomId },
-                    lot: null,
-                });
-                await this.saleLineRepo.save(lineEntity);
-                lineNumber++;
-            }
-            const ssl = await this.storeStockLocationRepo.findOne({
-                where: {
-                    organizationId: persistence_scope_1.DEFAULT_ORGANIZATION_ID,
-                    storeId: persistence_scope_1.DEFAULT_STORE_ID,
-                    purpose: 'sale_issue',
-                    isActive: true,
-                },
-                relations: ['stockLocation'],
-            });
-            const locationId = ssl?.stockLocation?.id;
-            if (ssl && locationId) {
-                for (const line of payload.items) {
-                    const item = itemMap.get(line.itemId);
-                    if (!item)
-                        continue;
-                    let balance = await this.stockBalanceRepo.findOne({
-                        where: {
-                            organizationId: persistence_scope_1.DEFAULT_ORGANIZATION_ID,
-                            item: { id: line.itemId },
-                            location: { id: locationId },
-                        },
-                        relations: ['item', 'location'],
-                    });
-                    if (!balance) {
-                        balance = this.stockBalanceRepo.create({
-                            organizationId: persistence_scope_1.DEFAULT_ORGANIZATION_ID,
-                            item: { id: line.itemId },
-                            location: { id: locationId },
-                            lot: null,
-                            quantityOnHand: 0,
-                            quantityReserved: 0,
-                            averageCost: 0,
-                        });
-                    }
-                    balance.quantityReserved = Number((balance.quantityReserved + line.quantity).toFixed(4));
-                    const savedBalance = await this.stockBalanceRepo.save(balance);
-                    await this.stockAdjustmentRepo.save(this.stockAdjustmentRepo.create({
-                        stockBalance: savedBalance,
-                        reason: `order_reservation:${savedSale.saleNumber}`,
-                        deltaQuantity: 0,
-                        performedByUserId: userId ?? 'system',
-                        performedAt: new Date(),
-                    }));
-                }
-            }
+        const items = payload.items?.length
+            ? await this.itemRepo.findBy({ id: (0, typeorm_2.In)(payload.items.map((i) => i.itemId)) })
+            : [];
+        const itemMap = new Map(items.map((i) => [i.id, i]));
+        let subtotal = 0;
+        const orderItems = [];
+        for (const line of payload.items ?? []) {
+            const item = itemMap.get(line.itemId);
+            if (!item)
+                continue;
+            const price = line.unitPrice ?? 0;
+            subtotal += price * line.quantity;
+            orderItems.push({ itemId: line.itemId, quantity: line.quantity, unitPrice: price });
         }
-        return this.saleRepo.findOne({ where: { id: savedSale.id }, relations: ['lines'] });
-    }
-    async getOrderLinesWithItems(orderId) {
-        const lines = await this.saleLineRepo.find({
-            where: { sale: { id: orderId } },
-            relations: ['item'],
+        let customerId = payload.customerId ?? null;
+        if (!customerId && userId) {
+            const party = await this.partyRepo.findOne({ where: { userId } });
+            if (party)
+                customerId = party.id;
+        }
+        const order = this.orderRepo.create({
+            orderNumber: `ORD-${Date.now()}`,
+            customerId,
+            paymentMethod: payload.paymentMethod,
+            notes: payload.notes ?? null,
+            orderStatus: 'pending',
+            createdBy: userId ?? null,
+            subtotalAmount: subtotal,
+            totalAmount: subtotal,
         });
-        return lines.map((l) => ({
-            itemId: l.item.id,
-            lotId: l.lot?.id ?? null,
-            quantity: l.quantity,
-        }));
+        const savedOrder = await this.orderRepo.save(order);
+        if (orderItems.length > 0) {
+            await this.orderItemRepo.save(orderItems.map((oi) => this.orderItemRepo.create({ order: savedOrder, ...oi })));
+        }
+        if (payload.delivery) {
+            const delivery = this.deliveryRepo.create({
+                order: savedOrder,
+                address: payload.delivery.address,
+                city: payload.delivery.city ?? null,
+                state: payload.delivery.state ?? null,
+                phone: payload.delivery.phone ?? null,
+                shippingMethod: payload.delivery.shippingMethod ?? null,
+            });
+            await this.deliveryRepo.save(delivery);
+        }
+        return this.orderRepo.findOne({
+            where: { id: savedOrder.id },
+            relations: ['items', 'delivery'],
+        });
     }
     async listArticles(query) {
         const [data, total] = await this.blogRepo.findAndCount({
@@ -432,27 +366,23 @@ exports.WebsiteService = WebsiteService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(item_orm_entity_1.ItemOrmEntity)),
     __param(1, (0, typeorm_1.InjectRepository)(item_category_orm_entity_1.ItemCategoryOrmEntity)),
-    __param(2, (0, typeorm_1.InjectRepository)(entities_1.SaleOrmEntity)),
-    __param(3, (0, typeorm_1.InjectRepository)(entities_1.SaleLineOrmEntity)),
-    __param(4, (0, typeorm_1.InjectRepository)(party_orm_entity_1.PartyOrmEntity)),
-    __param(5, (0, typeorm_1.InjectRepository)(entities_3.HealthConcernOrmEntity)),
-    __param(6, (0, typeorm_1.InjectRepository)(entities_3.PrescriptionOrmEntity)),
-    __param(7, (0, typeorm_1.InjectRepository)(entities_3.PrescriptionFileOrmEntity)),
-    __param(8, (0, typeorm_1.InjectRepository)(entities_3.ConsultationOrmEntity)),
-    __param(9, (0, typeorm_1.InjectRepository)(entities_3.TestimonialOrmEntity)),
-    __param(10, (0, typeorm_1.InjectRepository)(entities_3.BlogArticleOrmEntity)),
-    __param(11, (0, typeorm_1.InjectRepository)(entities_3.DeliveryAreaOrmEntity)),
-    __param(12, (0, typeorm_1.InjectRepository)(entities_3.BranchOrmEntity)),
-    __param(13, (0, typeorm_1.InjectRepository)(entities_3.ContactSubmissionOrmEntity)),
-    __param(14, (0, typeorm_1.InjectRepository)(entities_3.NewsletterSubscriberOrmEntity)),
-    __param(15, (0, typeorm_1.InjectRepository)(entities_3.ProductReviewOrmEntity)),
-    __param(16, (0, typeorm_1.InjectRepository)(entities_3.RewardTransactionOrmEntity)),
-    __param(17, (0, typeorm_1.InjectRepository)(entities_2.StockBalanceOrmEntity)),
-    __param(18, (0, typeorm_1.InjectRepository)(entities_2.StockAdjustmentOrmEntity)),
-    __param(19, (0, typeorm_1.InjectRepository)(entities_2.StoreStockLocationOrmEntity)),
+    __param(2, (0, typeorm_1.InjectRepository)(party_orm_entity_1.PartyOrmEntity)),
+    __param(3, (0, typeorm_1.InjectRepository)(entities_1.HealthConcernOrmEntity)),
+    __param(4, (0, typeorm_1.InjectRepository)(entities_1.PrescriptionOrmEntity)),
+    __param(5, (0, typeorm_1.InjectRepository)(entities_1.PrescriptionFileOrmEntity)),
+    __param(6, (0, typeorm_1.InjectRepository)(entities_1.ConsultationOrmEntity)),
+    __param(7, (0, typeorm_1.InjectRepository)(entities_1.TestimonialOrmEntity)),
+    __param(8, (0, typeorm_1.InjectRepository)(entities_1.BlogArticleOrmEntity)),
+    __param(9, (0, typeorm_1.InjectRepository)(entities_1.DeliveryAreaOrmEntity)),
+    __param(10, (0, typeorm_1.InjectRepository)(entities_1.BranchOrmEntity)),
+    __param(11, (0, typeorm_1.InjectRepository)(entities_1.ContactSubmissionOrmEntity)),
+    __param(12, (0, typeorm_1.InjectRepository)(entities_1.NewsletterSubscriberOrmEntity)),
+    __param(13, (0, typeorm_1.InjectRepository)(entities_1.ProductReviewOrmEntity)),
+    __param(14, (0, typeorm_1.InjectRepository)(entities_1.RewardTransactionOrmEntity)),
+    __param(15, (0, typeorm_1.InjectRepository)(entities_1.OrderOrmEntity)),
+    __param(16, (0, typeorm_1.InjectRepository)(entities_1.OrderItemOrmEntity)),
+    __param(17, (0, typeorm_1.InjectRepository)(entities_1.DeliveryOrmEntity)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

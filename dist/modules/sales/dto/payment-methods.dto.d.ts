@@ -6,6 +6,7 @@ export declare class CreatePaymentMethodDto {
     name: string;
     methodType: 'cash' | 'card' | 'transfer' | 'wallet' | 'insurance';
     isActive?: boolean;
+    overrideCodeValidation?: boolean;
 }
 export declare class UpdatePaymentMethodDto {
     code?: string;

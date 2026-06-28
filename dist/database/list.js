@@ -7,7 +7,6 @@ function applyFilters(qb, alias, filters) {
         if (!raw)
             return;
         const { type, value, valueTo } = parseFilter(raw);
-        console.log({ raw, field, type, value, valueTo });
         applyFilter(qb, alias, field, type, value, valueTo);
     });
 }
@@ -28,7 +27,6 @@ function paramName(field, type) {
 function applyFilter(qb, alias, field, type, value, valueTo) {
     const column = resolveField(alias, field);
     const param = paramName(field, type);
-    console.log({ column, param });
     switch (type) {
         case 'EQUALS':
             qb.andWhere(`${column} = :${param}`, { [param]: value });
@@ -58,6 +56,13 @@ function applyFilter(qb, alias, field, type, value, valueTo) {
         case 'LESS_THAN_OR_EQUAL':
             qb.andWhere(`${column} <= :${param}`, { [param]: value });
             break;
+        case 'TODAY':
+        case 'YESTERDAY':
+        case 'TOMMORROW':
+        case 'NEXT_24_HOURS':
+        case 'THIS_MONTH':
+        case 'LAST_MONTH':
+        case 'NEXT_MONTH':
         case 'BETWEEN': {
             const from = `${param}_from`;
             const to = `${param}_to`;

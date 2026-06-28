@@ -18,6 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const mappers_1 = require("../../../shared/domain/mappers");
 const organization_orm_entity_1 = require("../entities/organization.orm-entity");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let OrganizationsService = class OrganizationsService {
     organizationRepository;
     constructor(organizationRepository) {
@@ -45,6 +46,19 @@ let OrganizationsService = class OrganizationsService {
         return (0, mappers_1.toOrganizationType)(organization);
     }
     async create(payload) {
+        const last = await this.organizationRepository.findOne({
+            where: { deletedAt: (0, typeorm_2.IsNull)() },
+            order: { createdAt: 'DESC' },
+            select: ['code'],
+        });
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: last?.code,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         const duplicate = await this.organizationRepository.findOne({
             where: { code: payload.code, deletedAt: (0, typeorm_2.IsNull)() },
         });

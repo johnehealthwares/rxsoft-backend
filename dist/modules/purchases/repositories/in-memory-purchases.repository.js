@@ -171,6 +171,9 @@ let InMemoryPurchasesRepository = class InMemoryPurchasesRepository {
     async listReceipts(query) {
         return { items: [], total: 0 };
     }
+    async findLastReceipt(_organizationId) {
+        return null;
+    }
 };
 exports.InMemoryPurchasesRepository = InMemoryPurchasesRepository;
 exports.InMemoryPurchasesRepository = InMemoryPurchasesRepository = __decorate([

@@ -13,6 +13,7 @@ export declare class CreateGenericProductDto {
     pediatricDosage?: string;
     isPrescriptionRequired?: boolean;
     isControlledSubstance?: boolean;
+    overrideCodeValidation?: boolean;
 }
 export declare class UpdateGenericProductDto {
     code?: string;

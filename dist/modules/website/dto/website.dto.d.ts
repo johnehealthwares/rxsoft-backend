@@ -30,17 +30,20 @@ export declare class CreateOrderItemDto {
     quantity: number;
     unitPrice?: number;
 }
-export declare class CreateOrderDto {
-    customerId?: string;
-    deliveryAddress: string;
+export declare class CreateDeliveryDto {
+    address: string;
     city?: string;
     state?: string;
     phone?: string;
     shippingMethod?: string;
+}
+export declare class CreateOrderDto {
+    customerId?: string;
     paymentMethod: string;
     prescriptionIds?: string[];
     notes?: string;
     items: CreateOrderItemDto[];
+    delivery?: CreateDeliveryDto;
 }
 export declare class CreateContactDto {
     name: string;
@@ -118,5 +121,11 @@ export declare class UpdateArticleDto {
     metaDescription?: string;
 }
 export declare class UpdatePrescriptionStatusDto {
+    status: string;
+}
+export declare class PostOrderAsSaleDto {
+    stockLocationId?: string;
+}
+export declare class UpdateOrderStatusDto {
     status: string;
 }

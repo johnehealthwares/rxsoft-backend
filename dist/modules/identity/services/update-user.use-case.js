@@ -34,8 +34,9 @@ let UpdateUserUseCase = class UpdateUserUseCase {
             throw new common_1.NotFoundException('User not found');
         }
         const roleCodes = payload.roleCodes ?? user.roleCodes;
+        let roles = user.roles;
         if (payload.roleCodes) {
-            const roles = await this.roleRepository.listByCodes(roleCodes, organizationId);
+            roles = await this.roleRepository.listByCodes(roleCodes, organizationId);
             if (roles.length !== roleCodes.length) {
                 throw new common_1.BadRequestException('One or more roles are invalid');
             }
@@ -43,7 +44,7 @@ let UpdateUserUseCase = class UpdateUserUseCase {
         const passwordHash = payload.password
             ? await this.passwordHasher.hash(payload.password)
             : user.passwordHash;
-        const updatedUser = new user_entity_1.User(userId, organizationId, payload.username ?? user.username, passwordHash, payload.isActive ?? user.isActive, roleCodes);
+        const updatedUser = new user_entity_1.User(userId, organizationId, payload.username ?? user.username, passwordHash, payload.isActive ?? user.isActive, roleCodes, roles);
         await this.userRepository.update(updatedUser, organizationId);
         if (payload.posConfig) {
             await this.userPosConfigService.update(userId, organizationId, payload.posConfig);

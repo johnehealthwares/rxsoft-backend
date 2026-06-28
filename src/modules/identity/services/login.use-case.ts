@@ -70,6 +70,7 @@ export class LoginUseCase {
       roles: user.roleCodes,
       permissions,
       phone: user.phone,
+      email: user.email ?? user.id,
     }, loginTimeoutMinutes);
 
     const refreshTokenHash = await this.passwordHasher.hash(tokenPair.refreshToken);

@@ -111,6 +111,7 @@ export class InMemoryInventoryRepository implements InventoryRepository {
       quantity: Math.abs(adjustment.deltaQuantity),
       unitCost: stockBalance.averageCost,
       occurredAt: adjustment.performedAt,
+      createdAt: adjustment.performedAt,
       createdByUserId: adjustment.performedByUserId,
     };
     this.stockMovements.set(movement.id, movement);

@@ -47,6 +47,15 @@ let PurchasesController = class PurchasesController {
     async remove(purchaseId, currentUser) {
         await this.purchasesService.removePurchase(purchaseId, currentUser.organizationId);
     }
+    async addLine(purchaseId, payload, currentUser) {
+        return this.purchasesService.addLine(purchaseId, payload, currentUser);
+    }
+    async updateLine(purchaseId, lineId, payload, currentUser) {
+        return this.purchasesService.updateLine(purchaseId, lineId, payload, currentUser);
+    }
+    async removeLine(purchaseId, lineId, currentUser) {
+        return this.purchasesService.removeLine(purchaseId, lineId, currentUser);
+    }
 };
 exports.PurchasesController = PurchasesController;
 __decorate([
@@ -109,6 +118,40 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], PurchasesController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(':purchaseId/lines'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin', 'manager'),
+    (0, audit_action_decorator_1.AuditAction)('purchase.line.create'),
+    __param(0, (0, common_1.Param)('purchaseId')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, purchases_dto_1.CreatePurchaseLineDto, Object]),
+    __metadata("design:returntype", Promise)
+], PurchasesController.prototype, "addLine", null);
+__decorate([
+    (0, common_1.Put)(':purchaseId/lines/:lineId'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin', 'manager'),
+    (0, audit_action_decorator_1.AuditAction)('purchase.line.update'),
+    __param(0, (0, common_1.Param)('purchaseId')),
+    __param(1, (0, common_1.Param)('lineId')),
+    __param(2, (0, common_1.Body)()),
+    __param(3, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, purchases_dto_1.UpdatePurchaseLineDto, Object]),
+    __metadata("design:returntype", Promise)
+], PurchasesController.prototype, "updateLine", null);
+__decorate([
+    (0, common_1.Delete)(':purchaseId/lines/:lineId'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin', 'manager'),
+    (0, audit_action_decorator_1.AuditAction)('purchase.line.delete'),
+    __param(0, (0, common_1.Param)('purchaseId')),
+    __param(1, (0, common_1.Param)('lineId')),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], PurchasesController.prototype, "removeLine", null);
 exports.PurchasesController = PurchasesController = __decorate([
     (0, swagger_1.ApiTags)('purchases'),
     (0, swagger_1.ApiBearerAuth)(),

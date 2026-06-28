@@ -34,6 +34,7 @@ function toReceivableResponse(item) {
     return {
         id: item.id,
         customerId: item.customerId,
+        customer: item.customerName ? { id: item.customerId, name: item.customerName } : null,
         saleId: item.saleId,
         receivableNumber: item.receivableNumber,
         originalAmount: item.originalAmount,

@@ -28,14 +28,17 @@ const list_sales_dto_1 = require("../dto/list-sales.dto");
 const create_sale_refund_use_case_1 = require("../services/create-sale-refund.use-case");
 const create_sale_use_case_1 = require("../services/create-sale.use-case");
 const list_sales_use_case_1 = require("../services/list-sales.use-case");
+const sales_di_tokens_1 = require("../services/sales.di-tokens");
 let SalesController = class SalesController {
     listSalesUseCase;
     createSaleUseCase;
     createSaleRefundUseCase;
-    constructor(listSalesUseCase, createSaleUseCase, createSaleRefundUseCase) {
+    salesRepository;
+    constructor(listSalesUseCase, createSaleUseCase, createSaleRefundUseCase, salesRepository) {
         this.listSalesUseCase = listSalesUseCase;
         this.createSaleUseCase = createSaleUseCase;
         this.createSaleRefundUseCase = createSaleRefundUseCase;
+        this.salesRepository = salesRepository;
     }
     async listSales(query, currentUser) {
         const result = await this.listSalesUseCase.execute(query, currentUser.organizationId);
@@ -44,11 +47,13 @@ let SalesController = class SalesController {
                 id: sale.id,
                 saleNumber: sale.saleNumber,
                 saleChannel: sale.saleChannel,
+                storeId: sale.storeId,
+                storeName: sale.storeName,
                 status: sale.status,
                 totalAmount: sale.totalAmount,
                 paidAmount: sale.paidAmount,
                 changeAmount: sale.changeAmount,
-                saleDate: sale.saleDate.toISOString(),
+                saleDate: new Date(sale.saleDate).toISOString(),
             })),
             meta: {
                 page: query.page,
@@ -57,12 +62,21 @@ let SalesController = class SalesController {
             },
         };
     }
+    async metrics(query, currentUser) {
+        const metricsQuery = {
+            organizationId: currentUser.organizationId,
+            search: query.search,
+        };
+        return this.salesRepository.getMetrics(metricsQuery);
+    }
     async createSale(payload, currentUser) {
         const result = await this.createSaleUseCase.execute(payload, currentUser.organizationId, currentUser.sub);
         return {
             id: result.sale.id,
             saleNumber: result.sale.saleNumber,
             saleChannel: result.sale.saleChannel,
+            storeId: result.sale.storeId,
+            storeName: result.sale.storeName,
             status: result.sale.status,
             totalAmount: result.sale.totalAmount,
             paidAmount: result.sale.paidAmount,
@@ -97,6 +111,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "listSales", null);
 __decorate([
+    (0, common_1.Get)('metrics'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get sales metrics' }),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [list_sales_dto_1.ListSalesDto, Object]),
+    __metadata("design:returntype", Promise)
+], SalesController.prototype, "metrics", null);
+__decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)('admin', 'super_admin', 'cashier'),
     (0, audit_action_decorator_1.AuditAction)('sales.sale.create'),
@@ -126,8 +150,9 @@ exports.SalesController = SalesController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, common_1.Controller)('sales'),
+    __param(3, (0, common_1.Inject)(sales_di_tokens_1.SALES_REPOSITORY)),
     __metadata("design:paramtypes", [list_sales_use_case_1.ListSalesUseCase,
         create_sale_use_case_1.CreateSaleUseCase,
-        create_sale_refund_use_case_1.CreateSaleRefundUseCase])
+        create_sale_refund_use_case_1.CreateSaleRefundUseCase, Object])
 ], SalesController);
 //# sourceMappingURL=sales.controller.js.map

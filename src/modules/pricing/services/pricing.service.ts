@@ -17,6 +17,7 @@ import {
 } from '../dto/pricing.dto';
 import { PriceListItemOrmEntity, PriceListOrmEntity } from '../entities';
 import { applyFilters } from '../../../database/list';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class PricingService {
@@ -63,6 +64,20 @@ export class PricingService {
   }
 
   async createPriceList(payload: CreatePriceListDto, organizationId = DEFAULT_ORGANIZATION_ID): Promise<PriceListType> {
+    const last = await this.priceListRepository.findOne({
+      where: { organizationId },
+      order: { createdAt: 'DESC' },
+      select: ['code'],
+    });
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: last?.code,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
+
     const duplicate = await this.priceListRepository.findOne({
       where: { organizationId, code: payload.code },
     });

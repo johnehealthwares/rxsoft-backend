@@ -20,6 +20,7 @@ const roles_decorator_1 = require("../../../common/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../../common/guards/roles.guard");
 const audit_action_decorator_1 = require("../../../common/decorators/audit-action.decorator");
+const list_query_dto_1 = require("../../../shared/dto/list-query.dto");
 const goods_receipt_dto_1 = require("../dto/goods-receipt.dto");
 const unpost_goods_dto_1 = require("../dto/unpost-goods.dto");
 const receive_goods_use_case_1 = require("../services/receive-goods.use-case");
@@ -56,13 +57,14 @@ let InflowController = class InflowController {
         });
         return { data: result.items, total: result.total, page: page ?? 1, limit: limit ?? 20 };
     }
-    async listAllReceipts(page, limit, currentUser) {
+    async listAllReceipts(query, currentUser) {
         const result = await this.purchasesRepo.listReceipts({
             organizationId: currentUser.organizationId,
-            offset: ((page ?? 1) - 1) * (limit ?? 20),
-            limit: limit ?? 20,
+            search: query.search,
+            offset: query.offset,
+            limit: query.limit,
         });
-        return { data: result.items, total: result.total, page: page ?? 1, limit: limit ?? 20 };
+        return { data: result.items, meta: { page: query.page, limit: query.limit, total: result.total } };
     }
 };
 exports.InflowController = InflowController;
@@ -108,13 +110,10 @@ __decorate([
     (0, roles_decorator_1.Roles)('super_admin', 'admin', 'manager', 'auditor'),
     (0, audit_action_decorator_1.AuditAction)('purchase.receipts.list'),
     (0, swagger_1.ApiOperation)({ summary: 'List all goods receipts' }),
-    (0, swagger_1.ApiQuery)({ name: 'page', required: false }),
-    (0, swagger_1.ApiQuery)({ name: 'limit', required: false }),
-    __param(0, (0, common_1.Query)('page')),
-    __param(1, (0, common_1.Query)('limit')),
-    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:paramtypes", [list_query_dto_1.ListQueryDto, Object]),
     __metadata("design:returntype", Promise)
 ], InflowController.prototype, "listAllReceipts", null);
 exports.InflowController = InflowController = __decorate([

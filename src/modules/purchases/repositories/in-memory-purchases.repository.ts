@@ -171,4 +171,8 @@ export class InMemoryPurchasesRepository implements PurchasesRepository {
   async listReceipts(query: ReceiptListQuery): Promise<{ items: GoodsReceiptOrmEntity[]; total: number }> {
     return { items: [], total: 0 };
   }
+
+  async findLastReceipt(_organizationId: string): Promise<Pick<GoodsReceiptOrmEntity, 'receiptNumber'> | null> {
+    return null;
+  }
 }

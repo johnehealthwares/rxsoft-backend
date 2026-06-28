@@ -13,6 +13,7 @@ exports.GenericProductsService = void 0;
 const common_1 = require("@nestjs/common");
 const healthcare_concepts_service_1 = require("../../../services/healthcare-concepts.service");
 const generic_drug_cache_service_1 = require("../../../services/generic-drug-cache.service");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 const toGenericProductType = (cached) => ({
     id: cached.id,
     organizationId: '',
@@ -86,6 +87,14 @@ let GenericProductsService = class GenericProductsService {
         return toGenericProductType(cached);
     }
     async create(payload, _organizationId) {
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: undefined,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         const result = await this.healthcare.createGenericProduct(payload);
         if (!result)
             throw new common_1.BadRequestException('Failed to create generic product');

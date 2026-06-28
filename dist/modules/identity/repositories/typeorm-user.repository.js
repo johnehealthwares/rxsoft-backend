@@ -41,11 +41,6 @@ let TypeormUserRepository = class TypeormUserRepository {
         return item ? identity_mapper_1.IdentityMapper.toDomainUser(item) : null;
     }
     async create(user) {
-        const roles = user.roleCodes.length
-            ? await this.roleRepository.find({
-                where: user.roleCodes.map((code) => ({ code, organizationId: user.organizationId })),
-            })
-            : [];
         const entity = this.userRepository.create({
             id: user.id,
             organizationId: user.organizationId,
@@ -53,7 +48,7 @@ let TypeormUserRepository = class TypeormUserRepository {
             passwordHash: user.passwordHash,
             isActive: user.isActive,
             phone: user.phone,
-            roles,
+            roles: user.roles,
         });
         const saved = await this.userRepository.save(entity);
         const reloaded = await this.userRepository.findOneOrFail({

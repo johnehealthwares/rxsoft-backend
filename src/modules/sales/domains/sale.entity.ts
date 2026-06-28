@@ -4,6 +4,8 @@ export class Sale {
     public readonly organizationId: string,
     public readonly saleNumber: string,
     public readonly saleChannel: 'pos' | 'invoice' | 'mobile',
+    public readonly storeId: string,
+    public readonly storeName: string | null,
     public readonly status: 'draft' | 'posted' | 'voided' | 'refunded',
     public readonly totalAmount: number,
     public readonly paidAmount: number,

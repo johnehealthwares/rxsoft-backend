@@ -52,13 +52,13 @@ let UsersController = class UsersController {
     async create(payload, currentUser) {
         const user = await this.createUserUseCase.execute(payload, currentUser.organizationId);
         const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
-        return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
+        return { id: user.id, username: user.username, phone: user.phone, roles: user.roles, posConfig };
     }
     async list(query, currentUser) {
         const result = await this.listUsersUseCase.execute(query.offset, query.limit, currentUser.organizationId);
         const data = await Promise.all(result.items.map(async (item) => {
             const posConfig = await this.userPosConfigService.getOrCreate(item.id, currentUser.organizationId);
-            return { id: item.id, username: item.username, phone: item.phone, roles: item.roleCodes, posConfig };
+            return { id: item.id, username: item.username, phone: item.phone, roles: item.roles, posConfig };
         }));
         return {
             data,
@@ -75,19 +75,19 @@ let UsersController = class UsersController {
             throw new common_1.NotFoundException('User not found');
         }
         const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
-        return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
+        return { id: user.id, username: user.username, phone: user.phone, roles: user.roles, posConfig };
     }
     async update(id, payload, currentUser) {
         const user = await this.updateUserUseCase.execute(id, payload, currentUser.organizationId);
         const posConfig = await this.userPosConfigService.getOrCreate(user.id, currentUser.organizationId);
-        return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes, posConfig };
+        return { id: user.id, username: user.username, phone: user.phone, roles: user.roles, posConfig };
     }
     async delete(id, currentUser) {
         await this.deleteUserUseCase.execute(id, currentUser.organizationId);
     }
     async assignRole(userId, payload, currentUser) {
         const user = await this.assignRoleUseCase.execute(userId, payload, currentUser.organizationId);
-        return { id: user.id, username: user.username, phone: user.phone, roles: user.roleCodes };
+        return { id: user.id, username: user.username, phone: user.phone, roles: user.roles };
     }
 };
 exports.UsersController = UsersController;

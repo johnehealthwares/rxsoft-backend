@@ -19,6 +19,7 @@ const typeorm_2 = require("typeorm");
 const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
 const mappers_1 = require("../../../shared/domain/mappers");
 const manufacturer_orm_entity_1 = require("../entities/manufacturer.orm-entity");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let ManufacturersService = class ManufacturersService {
     manufacturerRepository;
     constructor(manufacturerRepository) {
@@ -58,6 +59,17 @@ let ManufacturersService = class ManufacturersService {
         return (0, mappers_1.toManufacturerType)(manufacturer);
     }
     async create(payload, organizationId = persistence_scope_1.DEFAULT_ORGANIZATION_ID) {
+        if (payload.code) {
+            const last = await this.getLastCreated(organizationId);
+            const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+                providedCode: payload.code,
+                lastCode: last?.code,
+                override: payload.overrideCodeValidation,
+            });
+            if (!valid) {
+                throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+            }
+        }
         const duplicate = await this.manufacturerRepository.findOne({
             where: { organizationId, name: payload.name, deletedAt: (0, typeorm_2.IsNull)() },
         });

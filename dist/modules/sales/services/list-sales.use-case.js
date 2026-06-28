@@ -24,7 +24,7 @@ let ListSalesUseCase = class ListSalesUseCase {
         this.cacheService = cacheService;
     }
     async execute(query, organizationId) {
-        const key = ['sales:list', organizationId, query.page, query.limit, query.status ?? ''].join(':');
+        const key = ['sales:list', organizationId, query.page, query.limit, query.status ?? '', query.search].join(':');
         const cached = await this.cacheService?.get(key);
         if (cached) {
             return cached;

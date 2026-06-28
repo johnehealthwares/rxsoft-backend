@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 class ReceivableResponseDto {
     id;
     customerId;
+    customer;
     saleId;
     receivableNumber;
     originalAmount;
@@ -31,6 +32,10 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], ReceivableResponseDto.prototype, "customerId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ nullable: true }),
+    __metadata("design:type", Object)
+], ReceivableResponseDto.prototype, "customer", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

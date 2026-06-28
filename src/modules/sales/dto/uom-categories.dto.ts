@@ -13,6 +13,10 @@ export class CreateUomCategoryDto {
   @IsString()
   @MaxLength(64)
   name!: string;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdateUomCategoryDto extends PartialType(CreateUomCategoryDto) {}

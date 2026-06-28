@@ -27,8 +27,9 @@ export class UpdateUserUseCase {
     }
 
     const roleCodes = payload.roleCodes ?? user.roleCodes;
+    let roles = user.roles;
     if (payload.roleCodes) {
-      const roles = await this.roleRepository.listByCodes(roleCodes, organizationId);
+      roles = await this.roleRepository.listByCodes(roleCodes, organizationId);
       if (roles.length !== roleCodes.length) {
         throw new BadRequestException('One or more roles are invalid');
       }
@@ -45,6 +46,7 @@ export class UpdateUserUseCase {
       passwordHash,
       payload.isActive ?? user.isActive,
       roleCodes,
+      roles,
     );
 
     await this.userRepository.update(updatedUser, organizationId);

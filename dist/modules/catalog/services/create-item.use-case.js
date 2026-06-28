@@ -22,6 +22,7 @@ const catalog_di_tokens_1 = require("./catalog.di-tokens");
 const item_entity_1 = require("../domains/item.entity");
 const utils_1 = require("./utils");
 const generic_drug_cache_service_1 = require("../../../services/generic-drug-cache.service");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let CreateItemUseCase = class CreateItemUseCase {
     productRepository;
     cache;
@@ -36,6 +37,15 @@ let CreateItemUseCase = class CreateItemUseCase {
         this.cacheService = cacheService;
     }
     async execute(payload, organizationId, performedByUserId) {
+        const lastItem = await this.productRepository.findLastCreated(organizationId);
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: lastItem?.code,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         const existing = await this.productRepository.findByCode(payload.code, organizationId);
         if (existing) {
             throw new common_1.BadRequestException('Item code already exists');

@@ -4,6 +4,7 @@ export declare class ListManufacturersDto extends ListQueryDto {
 export declare class CreateManufacturerDto {
     code?: string;
     name: string;
+    overrideCodeValidation?: boolean;
 }
 export declare class UpdateManufacturerDto {
     code?: string | null;

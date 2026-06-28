@@ -1,6 +1,6 @@
 import { Item } from '../domains/item.entity';
 import { ItemCategory } from '../domains/item-category.entity';
-import { ItemDependencySearchQuery, ItemListQuery, ItemRepository, UomLookup } from './item.repository';
+import { ItemDependencySearchQuery, ItemListQuery, ItemMetrics, ItemMetricsQuery, ItemRepository, UomLookup } from './item.repository';
 export declare class InMemoryItemRepository implements ItemRepository {
     private readonly items;
     private readonly createdAtById;
@@ -28,5 +28,7 @@ export declare class InMemoryItemRepository implements ItemRepository {
         items: UomLookup[];
         total: number;
     }>;
+    findLastCreated(organizationId: string): Promise<Item | null>;
+    getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics>;
     save(product: Item): Promise<Item>;
 }

@@ -6,6 +6,8 @@ import type { UomCategoryType } from '../../../shared/domain';
 import { toUomCategoryType } from '../../../shared/domain/mappers';
 import { CreateUomCategoryDto, ListUomCategoriesDto, UpdateUomCategoryDto } from '../dto/uom-categories.dto';
 import { UomCategoryOrmEntity } from '../entities/uom-category.orm-entity';
+import { BadRequestException } from '@nestjs/common';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 type UomCategoryRecord = {
   id: string;
@@ -70,6 +72,22 @@ export class UomCategoriesService {
   }
 
   async create(payload: CreateUomCategoryDto, organizationId: string): Promise<UomCategoryType> {
+    if (payload.code && this.uomCategoryRepository) {
+      const last = await this.uomCategoryRepository.findOne({
+        where: { organizationId },
+        order: { createdAt: 'DESC' },
+        select: ['code'],
+      });
+      const { valid, expectedCode } = validateSequentialCode({
+        providedCode: payload.code,
+        lastCode: last?.code ?? undefined,
+        override: payload.overrideCodeValidation,
+      });
+      if (!valid) {
+        throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+      }
+    }
+
     if (!this.uomCategoryRepository) {
       const now = new Date().toISOString();
       const record: UomCategoryRecord = {

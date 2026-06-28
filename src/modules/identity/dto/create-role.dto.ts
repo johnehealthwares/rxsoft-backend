@@ -23,4 +23,8 @@ export class CreateRoleDto {
   @ArrayNotEmpty()
   @IsString({ each: true })
   permissionCodes?: string[];
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }

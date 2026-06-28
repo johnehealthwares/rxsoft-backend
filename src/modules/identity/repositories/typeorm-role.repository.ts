@@ -16,6 +16,15 @@ export class TypeormRoleRepository implements RoleRepository {
     private readonly permissionRepository: Repository<PermissionOrmEntity>,
   ) {}
 
+  async findLastCreated(organizationId: string): Promise<Pick<Role, 'code'> | null> {
+    const role = await this.roleRepository.findOne({
+      where: { organizationId },
+      order: { createdAt: 'DESC' },
+      select: ['code'],
+    });
+    return role ? { code: role.code } : null;
+  }
+
   async findByCode(code: string, organizationId: string): Promise<Role | null> {
     const item = await this.roleRepository.findOne({
       where: { code, organizationId },

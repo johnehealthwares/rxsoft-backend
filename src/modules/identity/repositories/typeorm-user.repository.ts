@@ -35,11 +35,7 @@ export class TypeormUserRepository implements UserRepository {
   }
 
   async create(user: User): Promise<User> {
-    const roles = user.roleCodes.length
-      ? await this.roleRepository.find({
-          where: user.roleCodes.map((code) => ({ code, organizationId: user.organizationId })),
-        })
-      : [];
+    
 
     const entity = this.userRepository.create({
       id: user.id,
@@ -48,7 +44,7 @@ export class TypeormUserRepository implements UserRepository {
       passwordHash: user.passwordHash,
       isActive: user.isActive,
       phone: user.phone,
-      roles,
+      roles: user.roles,
     });
 
     const saved = await this.userRepository.save(entity);

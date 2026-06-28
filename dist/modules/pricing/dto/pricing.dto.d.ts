@@ -6,6 +6,7 @@ export declare class CreatePriceListDto {
     name: string;
     isDefault?: boolean;
     isActive?: boolean;
+    overrideCodeValidation?: boolean;
 }
 export declare class UpdatePriceListDto {
     code?: string;

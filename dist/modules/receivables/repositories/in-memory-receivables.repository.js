@@ -15,7 +15,7 @@ let InMemoryReceivablesRepository = class InMemoryReceivablesRepository {
     receivables = new Map([
         [
             'ar1',
-            new account_receivable_entity_1.AccountReceivable('ar1', 'org1', 'cust1', 'sale1', 'AR-SALE-0001', 100, 100, 'open', new Date('2026-02-20T10:00:00.000Z'), null),
+            new account_receivable_entity_1.AccountReceivable('ar1', 'org1', 'cust1', null, 'sale1', 'AR-SALE-0001', 100, 100, 'open', new Date('2026-02-20T10:00:00.000Z'), null),
         ],
     ]);
     transactions = new Map();

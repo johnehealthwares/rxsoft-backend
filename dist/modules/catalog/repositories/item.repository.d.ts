@@ -35,6 +35,18 @@ export type UomLookup = {
     factor: number;
     isActive: boolean;
 };
+export type ItemMetricsQuery = {
+    organizationId: string;
+    search?: string;
+    categoryCode?: string;
+};
+export type ItemMetrics = {
+    total: number;
+    active: number;
+    inactive: number;
+    noCategory: number;
+    noGenericProductCode: number;
+};
 export interface ItemRepository {
     list(query: ItemListQuery): Promise<{
         items: Item[];
@@ -54,4 +66,6 @@ export interface ItemRepository {
         total: number;
     }>;
     save(product: Item): Promise<Item>;
+    findLastCreated(organizationId: string): Promise<Item | null>;
+    getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics>;
 }

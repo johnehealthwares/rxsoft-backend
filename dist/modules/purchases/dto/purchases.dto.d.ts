@@ -21,7 +21,24 @@ export declare class CreatePurchaseDto {
     itemId?: string;
     quantity?: number;
     unitCost?: number;
+    overrideCodeValidation?: boolean;
     lines?: PurchaseLineDto[];
 }
 export declare class UpdatePurchaseDto extends CreatePurchaseDto {
+}
+export declare class CreatePurchaseLineDto {
+    itemId: string;
+    orderedQty: number;
+    uomId: string;
+    unitCost: number;
+    discountPercent?: number;
+    taxPercent?: number;
+}
+export declare class UpdatePurchaseLineDto {
+    orderedQty?: number;
+    uomId?: string;
+    unitCost?: number;
+    receivedQty?: number;
+    discountPercent?: number;
+    taxPercent?: number;
 }

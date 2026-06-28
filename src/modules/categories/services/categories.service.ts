@@ -6,6 +6,7 @@ import type { ItemCategoryType } from '../../../shared/domain';
 import { toItemCategoryType } from '../../../shared/domain/mappers';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto/categories.dto';
 import { ItemCategoryOrmEntity } from 'src/modules/catalog/entities';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class CategoriesService {
@@ -25,6 +26,8 @@ export class CategoriesService {
       qb.andWhere('(category.code ILIKE :search OR category.name ILIKE :search)', { search: `%${query.search}%` });
     }
 
+    qb.skip(query.offset).take(query.limit);
+
     const [data, total] = await qb.getManyAndCount();
     return { data: data.map(toItemCategoryType), total };
   }
@@ -39,6 +42,20 @@ export class CategoriesService {
   }
 
   async createCategory(payload: CreateCategoryDto, organizationId: string): Promise<ItemCategoryType> {
+    const last = await this.categoryRepository.findOne({
+      where: { organizationId, deletedAt: IsNull() },
+      order: { createdAt: 'DESC' },
+      select: ['code'],
+    });
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: last?.code,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
+
     const duplicate = await this.categoryRepository.findOne({
       where: { code: payload.code, organizationId, deletedAt: IsNull() },
     });

@@ -18,4 +18,5 @@ export declare class InMemoryPurchasesRepository implements PurchasesRepository 
         items: GoodsReceiptOrmEntity[];
         total: number;
     }>;
+    findLastReceipt(_organizationId: string): Promise<Pick<GoodsReceiptOrmEntity, 'receiptNumber'> | null>;
 }

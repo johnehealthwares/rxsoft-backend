@@ -9,6 +9,7 @@ describe('CreateItemUseCase', () => {
     list: jest.fn(),
     findById: jest.fn(),
     findByCode: jest.fn(),
+    findByBarcode: jest.fn(),
     findCategoryById: jest.fn(),
     findGenericProductById: jest.fn(),
     findUomById: jest.fn(),
@@ -16,6 +17,7 @@ describe('CreateItemUseCase', () => {
     listGenericProducts: jest.fn(),
     listUoms: jest.fn(),
     save: jest.fn(),
+    findLastCreated: jest.fn().mockResolvedValue(null),
   };
 
   const pricingService = {

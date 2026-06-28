@@ -9,6 +9,7 @@ import { Item } from '../domains/item.entity';
 import { CreateItemDto } from '../dto/create-item.dto';
 import { validateUoms } from './utils';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class CreateItemUseCase {
@@ -25,6 +26,16 @@ export class CreateItemUseCase {
   ) { }
 
   async execute(payload: CreateItemDto, organizationId: string, performedByUserId?: string): Promise<Item> {
+    const lastItem = await this.productRepository.findLastCreated(organizationId);
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: lastItem?.code,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
+
     const existing = await this.productRepository.findByCode(payload.code, organizationId);
     if (existing) {
       throw new BadRequestException('Item code already exists');

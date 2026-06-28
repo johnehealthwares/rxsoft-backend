@@ -5,6 +5,7 @@ import type { PaymentMethodType } from '../../../shared/domain';
 import { toPaymentMethodType } from '../../../shared/domain/mappers';
 import { PaymentMethodOrmEntity } from '../entities/payment-method.orm-entity';
 import { CreatePaymentMethodDto, ListPaymentMethodsDto, UpdatePaymentMethodDto } from '../dto/payment-methods.dto';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class PaymentMethodsService {
@@ -38,6 +39,20 @@ export class PaymentMethodsService {
   }
 
   async create(payload: CreatePaymentMethodDto, organizationId: string): Promise<PaymentMethodType> {
+    const last = await this.paymentMethodRepository.findOne({
+      where: { organizationId },
+      order: { createdAt: 'DESC' },
+      select: ['code'],
+    });
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: last?.code,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
+
     const duplicate = await this.paymentMethodRepository.findOne({ where: { organizationId, code: payload.code } });
     if (duplicate) throw new BadRequestException('Payment method code already exists');
 

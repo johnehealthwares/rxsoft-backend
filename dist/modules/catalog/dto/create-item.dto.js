@@ -29,6 +29,7 @@ class CreateItemDto {
     smallImageUrl;
     mediumImageUrl;
     largeImageUrl;
+    overrideCodeValidation;
     priceListItems;
     stockItems;
 }
@@ -130,6 +131,11 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateItemDto.prototype, "largeImageUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateItemDto.prototype, "overrideCodeValidation", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)

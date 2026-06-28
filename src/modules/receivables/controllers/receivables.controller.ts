@@ -37,6 +37,7 @@ type ReceivableMutationResponse = {
 function toReceivableResponse(item: {
   id: string;
   customerId: string;
+  customerName: string | null;
   saleId: string;
   receivableNumber: string;
   originalAmount: number;
@@ -48,6 +49,7 @@ function toReceivableResponse(item: {
   return {
     id: item.id,
     customerId: item.customerId,
+    customer: item.customerName ? { id: item.customerId, name: item.customerName } : null,
     saleId: item.saleId,
     receivableNumber: item.receivableNumber,
     originalAmount: item.originalAmount,

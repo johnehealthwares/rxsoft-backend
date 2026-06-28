@@ -5,6 +5,7 @@ class AccountReceivable {
     id;
     organizationId;
     customerId;
+    customerName;
     saleId;
     receivableNumber;
     originalAmount;
@@ -12,10 +13,11 @@ class AccountReceivable {
     status;
     openedAt;
     closedAt;
-    constructor(id, organizationId, customerId, saleId, receivableNumber, originalAmount, outstandingAmount, status, openedAt, closedAt) {
+    constructor(id, organizationId, customerId, customerName, saleId, receivableNumber, originalAmount, outstandingAmount, status, openedAt, closedAt) {
         this.id = id;
         this.organizationId = organizationId;
         this.customerId = customerId;
+        this.customerName = customerName;
         this.saleId = saleId;
         this.receivableNumber = receivableNumber;
         this.originalAmount = originalAmount;

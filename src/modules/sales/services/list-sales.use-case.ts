@@ -17,7 +17,7 @@ export class ListSalesUseCase {
     query: ListSalesDto,
     organizationId: string,
   ): Promise<Awaited<ReturnType<SalesRepository['list']>>> {
-    const key = ['sales:list', organizationId, query.page, query.limit, query.status ?? ''].join(':');
+    const key = ['sales:list', organizationId, query.page, query.limit, query.status ?? '', query.search].join(':');
     const cached = await this.cacheService?.get<Awaited<ReturnType<SalesRepository['list']>>>(key);
     if (cached) {
       return cached;

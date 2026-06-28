@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SaleResponseDto {
   @ApiProperty()
@@ -9,6 +9,12 @@ export class SaleResponseDto {
 
   @ApiProperty({ enum: ['pos', 'invoice', 'mobile'] })
   saleChannel!: 'pos' | 'invoice' | 'mobile';
+
+  @ApiProperty()
+  storeId!: string;
+
+  @ApiPropertyOptional()
+  storeName?: string | null;
 
   @ApiProperty({ enum: ['draft', 'posted', 'voided', 'refunded'] })
   status!: 'draft' | 'posted' | 'voided' | 'refunded';

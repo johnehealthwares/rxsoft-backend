@@ -13,6 +13,9 @@ export class MeResponseDto {
   @ApiPropertyOptional()
   phone?: string;
 
+  @ApiPropertyOptional()
+  email?: string;
+
   @ApiProperty({ isArray: true })
   roles!: string[];
 

@@ -6,6 +6,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
+import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import { ReceiveGoodsDto } from '../dto/goods-receipt.dto';
 import { UnpostGoodsDto } from '../dto/unpost-goods.dto';
 import { ReceiveGoodsUseCase } from '../services/receive-goods.use-case';
@@ -80,18 +81,16 @@ export class InflowController {
   @Roles('super_admin', 'admin', 'manager', 'auditor')
   @AuditAction('purchase.receipts.list')
   @ApiOperation({ summary: 'List all goods receipts' })
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'limit', required: false })
   async listAllReceipts(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @CurrentUser() currentUser?: RequestUser,
+    @Query() query: ListQueryDto,
+    @CurrentUser() currentUser: RequestUser,
   ) {
     const result = await this.purchasesRepo.listReceipts({
-      organizationId: currentUser!.organizationId,
-      offset: ((page ?? 1) - 1) * (limit ?? 20),
-      limit: limit ?? 20,
+      organizationId: currentUser.organizationId,
+      search: query.search,
+      offset: query.offset,
+      limit: query.limit,
     });
-    return { data: result.items, total: result.total, page: page ?? 1, limit: limit ?? 20 };
+    return { data: result.items, meta: { page: query.page, limit: query.limit, total: result.total } };
   }
 }

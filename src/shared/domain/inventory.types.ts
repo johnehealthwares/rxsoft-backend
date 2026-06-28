@@ -4,6 +4,7 @@ export type WarehouseType = {
   storeId: string | null;
   code: string;
   name: string;
+  address: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

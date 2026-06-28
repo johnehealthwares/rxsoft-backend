@@ -25,6 +25,7 @@ export class MeUseCase {
       id: userId,
       username: user?.username ?? 'unknown',
       phone: user?.phone,
+      email: user?.email,
       roles: roleCodes,
       permissions,
       modules,

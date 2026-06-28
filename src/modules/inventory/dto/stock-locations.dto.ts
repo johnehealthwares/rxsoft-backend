@@ -1,12 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
+import { Transform } from 'class-transformer';
 
 export class ListStockLocationsDto extends ListQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   warehouseId?: string;
+
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  isActive?: boolean;
 }
 
 export class CreateStockLocationDto {
@@ -40,6 +48,10 @@ export class CreateStockLocationDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdateStockLocationDto {
@@ -92,12 +104,18 @@ export class AdjustStockByReferenceDto {
   lotId?: string;
 
   @ApiProperty()
+  @IsNumber()
   deltaQuantity!: number;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   reason!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  uomId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

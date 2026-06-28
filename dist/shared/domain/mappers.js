@@ -94,6 +94,7 @@ const toWarehouseType = (entity) => ({
     storeId: entity.storeId,
     code: entity.code,
     name: entity.name,
+    address: entity.address,
     isActive: entity.isActive,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),

@@ -27,14 +27,8 @@ let SaleOrmEntity = class SaleOrmEntity {
     customer;
     customerId;
     status;
-    orderStatus;
-    deliveryAddress;
-    city;
-    state;
-    phone;
-    shippingMethod;
     notes;
-    assignedLocationId;
+    stockLocationId;
     subtotalAmount;
     discountAmount;
     taxAmount;
@@ -86,37 +80,13 @@ __decorate([
     __metadata("design:type", String)
 ], SaleOrmEntity.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'order_status', type: 'text', nullable: true }),
-    __metadata("design:type", Object)
-], SaleOrmEntity.prototype, "orderStatus", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: 'delivery_address', type: 'text', nullable: true }),
-    __metadata("design:type", Object)
-], SaleOrmEntity.prototype, "deliveryAddress", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
-    __metadata("design:type", Object)
-], SaleOrmEntity.prototype, "city", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
-    __metadata("design:type", Object)
-], SaleOrmEntity.prototype, "state", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
-    __metadata("design:type", Object)
-], SaleOrmEntity.prototype, "phone", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: 'shipping_method', type: 'text', nullable: true }),
-    __metadata("design:type", Object)
-], SaleOrmEntity.prototype, "shippingMethod", void 0);
-__decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", Object)
 ], SaleOrmEntity.prototype, "notes", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'assigned_location_id', type: 'uuid', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'stock_location_id', type: 'uuid', nullable: true }),
     __metadata("design:type", Object)
-], SaleOrmEntity.prototype, "assignedLocationId", void 0);
+], SaleOrmEntity.prototype, "stockLocationId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'subtotal_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new column_transformer_1.ColumnNumericTransformer() }),
     __metadata("design:type", Number)

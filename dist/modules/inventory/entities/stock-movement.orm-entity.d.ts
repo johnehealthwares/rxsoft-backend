@@ -14,6 +14,7 @@ export declare class StockMovementOrmEntity {
     fromLocationId: string | null;
     toLocation: StockLocationOrmEntity | null;
     toLocationId: string | null;
+    uomId: string | null;
     movementType: 'in' | 'out' | 'transfer' | 'adjustment';
     quantity: number;
     unitCost: number | null;

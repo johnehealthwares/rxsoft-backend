@@ -24,6 +24,7 @@ import { ManufacturersModule } from './modules/manufacturers/manufacturers.modul
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { UserPosConfigModule } from './modules/user-pos-config/user-pos-config.module';
 import { OrganisationConfigModule } from './modules/organisation-config/organisation-config.module';
+import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { WebsiteModule } from './modules/website/website.module';
 import { ApmModule } from './modules/apm/apm.module';
 import { UploadModule } from './modules/upload/upload.module';
@@ -117,6 +118,7 @@ const applicationModules = useInMemoryRepos
       UploadModule,
       UserPosConfigModule,
       OrganisationConfigModule,
+      WarehousesModule,
     ];
 
 @Module({

@@ -13,8 +13,10 @@ exports.AdjustStockByReferenceDto = exports.UpdateStockLocationDto = exports.Cre
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const list_query_dto_1 = require("../../../shared/dto/list-query.dto");
+const class_transformer_1 = require("class-transformer");
 class ListStockLocationsDto extends list_query_dto_1.ListQueryDto {
     warehouseId;
+    isActive;
 }
 exports.ListStockLocationsDto = ListStockLocationsDto;
 __decorate([
@@ -23,6 +25,13 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], ListStockLocationsDto.prototype, "warehouseId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_transformer_1.Transform)(({ value }) => value === 'true' || value === true),
+    __metadata("design:type", Boolean)
+], ListStockLocationsDto.prototype, "isActive", void 0);
 class CreateStockLocationDto {
     warehouseId;
     parentId;
@@ -30,6 +39,7 @@ class CreateStockLocationDto {
     name;
     locationType;
     isActive;
+    overrideCodeValidation;
 }
 exports.CreateStockLocationDto = CreateStockLocationDto;
 __decorate([
@@ -69,6 +79,11 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateStockLocationDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateStockLocationDto.prototype, "overrideCodeValidation", void 0);
 class UpdateStockLocationDto {
     warehouseId;
     parentId;
@@ -121,6 +136,7 @@ class AdjustStockByReferenceDto {
     lotId;
     deltaQuantity;
     reason;
+    uomId;
     reorderMinQty;
     reorderMaxQty;
 }
@@ -145,6 +161,7 @@ __decorate([
 ], AdjustStockByReferenceDto.prototype, "lotId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], AdjustStockByReferenceDto.prototype, "deltaQuantity", void 0);
 __decorate([
@@ -153,6 +170,12 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], AdjustStockByReferenceDto.prototype, "reason", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], AdjustStockByReferenceDto.prototype, "uomId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsOptional)(),

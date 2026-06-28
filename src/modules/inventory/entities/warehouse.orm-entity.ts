@@ -19,6 +19,9 @@ export class WarehouseOrmEntity {
   @Column({ type: 'text' })
   name!: string;
 
+  @Column({ type: 'text', nullable: true })
+  address!: string | null;
+
   @OneToMany(
   () => StockLocationOrmEntity,
   (location) => location.warehouse

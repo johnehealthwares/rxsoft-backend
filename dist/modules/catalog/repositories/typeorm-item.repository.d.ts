@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
 import { Item } from '../domains/item.entity';
-import { ItemDependencySearchQuery, ItemListQuery, ItemRepository, UomLookup } from './item.repository';
+import { ItemDependencySearchQuery, ItemListQuery, ItemMetrics, ItemMetricsQuery, ItemRepository, UomLookup } from './item.repository';
 import { ItemOrmEntity } from '../entities/item.orm-entity';
 import { ItemCategoryOrmEntity } from '../entities/item-category.orm-entity';
 import { CatalogMapper } from '../mappers/catalog.mapper';
@@ -31,5 +31,7 @@ export declare class TypeormItemRepository implements ItemRepository {
         items: UomLookup[];
         total: number;
     }>;
+    findLastCreated(organizationId: string): Promise<Item | null>;
+    getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics>;
     save(product: Item): Promise<Item>;
 }

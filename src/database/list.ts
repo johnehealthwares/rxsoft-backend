@@ -30,7 +30,6 @@ export function applyFilters(
   Object.entries(filters).forEach(([field, raw]) => {
     if (!raw) return
     const { type, value, valueTo } = parseFilter(raw)
-    console.log({raw, field, type, value, valueTo})
     applyFilter(qb, alias, field, type, value, valueTo)
   })
 }
@@ -63,7 +62,6 @@ export function applyFilter(
 ) {
   const column = resolveField(alias, field)
   const param = paramName(field, type)
-  console.log({column, param})
 
   switch (type) {
     case 'EQUALS':
@@ -100,7 +98,13 @@ export function applyFilter(
     case 'LESS_THAN_OR_EQUAL':
       qb.andWhere(`${column} <= :${param}`, { [param]: value })
       break
-
+    case 'TODAY': //TODO: Implemennt defautls if not sent
+    case 'YESTERDAY':
+    case 'TOMMORROW':
+    case 'NEXT_24_HOURS': 
+    case 'THIS_MONTH':
+    case 'LAST_MONTH':
+    case 'NEXT_MONTH':
     case 'BETWEEN': {
       const from = `${param}_from`
       const to = `${param}_to`
@@ -108,7 +112,7 @@ export function applyFilter(
       qb.andWhere(`${column} BETWEEN :${from} AND :${to}`, {
         [from]: value,
         [to]: valueTo,
-      })
+      });
       break
     }
 

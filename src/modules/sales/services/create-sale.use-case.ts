@@ -1,14 +1,20 @@
 import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
 import { AppCacheService } from '../../../common/cache/cache.service';
 import { CreateSaleDto } from '../dto/create-sale.dto';
 import { SALES_REPOSITORY } from './sales.di-tokens';
 import type { SalesRepository } from '../repositories/sales.repository';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
+import { UomOrmEntity } from '../entities';
 
 @Injectable()
 export class CreateSaleUseCase {
   constructor(
     @Inject(SALES_REPOSITORY)
     private readonly salesRepository: SalesRepository,
+    @InjectRepository(UomOrmEntity)
+    private readonly uomRepository: Repository<UomOrmEntity>,
     @Optional()
     private readonly cacheService?: AppCacheService,
   ) {}
@@ -18,12 +24,30 @@ export class CreateSaleUseCase {
     organizationId: string,
     userId: string,
   ): Promise<Awaited<ReturnType<SalesRepository['createWithSettlement']>>> {
+    // const last = await this.salesRepository.findLastCreated(organizationId);
+    // const { valid, expectedCode } = validateSequentialCode({
+    //   providedCode: payload.saleNumber,
+    //   lastCode: last?.saleNumber,
+    //   override: payload.overrideCodeValidation,
+    // });
+    // if (!valid) {
+    //   throw new BadRequestException(`Invalid code '${payload.saleNumber}'. Expected '${expectedCode}'.`);
+    // }
+
     if (!payload.lines.length) {
       throw new BadRequestException('At least one sale line is required');
     }
 
+    const uomIds = [...new Set(payload.lines.map((l) => l.uomId))];
+    const uoms = await this.uomRepository.find({
+      where: { id: In(uomIds), organizationId },
+      select: ['id', 'factor'],
+    });
+    const uomFactorMap = new Map(uoms.map((u) => [u.id, u.factor]));
+
     const lines = payload.lines.map((line, index) => {
-      const lineSubtotal = Number((line.quantity * line.unitPrice).toFixed(2));
+      const factor = uomFactorMap.get(line.uomId) ?? 1;
+      const lineSubtotal = Number((line.quantity * line.unitPrice * factor).toFixed(2));
       return {
         lineNumber: index + 1,
         itemId: line.itemId,

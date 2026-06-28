@@ -62,7 +62,7 @@ let UpdateItemUseCase = class UpdateItemUseCase {
             throw new common_1.BadRequestException('Sale UOM does not exist');
         }
         (0, utils_1.validateUoms)({ baseUom, saleUom, purchaseUom });
-        const product = new item_entity_1.Item(productId, organizationId, payload.code, payload.name, payload.genericProductCode ?? null, category.id, category, payload.baseUomId, payload.purchaseUomId ?? null, payload.saleUomId ?? null, baseUom ?? null, purchaseUom ?? null, saleUom ?? null, payload.barcode ?? null, payload.trackLot ?? true, payload.trackExpiry ?? true, payload.shelfLifeDays ?? null, payload.isActive ?? true);
+        const product = new item_entity_1.Item(productId, organizationId, payload.code, payload.name, payload.genericProductCode ?? null, category.id, category, payload.baseUomId, payload.purchaseUomId ?? null, payload.saleUomId ?? null, baseUom ?? null, purchaseUom ?? null, saleUom ?? null, payload.barcode ?? null, payload.trackLot ?? true, payload.trackExpiry ?? true, payload.shelfLifeDays ?? null, payload.isActive ?? true, payload.imageUrl ?? null, payload.smallImageUrl ?? null, payload.mediumImageUrl ?? null, payload.largeImageUrl ?? null);
         const created = await this.productRepository.save(product);
         for (const item of payload.priceListItems ?? []) {
             if (!item.priceListId) {

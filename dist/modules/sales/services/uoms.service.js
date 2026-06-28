@@ -19,6 +19,7 @@ const node_crypto_1 = require("node:crypto");
 const typeorm_2 = require("typeorm");
 const mappers_1 = require("../../../shared/domain/mappers");
 const uom_orm_entity_1 = require("../entities/uom.orm-entity");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 const list_1 = require("../../../database/list");
 let UomsService = class UomsService {
     uomRepository;
@@ -82,6 +83,21 @@ let UomsService = class UomsService {
         return (0, mappers_1.toUomType)(item);
     }
     async create(payload, organizationId) {
+        if (payload.code) {
+            const last = await this.uomRepository.findOne({
+                where: { organizationId },
+                order: { createdAt: 'DESC' },
+                select: ['code'],
+            });
+            const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+                providedCode: payload.code,
+                lastCode: last?.code ?? undefined,
+                override: payload.overrideCodeValidation,
+            });
+            if (!valid) {
+                throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+            }
+        }
         if (!this.uomRepository) {
             const now = new Date();
             const record = {

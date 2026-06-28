@@ -28,6 +28,7 @@ class CreateGenericProductDto {
     pediatricDosage;
     isPrescriptionRequired;
     isControlledSubstance;
+    overrideCodeValidation;
 }
 exports.CreateGenericProductDto = CreateGenericProductDto;
 __decorate([
@@ -97,6 +98,11 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateGenericProductDto.prototype, "isControlledSubstance", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateGenericProductDto.prototype, "overrideCodeValidation", void 0);
 class UpdateGenericProductDto {
     code;
     name;

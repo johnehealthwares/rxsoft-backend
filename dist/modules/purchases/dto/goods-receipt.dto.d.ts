@@ -8,6 +8,7 @@ export declare class ReceiveGoodsDto {
     purchaseOrderId: string;
     receivedDate: string;
     receiptNumber?: string;
+    overrideCodeValidation?: boolean;
     note?: string;
     lines: ReceiveGoodsLineDto[];
 }

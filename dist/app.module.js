@@ -32,6 +32,7 @@ const manufacturers_module_1 = require("./modules/manufacturers/manufacturers.mo
 const accounting_module_1 = require("./modules/accounting/accounting.module");
 const user_pos_config_module_1 = require("./modules/user-pos-config/user-pos-config.module");
 const organisation_config_module_1 = require("./modules/organisation-config/organisation-config.module");
+const warehouses_module_1 = require("./modules/warehouses/warehouses.module");
 const website_module_1 = require("./modules/website/website.module");
 const apm_module_1 = require("./modules/apm/apm.module");
 const upload_module_1 = require("./modules/upload/upload.module");
@@ -119,6 +120,7 @@ const applicationModules = useInMemoryRepos
         upload_module_1.UploadModule,
         user_pos_config_module_1.UserPosConfigModule,
         organisation_config_module_1.OrganisationConfigModule,
+        warehouses_module_1.WarehousesModule,
     ];
 let AppModule = class AppModule {
 };

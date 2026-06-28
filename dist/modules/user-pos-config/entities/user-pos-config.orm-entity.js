@@ -13,6 +13,8 @@ exports.UserPosConfigOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
 const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
 const stock_location_orm_entity_1 = require("../../inventory/entities/stock-location.orm-entity");
+const party_orm_entity_1 = require("../../customers/entities/party.orm-entity");
+const price_list_orm_entity_1 = require("../../pricing/entities/price-list.orm-entity");
 let UserPosConfigOrmEntity = class UserPosConfigOrmEntity {
     id;
     user;
@@ -24,6 +26,13 @@ let UserPosConfigOrmEntity = class UserPosConfigOrmEntity {
     allowA4Print;
     allowPos;
     loginTimeoutMinutes;
+    defaultCustomer;
+    defaultCustomerId;
+    defaultPriceList;
+    defaultPriceListId;
+    autoSelectLocation;
+    autoSelectCustomer;
+    autoSelectPriceList;
     createdAt;
     updatedAt;
 };
@@ -70,6 +79,36 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'login_timeout_minutes', type: 'int', nullable: true }),
     __metadata("design:type", Object)
 ], UserPosConfigOrmEntity.prototype, "loginTimeoutMinutes", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => party_orm_entity_1.PartyOrmEntity, { nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'default_customer_id' }),
+    __metadata("design:type", Object)
+], UserPosConfigOrmEntity.prototype, "defaultCustomer", void 0);
+__decorate([
+    (0, typeorm_1.RelationId)((entity) => entity.defaultCustomer),
+    __metadata("design:type", Object)
+], UserPosConfigOrmEntity.prototype, "defaultCustomerId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => price_list_orm_entity_1.PriceListOrmEntity, { nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'default_price_list_id' }),
+    __metadata("design:type", Object)
+], UserPosConfigOrmEntity.prototype, "defaultPriceList", void 0);
+__decorate([
+    (0, typeorm_1.RelationId)((entity) => entity.defaultPriceList),
+    __metadata("design:type", Object)
+], UserPosConfigOrmEntity.prototype, "defaultPriceListId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'auto_select_location', type: 'boolean', default: true }),
+    __metadata("design:type", Boolean)
+], UserPosConfigOrmEntity.prototype, "autoSelectLocation", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'auto_select_customer', type: 'boolean', default: true }),
+    __metadata("design:type", Boolean)
+], UserPosConfigOrmEntity.prototype, "autoSelectCustomer", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'auto_select_price_list', type: 'boolean', default: true }),
+    __metadata("design:type", Boolean)
+], UserPosConfigOrmEntity.prototype, "autoSelectPriceList", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)

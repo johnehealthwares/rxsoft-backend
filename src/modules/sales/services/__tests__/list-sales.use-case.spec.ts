@@ -6,6 +6,7 @@ describe('ListSalesUseCase', () => {
     list: jest.fn(),
     createWithSettlement: jest.fn(),
     createRefund: jest.fn(),
+    findLastCreated: jest.fn().mockResolvedValue(null),
   };
 
   const useCase = new ListSalesUseCase(salesRepository);

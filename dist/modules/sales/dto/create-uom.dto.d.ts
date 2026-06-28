@@ -6,4 +6,5 @@ export declare class CreateUomDto {
     factor?: number;
     rounding?: number;
     isActive?: boolean;
+    overrideCodeValidation?: boolean;
 }

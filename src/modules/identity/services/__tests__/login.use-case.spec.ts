@@ -24,6 +24,7 @@ describe('LoginUseCase', () => {
     update: jest.fn(),
     delete: jest.fn(),
     findById: jest.fn(),
+    findLastCreated: jest.fn().mockResolvedValue(null),
   };
 
   const passwordHasher: jest.Mocked<PasswordHasherPort> = {

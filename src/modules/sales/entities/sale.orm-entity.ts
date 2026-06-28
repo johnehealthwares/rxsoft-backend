@@ -35,29 +35,11 @@ export class SaleOrmEntity {
   @Column({ type: 'text' })
   status!: 'draft' | 'posted' | 'voided' | 'refunded';
 
-  @Column({ name: 'order_status', type: 'text', nullable: true })
-  orderStatus!: 'pending' | 'confirmed' | 'processing' | 'dispatched' | 'in_transit' | 'delivered' | 'cancelled' | null;
-
-  @Column({ name: 'delivery_address', type: 'text', nullable: true })
-  deliveryAddress!: string | null;
-
-  @Column({ type: 'text', nullable: true })
-  city!: string | null;
-
-  @Column({ type: 'text', nullable: true })
-  state!: string | null;
-
-  @Column({ type: 'text', nullable: true })
-  phone!: string | null;
-
-  @Column({ name: 'shipping_method', type: 'text', nullable: true })
-  shippingMethod!: string | null;
-
   @Column({ type: 'text', nullable: true })
   notes!: string | null;
 
-  @Column({ name: 'assigned_location_id', type: 'uuid', nullable: true })
-  assignedLocationId!: string | null;
+  @Column({ name: 'stock_location_id', type: 'uuid', nullable: true })
+  stockLocationId!: string | null;
 
   @Column({ name: 'subtotal_amount', type: 'decimal', default: 0, precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   subtotalAmount!: number;

@@ -32,7 +32,7 @@ let GlobalExceptionFilter = GlobalExceptionFilter_1 = class GlobalExceptionFilte
         const ctx = host.switchToHttp();
         const response = ctx.getResponse();
         const request = ctx.getRequest();
-        console.log({ exception });
+        console.log({ exception }, (exception?.response)?.message);
         if (exception instanceof typeorm_1.QueryFailedError) {
             const dbError = exception.driverError || exception;
             const code = dbError?.code;

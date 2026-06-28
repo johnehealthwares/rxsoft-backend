@@ -1,4 +1,5 @@
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
+import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import { ReceiveGoodsDto } from '../dto/goods-receipt.dto';
 import { UnpostGoodsDto } from '../dto/unpost-goods.dto';
 import { ReceiveGoodsUseCase } from '../services/receive-goods.use-case';
@@ -17,10 +18,12 @@ export declare class InflowController {
         page: number;
         limit: number;
     }>;
-    listAllReceipts(page?: number, limit?: number, currentUser?: RequestUser): Promise<{
+    listAllReceipts(query: ListQueryDto, currentUser: RequestUser): Promise<{
         data: import("../entities").GoodsReceiptOrmEntity[];
-        total: number;
-        page: number;
-        limit: number;
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+        };
     }>;
 }

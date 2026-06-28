@@ -21,6 +21,7 @@ export class InMemoryReceivablesRepository implements ReceivablesRepository {
         'ar1',
         'org1',
         'cust1',
+        null,
         'sale1',
         'AR-SALE-0001',
         100,

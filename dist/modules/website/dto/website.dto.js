@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdatePrescriptionStatusDto = exports.UpdateArticleDto = exports.CreateArticleDto = exports.UpdateHealthConcernDto = exports.CreateHealthConcernDto = exports.RegisterDto = exports.SearchQueryDto = exports.CreateReviewDto = exports.NewsletterSubscribeDto = exports.CreateContactDto = exports.CreateOrderDto = exports.CreateOrderItemDto = exports.AddToCartDto = exports.CreateConsultationDto = exports.CreatePrescriptionDto = exports.ListQueryDto = void 0;
+exports.UpdateOrderStatusDto = exports.PostOrderAsSaleDto = exports.UpdatePrescriptionStatusDto = exports.UpdateArticleDto = exports.CreateArticleDto = exports.UpdateHealthConcernDto = exports.CreateHealthConcernDto = exports.RegisterDto = exports.SearchQueryDto = exports.CreateReviewDto = exports.NewsletterSubscribeDto = exports.CreateContactDto = exports.CreateOrderDto = exports.CreateDeliveryDto = exports.CreateOrderItemDto = exports.AddToCartDto = exports.CreateConsultationDto = exports.CreatePrescriptionDto = exports.ListQueryDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
@@ -178,17 +178,50 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "unitPrice", void 0);
-class CreateOrderDto {
-    customerId;
-    deliveryAddress;
+class CreateDeliveryDto {
+    address;
     city;
     state;
     phone;
     shippingMethod;
+}
+exports.CreateDeliveryDto = CreateDeliveryDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateDeliveryDto.prototype, "address", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateDeliveryDto.prototype, "city", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateDeliveryDto.prototype, "state", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateDeliveryDto.prototype, "phone", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateDeliveryDto.prototype, "shippingMethod", void 0);
+class CreateOrderDto {
+    customerId;
     paymentMethod;
     prescriptionIds;
     notes;
     items;
+    delivery;
 }
 exports.CreateOrderDto = CreateOrderDto;
 __decorate([
@@ -197,35 +230,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateOrderDto.prototype, "customerId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateOrderDto.prototype, "deliveryAddress", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateOrderDto.prototype, "city", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateOrderDto.prototype, "state", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateOrderDto.prototype, "phone", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateOrderDto.prototype, "shippingMethod", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),
@@ -252,6 +256,13 @@ __decorate([
     (0, class_validator_1.ArrayMinSize)(1),
     __metadata("design:type", Array)
 ], CreateOrderDto.prototype, "items", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ type: CreateDeliveryDto }),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => CreateDeliveryDto),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", CreateDeliveryDto)
+], CreateOrderDto.prototype, "delivery", void 0);
 class CreateContactDto {
     name;
     email;
@@ -691,4 +702,24 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], UpdatePrescriptionStatusDto.prototype, "status", void 0);
+class PostOrderAsSaleDto {
+    stockLocationId;
+}
+exports.PostOrderAsSaleDto = PostOrderAsSaleDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], PostOrderAsSaleDto.prototype, "stockLocationId", void 0);
+class UpdateOrderStatusDto {
+    status;
+}
+exports.UpdateOrderStatusDto = UpdateOrderStatusDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: ['pending', 'confirmed', 'processing', 'dispatched', 'in_transit', 'delivered', 'cancelled'] }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], UpdateOrderStatusDto.prototype, "status", void 0);
 //# sourceMappingURL=website.dto.js.map

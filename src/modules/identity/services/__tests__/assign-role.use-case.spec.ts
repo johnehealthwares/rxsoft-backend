@@ -21,6 +21,7 @@ describe('AssignRoleUseCase', () => {
     update: jest.fn(),
     delete: jest.fn(),
     findById: jest.fn(),
+    findLastCreated: jest.fn().mockResolvedValue(null),
   };
 
   const useCase = new AssignRoleUseCase(userRepository, roleRepository);

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RewardTransactionOrmEntity = exports.ProductReviewOrmEntity = exports.NewsletterSubscriberOrmEntity = exports.ContactSubmissionOrmEntity = exports.BranchOrmEntity = exports.DeliveryAreaOrmEntity = exports.BlogArticleOrmEntity = exports.TestimonialOrmEntity = exports.ConsultationOrmEntity = exports.PrescriptionFileOrmEntity = exports.PrescriptionOrmEntity = exports.HealthConcernOrmEntity = void 0;
+exports.DeliveryOrmEntity = exports.OrderItemOrmEntity = exports.OrderOrmEntity = exports.RewardTransactionOrmEntity = exports.ProductReviewOrmEntity = exports.NewsletterSubscriberOrmEntity = exports.ContactSubmissionOrmEntity = exports.BranchOrmEntity = exports.DeliveryAreaOrmEntity = exports.BlogArticleOrmEntity = exports.TestimonialOrmEntity = exports.ConsultationOrmEntity = exports.PrescriptionFileOrmEntity = exports.PrescriptionOrmEntity = exports.HealthConcernOrmEntity = void 0;
 var health_concern_orm_entity_1 = require("./health-concern.orm-entity");
 Object.defineProperty(exports, "HealthConcernOrmEntity", { enumerable: true, get: function () { return health_concern_orm_entity_1.HealthConcernOrmEntity; } });
 var prescription_orm_entity_1 = require("./prescription.orm-entity");
@@ -25,4 +25,10 @@ var product_review_orm_entity_1 = require("./product-review.orm-entity");
 Object.defineProperty(exports, "ProductReviewOrmEntity", { enumerable: true, get: function () { return product_review_orm_entity_1.ProductReviewOrmEntity; } });
 var reward_transaction_orm_entity_1 = require("./reward-transaction.orm-entity");
 Object.defineProperty(exports, "RewardTransactionOrmEntity", { enumerable: true, get: function () { return reward_transaction_orm_entity_1.RewardTransactionOrmEntity; } });
+var order_orm_entity_1 = require("./order.orm-entity");
+Object.defineProperty(exports, "OrderOrmEntity", { enumerable: true, get: function () { return order_orm_entity_1.OrderOrmEntity; } });
+var order_item_orm_entity_1 = require("./order-item.orm-entity");
+Object.defineProperty(exports, "OrderItemOrmEntity", { enumerable: true, get: function () { return order_item_orm_entity_1.OrderItemOrmEntity; } });
+var delivery_orm_entity_1 = require("./delivery.orm-entity");
+Object.defineProperty(exports, "DeliveryOrmEntity", { enumerable: true, get: function () { return delivery_orm_entity_1.DeliveryOrmEntity; } });
 //# sourceMappingURL=index.js.map

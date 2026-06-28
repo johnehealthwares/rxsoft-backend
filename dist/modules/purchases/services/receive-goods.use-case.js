@@ -16,6 +16,7 @@ exports.ReceiveGoodsUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const cache_service_1 = require("../../../common/cache/cache.service");
 const purchases_di_tokens_1 = require("./purchases.di-tokens");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let ReceiveGoodsUseCase = class ReceiveGoodsUseCase {
     purchasesRepository;
     cacheService;
@@ -41,9 +42,21 @@ let ReceiveGoodsUseCase = class ReceiveGoodsUseCase {
                 throw new common_1.BadRequestException(`Received quantity for item ${incomingLine.itemId} exceeds ordered quantity`);
             }
         }
+        const receiptNumber = payload.receiptNumber;
+        if (receiptNumber) {
+            const last = await this.purchasesRepository.findLastReceipt(organizationId);
+            const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+                providedCode: receiptNumber,
+                lastCode: last?.receiptNumber,
+                override: payload.overrideCodeValidation,
+            });
+            if (!valid) {
+                throw new common_1.BadRequestException(`Invalid code '${receiptNumber}'. Expected '${expectedCode}'.`);
+            }
+        }
         const result = await this.purchasesRepository.receiveGoods({
             organizationId,
-            receiptNumber: payload.receiptNumber ?? `GR-${Date.now()}`,
+            receiptNumber: receiptNumber ?? `GR-${Date.now()}`,
             purchaseOrderId: payload.purchaseOrderId,
             receivedDate: new Date(payload.receivedDate),
             createdByUserId: userId,

@@ -7,6 +7,7 @@ export declare class TypeormRoleRepository implements RoleRepository {
     private readonly roleRepository;
     private readonly permissionRepository;
     constructor(roleRepository: Repository<RoleOrmEntity>, permissionRepository: Repository<PermissionOrmEntity>);
+    findLastCreated(organizationId: string): Promise<Pick<Role, 'code'> | null>;
     findByCode(code: string, organizationId: string): Promise<Role | null>;
     findById(id: string, organizationId: string): Promise<Role | null>;
     listByCodes(codes: string[], organizationId: string): Promise<Role[]>;

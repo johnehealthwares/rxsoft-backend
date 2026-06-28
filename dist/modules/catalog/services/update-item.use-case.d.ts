@@ -3,7 +3,7 @@ import { InventoryService } from '../../inventory/services/inventory.service';
 import { PricingService } from '../../pricing/services/pricing.service';
 import type { ItemRepository } from '../repositories/item.repository';
 import { Item } from '../domains/item.entity';
-import { CreateItemDto } from '../dto/create-item.dto';
+import { ReplaceItemDto } from '../dto/replace-item.dto';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
 export declare class UpdateItemUseCase {
     private readonly productRepository;
@@ -12,5 +12,5 @@ export declare class UpdateItemUseCase {
     private readonly inventoryService?;
     private readonly cacheService?;
     constructor(productRepository: ItemRepository, cache: GenericDrugCacheService, pricingService?: PricingService | undefined, inventoryService?: InventoryService | undefined, cacheService?: AppCacheService | undefined);
-    execute(productId: string, payload: CreateItemDto, organizationId: string, performedByUserId?: string): Promise<Item>;
+    execute(productId: string, payload: ReplaceItemDto, organizationId: string, performedByUserId?: string): Promise<Item>;
 }

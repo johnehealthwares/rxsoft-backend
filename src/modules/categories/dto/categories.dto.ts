@@ -5,6 +5,7 @@ export class CreateCategoryDto {
   @ApiProperty() @IsString() code!: string;
   @ApiProperty() @IsString() name!: string;
   @ApiPropertyOptional() @IsString() @IsOptional() parentId?: string;
+  @ApiPropertyOptional({ default: false }) @IsOptional() overrideCodeValidation?: boolean;
 }
 
 export class UpdateCategoryDto {

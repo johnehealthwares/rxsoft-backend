@@ -15,26 +15,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebsiteAuthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const auth_response_dto_1 = require("../../identity/dto/auth-response.dto");
 const login_dto_1 = require("../../identity/dto/login.dto");
 const create_user_use_case_1 = require("../../identity/services/create-user.use-case");
 const login_use_case_1 = require("../../identity/services/login.use-case");
 const website_dto_1 = require("../dto/website.dto");
+const party_orm_entity_1 = require("../../../modules/customers/entities/party.orm-entity");
 const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
 let WebsiteAuthController = class WebsiteAuthController {
     createUserUseCase;
     loginUseCase;
-    constructor(createUserUseCase, loginUseCase) {
+    partyRepo;
+    constructor(createUserUseCase, loginUseCase, partyRepo) {
         this.createUserUseCase = createUserUseCase;
         this.loginUseCase = loginUseCase;
+        this.partyRepo = partyRepo;
     }
     async register(dto) {
-        await this.createUserUseCase.execute({
+        const createdUser = await this.createUserUseCase.execute({
             username: dto.username,
             password: dto.password,
             phone: dto.phone,
             roleCodes: ['website_user'],
         }, persistence_scope_1.DEFAULT_ORGANIZATION_ID);
+        const existingParty = await this.partyRepo.findOne({ where: { userId: createdUser.id } });
+        if (!existingParty) {
+            await this.partyRepo.save(this.partyRepo.create({
+                organizationId: persistence_scope_1.DEFAULT_ORGANIZATION_ID,
+                partyType: 'customer',
+                name: dto.username,
+                phone: dto.phone ?? null,
+                email: dto.email ?? null,
+                userId: createdUser.id,
+            }));
+        }
         return this.loginUseCase.execute({ username: dto.username, password: dto.password });
     }
     async login(dto) {
@@ -65,7 +81,9 @@ __decorate([
 exports.WebsiteAuthController = WebsiteAuthController = __decorate([
     (0, swagger_1.ApiTags)('website-auth'),
     (0, common_1.Controller)('website/auth'),
+    __param(2, (0, typeorm_1.InjectRepository)(party_orm_entity_1.PartyOrmEntity)),
     __metadata("design:paramtypes", [create_user_use_case_1.CreateUserUseCase,
-        login_use_case_1.LoginUseCase])
+        login_use_case_1.LoginUseCase,
+        typeorm_2.Repository])
 ], WebsiteAuthController);
 //# sourceMappingURL=website-auth.controller.js.map

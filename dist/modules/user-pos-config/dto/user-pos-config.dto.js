@@ -17,10 +17,18 @@ class UserPosConfigType {
     userId;
     organizationId;
     stockLocationId;
+    stockLocation;
     storeId;
     allowA4Print;
     allowPos;
     loginTimeoutMinutes;
+    defaultCustomerId;
+    defaultCustomer;
+    defaultPriceListId;
+    defaultPriceList;
+    autoSelectLocation;
+    autoSelectCustomer;
+    autoSelectPriceList;
     createdAt;
     updatedAt;
 }
@@ -31,6 +39,11 @@ class UpdateUserPosConfigDto {
     allowA4Print;
     allowPos;
     loginTimeoutMinutes;
+    defaultCustomerId;
+    defaultPriceListId;
+    autoSelectLocation;
+    autoSelectCustomer;
+    autoSelectPriceList;
 }
 exports.UpdateUserPosConfigDto = UpdateUserPosConfigDto;
 __decorate([
@@ -64,4 +77,34 @@ __decorate([
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Object)
 ], UpdateUserPosConfigDto.prototype, "loginTimeoutMinutes", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", Object)
+], UpdateUserPosConfigDto.prototype, "defaultCustomerId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", Object)
+], UpdateUserPosConfigDto.prototype, "defaultPriceListId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateUserPosConfigDto.prototype, "autoSelectLocation", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateUserPosConfigDto.prototype, "autoSelectCustomer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateUserPosConfigDto.prototype, "autoSelectPriceList", void 0);
 //# sourceMappingURL=user-pos-config.dto.js.map

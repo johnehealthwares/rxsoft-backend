@@ -14,21 +14,33 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateSaleUseCase = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const cache_service_1 = require("../../../common/cache/cache.service");
 const sales_di_tokens_1 = require("./sales.di-tokens");
+const entities_1 = require("../entities");
 let CreateSaleUseCase = class CreateSaleUseCase {
     salesRepository;
+    uomRepository;
     cacheService;
-    constructor(salesRepository, cacheService) {
+    constructor(salesRepository, uomRepository, cacheService) {
         this.salesRepository = salesRepository;
+        this.uomRepository = uomRepository;
         this.cacheService = cacheService;
     }
     async execute(payload, organizationId, userId) {
         if (!payload.lines.length) {
             throw new common_1.BadRequestException('At least one sale line is required');
         }
+        const uomIds = [...new Set(payload.lines.map((l) => l.uomId))];
+        const uoms = await this.uomRepository.find({
+            where: { id: (0, typeorm_2.In)(uomIds), organizationId },
+            select: ['id', 'factor'],
+        });
+        const uomFactorMap = new Map(uoms.map((u) => [u.id, u.factor]));
         const lines = payload.lines.map((line, index) => {
-            const lineSubtotal = Number((line.quantity * line.unitPrice).toFixed(2));
+            const factor = uomFactorMap.get(line.uomId) ?? 1;
+            const lineSubtotal = Number((line.quantity * line.unitPrice * factor).toFixed(2));
             return {
                 lineNumber: index + 1,
                 itemId: line.itemId,
@@ -90,7 +102,9 @@ exports.CreateSaleUseCase = CreateSaleUseCase;
 exports.CreateSaleUseCase = CreateSaleUseCase = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(sales_di_tokens_1.SALES_REPOSITORY)),
-    __param(1, (0, common_1.Optional)()),
-    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService])
+    __param(1, (0, typeorm_1.InjectRepository)(entities_1.UomOrmEntity)),
+    __param(2, (0, common_1.Optional)()),
+    __metadata("design:paramtypes", [Object, typeorm_2.Repository,
+        cache_service_1.AppCacheService])
 ], CreateSaleUseCase);
 //# sourceMappingURL=create-sale.use-case.js.map

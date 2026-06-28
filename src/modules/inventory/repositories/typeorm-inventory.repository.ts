@@ -88,10 +88,13 @@ export class TypeormInventoryRepository implements InventoryRepository {
   async listStockMovements(query: StockMovementQuery): Promise<{ items: StockMovement[]; total: number }> {
     const qb = this.stockMovementRepository
       .createQueryBuilder('stock_movement')
+      .leftJoinAndSelect('stock_movement.item', 'item')
+      .leftJoinAndSelect('stock_movement.fromLocation', 'fromLocation')
+      .leftJoinAndSelect('stock_movement.toLocation', 'toLocation')
       .where('stock_movement.organization_id = :organizationId', {
         organizationId: query.organizationId,
       })
-      // .orderBy('stock_movement.occurred_at', 'DESC')
+      .orderBy('stock_movement.occurredAt', 'DESC')
       .skip(query.offset)
       .take(query.limit);
 
@@ -101,18 +104,28 @@ export class TypeormInventoryRepository implements InventoryRepository {
 
     const [items, total] = await qb.getManyAndCount();
     return {
-      items: items.map((item) => ({
-        id: item.id,
-        organizationId: item.organizationId,
-        itemId: item.itemId,
-        lotId: item.lotId,
-        fromLocationId: item.fromLocationId,
-        toLocationId: item.toLocationId,
-        movementType: item.movementType,
-        quantity: item.quantity,
-        unitCost: item.unitCost,
-        occurredAt: item.occurredAt,
-        createdByUserId: item.createdByUserId,
+      items: items.map((movement) => ({
+        id: movement.id,
+        organizationId: movement.organizationId,
+        itemId: movement.itemId,
+        item: movement.item
+          ? { id: movement.item.id, code: movement.item.code, name: movement.item.name }
+          : null,
+        lotId: movement.lotId,
+        fromLocationId: movement.fromLocationId,
+        fromLocation: movement.fromLocation
+          ? { id: movement.fromLocation.id, name: movement.fromLocation.name }
+          : null,
+        toLocationId: movement.toLocationId,
+        toLocation: movement.toLocation
+          ? { id: movement.toLocation.id, name: movement.toLocation.name }
+          : null,
+        movementType: movement.movementType,
+        quantity: movement.quantity,
+        unitCost: movement.unitCost,
+        occurredAt: movement.occurredAt,
+        createdAt: movement.createdAt,
+        createdByUserId: movement.createdByUserId,
       })),
       total,
     };
@@ -183,7 +196,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
 
       const item = await itemRepo.findOne({
-        where: { id: payload.itemId, organizationId: payload.organizationId, isActive: true },
+        where: { id: payload.itemId, organizationId: payload.organizationId },
       });
       if (!item) throw new NotFoundException('Item not found');
 
@@ -243,6 +256,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
         lot: savedBalance.lot?.id ? { id: savedBalance.lot.id } : null,
         fromLocation: payload.deltaQuantity < 0 ? { id: location.id } : null,
         toLocation: payload.deltaQuantity > 0 ? { id: location.id } : null,
+        uomId: payload.uomId ?? null,
         movementType: 'adjustment',
         quantity: Math.abs(payload.deltaQuantity),
         unitCost: savedBalance.averageCost ?? null,

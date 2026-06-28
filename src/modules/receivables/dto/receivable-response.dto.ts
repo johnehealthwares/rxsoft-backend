@@ -7,6 +7,9 @@ export class ReceivableResponseDto {
   @ApiProperty()
   customerId!: string;
 
+  @ApiProperty({ nullable: true })
+  customer!: { id: string; name: string } | null;
+
   @ApiProperty()
   saleId!: string;
 

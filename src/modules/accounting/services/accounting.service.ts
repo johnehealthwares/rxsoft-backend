@@ -19,6 +19,7 @@ import {
   UpdateJournalEntryLineDto,
 } from '../dto/accounting.dto';
 import { GlAccountOrmEntity, JournalEntryLineOrmEntity, JournalEntryOrmEntity, JournalOrmEntity } from '../entities';
+import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 export type JournalType = ReturnType<typeof toJournalType>;
 export type JournalEntryType = ReturnType<typeof toJournalEntryType>;
@@ -60,6 +61,20 @@ export class AccountingService {
   }
 
   async createJournal(payload: CreateJournalDto, organizationId: string): Promise<JournalType> {
+    const last = await this.journalRepository.findOne({
+      where: { organizationId },
+      order: { createdAt: 'DESC' },
+      select: ['code'],
+    });
+    const { valid, expectedCode } = validateSequentialCode({
+      providedCode: payload.code,
+      lastCode: last?.code,
+      override: payload.overrideCodeValidation,
+    });
+    if (!valid) {
+      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+    }
+
     await this.ensureAccount(payload.defaultDebitAccountId, organizationId);
     await this.ensureAccount(payload.defaultCreditAccountId, organizationId);
 

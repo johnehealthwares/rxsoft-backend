@@ -21,6 +21,10 @@ export class CreatePaymentMethodDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
 }
 
 export class UpdatePaymentMethodDto {

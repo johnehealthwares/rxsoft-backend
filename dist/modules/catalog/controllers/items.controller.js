@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const create_item_dto_1 = require("../dto/create-item.dto");
+const replace_item_dto_1 = require("../dto/replace-item.dto");
 const list_item_dependencies_dto_1 = require("../dto/list-item-dependencies.dto");
 const list_items_dto_1 = require("../dto/list-items.dto");
 const item_response_dto_1 = require("../dto/item-response.dto");
@@ -36,6 +37,7 @@ const update_item_use_case_1 = require("../services/update-item.use-case");
 const patch_item_use_case_1 = require("../services/patch-item.use-case");
 const patch_item_dto_1 = require("../dto/patch-item.dto");
 const generic_drug_cache_service_1 = require("../../../services/generic-drug-cache.service");
+const catalog_di_tokens_1 = require("../services/catalog.di-tokens");
 let ItemsController = class ItemsController {
     listItemsUseCase;
     listItemDependenciesUseCase;
@@ -46,7 +48,8 @@ let ItemsController = class ItemsController {
     genericDrugCache;
     itemRepo;
     uomRepo;
-    constructor(listItemsUseCase, listItemDependenciesUseCase, getItemUseCase, createItemUseCase, updateItemUseCase, patchItemUseCase, genericDrugCache, itemRepo, uomRepo) {
+    itemRepository;
+    constructor(listItemsUseCase, listItemDependenciesUseCase, getItemUseCase, createItemUseCase, updateItemUseCase, patchItemUseCase, genericDrugCache, itemRepo, uomRepo, itemRepository) {
         this.listItemsUseCase = listItemsUseCase;
         this.listItemDependenciesUseCase = listItemDependenciesUseCase;
         this.getItemUseCase = getItemUseCase;
@@ -56,6 +59,7 @@ let ItemsController = class ItemsController {
         this.genericDrugCache = genericDrugCache;
         this.itemRepo = itemRepo;
         this.uomRepo = uomRepo;
+        this.itemRepository = itemRepository;
     }
     toResponse(item) {
         const cached = item.genericProductCode
@@ -65,7 +69,7 @@ let ItemsController = class ItemsController {
             id: item.id,
             code: item.code,
             name: item.name,
-            category: {
+            category: item.category && {
                 id: item.category.id,
                 code: item.category.code,
                 name: item.category.name,
@@ -152,6 +156,14 @@ let ItemsController = class ItemsController {
             },
         };
     }
+    async metrics(query, currentUser) {
+        const metricsQuery = {
+            organizationId: currentUser.organizationId,
+            search: query.search,
+            categoryCode: query.categoryCode,
+        };
+        return this.itemRepository.getMetrics(metricsQuery);
+    }
     async get(itemId, currentUser) {
         const item = await this.getItemUseCase.execute(itemId, currentUser.organizationId);
         return this.toResponse(item);
@@ -227,6 +239,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ItemsController.prototype, "listUoms", null);
 __decorate([
+    (0, common_1.Get)('metrics'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get item metrics' }),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [list_items_dto_1.ListItemsDto, Object]),
+    __metadata("design:returntype", Promise)
+], ItemsController.prototype, "metrics", null);
+__decorate([
     (0, common_1.Get)(':itemId'),
     (0, roles_decorator_1.Roles)('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk'),
     (0, swagger_1.ApiOperation)({ summary: 'Get item details by id' }),
@@ -252,14 +274,14 @@ __decorate([
 __decorate([
     (0, common_1.Put)(":itemId"),
     (0, roles_decorator_1.Roles)('admin', 'super_admin', 'pharmacist'),
-    (0, audit_action_decorator_1.AuditAction)('catalog.item.create'),
-    (0, swagger_1.ApiOperation)({ summary: 'Create a catalog item' }),
-    (0, swagger_1.ApiResponse)({ status: 201, type: item_response_dto_1.ItemResponseDto }),
+    (0, audit_action_decorator_1.AuditAction)('catalog.item.update'),
+    (0, swagger_1.ApiOperation)({ summary: 'Replace a catalog item (full update)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, type: item_response_dto_1.ItemResponseDto }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __param(2, (0, common_1.Param)('itemId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_item_dto_1.CreateItemDto, Object, String]),
+    __metadata("design:paramtypes", [replace_item_dto_1.ReplaceItemDto, Object, String]),
     __metadata("design:returntype", Promise)
 ], ItemsController.prototype, "replace", null);
 __decorate([
@@ -292,6 +314,7 @@ exports.ItemsController = ItemsController = __decorate([
     (0, common_1.Controller)('items'),
     __param(7, (0, typeorm_1.InjectRepository)(item_orm_entity_1.ItemOrmEntity)),
     __param(8, (0, typeorm_1.InjectRepository)(uom_orm_entity_1.UomOrmEntity)),
+    __param(9, (0, common_1.Inject)(catalog_di_tokens_1.ITEM_REPOSITORY)),
     __metadata("design:paramtypes", [list_items_use_case_1.ListItemsUseCase,
         list_item_dependencies_use_case_1.ListItemDependenciesUseCase,
         get_item_use_case_1.GetItemUseCase,
@@ -300,6 +323,6 @@ exports.ItemsController = ItemsController = __decorate([
         patch_item_use_case_1.PatchItemUseCase,
         generic_drug_cache_service_1.GenericDrugCacheService,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository, Object])
 ], ItemsController);
 //# sourceMappingURL=items.controller.js.map

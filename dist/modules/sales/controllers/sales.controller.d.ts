@@ -8,6 +8,7 @@ import { SaleResponseDto } from '../dto/sale-response.dto';
 import { CreateSaleRefundUseCase } from '../services/create-sale-refund.use-case';
 import { CreateSaleUseCase } from '../services/create-sale.use-case';
 import { ListSalesUseCase } from '../services/list-sales.use-case';
+import type { SalesRepository } from '../repositories/sales.repository';
 type SalesListResponse = {
     data: SaleResponseDto[];
     meta: {
@@ -20,8 +21,10 @@ export declare class SalesController {
     private readonly listSalesUseCase;
     private readonly createSaleUseCase;
     private readonly createSaleRefundUseCase;
-    constructor(listSalesUseCase: ListSalesUseCase, createSaleUseCase: CreateSaleUseCase, createSaleRefundUseCase: CreateSaleRefundUseCase);
+    private readonly salesRepository;
+    constructor(listSalesUseCase: ListSalesUseCase, createSaleUseCase: CreateSaleUseCase, createSaleRefundUseCase: CreateSaleRefundUseCase, salesRepository: SalesRepository);
     listSales(query: ListSalesDto, currentUser: RequestUser): Promise<SalesListResponse>;
+    metrics(query: ListSalesDto, currentUser: RequestUser): Promise<import("../repositories/sales.repository").SalesMetrics>;
     createSale(payload: CreateSaleDto, currentUser: RequestUser): Promise<CreateSaleResponseDto>;
     createRefund(saleId: string, payload: CreateSaleRefundDto, currentUser: RequestUser): Promise<CreateSaleRefundResponseDto>;
 }

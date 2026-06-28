@@ -1,6 +1,6 @@
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
-import { CreatePurchaseDto, UpdatePurchaseDto } from '../dto/purchases.dto';
+import { CreatePurchaseDto, CreatePurchaseLineDto, UpdatePurchaseDto, UpdatePurchaseLineDto } from '../dto/purchases.dto';
 import { PurchasesService } from '../services/purchases.service';
 type PurchaseSummaryType = Awaited<ReturnType<PurchasesService['getById']>>;
 type PurchaseListResponse = {
@@ -20,5 +20,8 @@ export declare class PurchasesController {
     replace(purchaseId: string, payload: UpdatePurchaseDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
     patch(purchaseId: string, payload: UpdatePurchaseDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
     remove(purchaseId: string, currentUser: RequestUser): Promise<void>;
+    addLine(purchaseId: string, payload: CreatePurchaseLineDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
+    updateLine(purchaseId: string, lineId: string, payload: UpdatePurchaseLineDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
+    removeLine(purchaseId: string, lineId: string, currentUser: RequestUser): Promise<PurchaseSummaryType>;
 }
 export {};

@@ -48,6 +48,7 @@ class ReceiveGoodsDto {
     purchaseOrderId;
     receivedDate;
     receiptNumber;
+    overrideCodeValidation;
     note;
     lines;
 }
@@ -68,6 +69,11 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], ReceiveGoodsDto.prototype, "receiptNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], ReceiveGoodsDto.prototype, "overrideCodeValidation", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsOptional)(),

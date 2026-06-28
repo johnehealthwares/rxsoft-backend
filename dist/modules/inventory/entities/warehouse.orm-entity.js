@@ -18,6 +18,7 @@ let WarehouseOrmEntity = class WarehouseOrmEntity {
     storeId;
     code;
     name;
+    address;
     stockLocations;
     isActive;
     createdAt;
@@ -44,6 +45,10 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'text' }),
     __metadata("design:type", String)
 ], WarehouseOrmEntity.prototype, "name", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", Object)
+], WarehouseOrmEntity.prototype, "address", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => stock_location_orm_entity_1.StockLocationOrmEntity, (location) => location.warehouse),
     __metadata("design:type", Array)

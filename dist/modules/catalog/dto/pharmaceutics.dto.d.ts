@@ -16,6 +16,7 @@ export declare class CreatePharmaceuticsDto {
     drugInteractions?: string;
     dosage?: string;
     drugComponentIds?: string[];
+    overrideCodeValidation?: boolean;
 }
 export declare class UpdatePharmaceuticsDto extends CreatePharmaceuticsDto {
 }

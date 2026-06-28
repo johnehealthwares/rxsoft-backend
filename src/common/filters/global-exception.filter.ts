@@ -39,7 +39,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    console.log({exception})
+    console.log({exception},((exception as any)?.response)?.message)
     if (exception instanceof QueryFailedError) {
       const dbError = (exception as any).driverError || exception;
       const code = dbError?.code;

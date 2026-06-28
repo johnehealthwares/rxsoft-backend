@@ -5,6 +5,7 @@ export declare class CreateOrganizationDto {
     code: string;
     name: string;
     isActive?: boolean;
+    overrideCodeValidation?: boolean;
 }
 export declare class UpdateOrganizationDto {
     code?: string;

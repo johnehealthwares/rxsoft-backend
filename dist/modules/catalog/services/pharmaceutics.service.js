@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PharmaceuticsService = void 0;
 const common_1 = require("@nestjs/common");
 const healthcare_concepts_service_1 = require("../../../services/healthcare-concepts.service");
+const code_validation_1 = require("../../../shared/utils/code-validation");
 let PharmaceuticsService = class PharmaceuticsService {
     healthcare;
     constructor(healthcare) {
@@ -31,6 +32,14 @@ let PharmaceuticsService = class PharmaceuticsService {
         return { id: item.id, organizationId: '', code: item.code, commonBrandName: item.commonBrandName, commonGenericName: item.commonGenericName, clinicalName: item.clinicalName, drugClass: item.drugClass, chemicalConstituents: null, pharmaceutics: item.pharmaceutics, indications: item.indications, contraindications: item.contraindications, mechanism: item.mechanism, missedDose: null, drugInteractions: null, dosage: null, createdAt: '', updatedAt: '', deletedAt: null };
     }
     async create(payload, _organizationId) {
+        const { valid, expectedCode } = (0, code_validation_1.validateSequentialCode)({
+            providedCode: payload.code,
+            lastCode: undefined,
+            override: payload.overrideCodeValidation,
+        });
+        if (!valid) {
+            throw new common_1.BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
+        }
         return payload;
     }
     async update(id, payload, _organizationId) {

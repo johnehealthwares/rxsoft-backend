@@ -23,8 +23,9 @@ const uom_converter_service_1 = require("../services/uom-converter.service");
 const entities_2 = require("../../receivables/entities");
 const sale_entity_1 = require("../domains/sale.entity");
 const entities_3 = require("../entities");
+const list_1 = require("../../../database/list");
 function toDomain(entity) {
-    return new sale_entity_1.Sale(entity.id, entity.organizationId, entity.saleNumber, entity.saleChannel, entity.status, entity.totalAmount, entity.paidAmount, entity.changeAmount, entity.saleDate);
+    return new sale_entity_1.Sale(entity.id, entity.organizationId, entity.saleNumber, entity.saleChannel, entity.storeId, entity.storeLocationName ?? null, entity.status, entity.totalAmount, entity.paidAmount, entity.changeAmount, entity.saleDate);
 }
 let TypeormSalesRepository = class TypeormSalesRepository {
     saleRepository;
@@ -32,6 +33,14 @@ let TypeormSalesRepository = class TypeormSalesRepository {
     uomRepository;
     dataSource;
     uomConverter;
+    async findLastCreated(organizationId) {
+        const entity = await this.saleRepository.findOne({
+            where: { organizationId },
+            order: { createdAt: 'DESC' },
+            select: ['saleNumber'],
+        });
+        return entity ? { saleNumber: entity.saleNumber } : null;
+    }
     constructor(saleRepository, itemRepository, uomRepository, dataSource, uomConverter) {
         this.saleRepository = saleRepository;
         this.itemRepository = itemRepository;
@@ -50,13 +59,107 @@ let TypeormSalesRepository = class TypeormSalesRepository {
             qb.andWhere('sale.status = :status', { status: query.status });
         }
         if (query.search) {
-            qb.andWhere('sale.sale_number ILIKE :search', { search: `%${query.search}%` });
+            if (query.search.includes('{')) {
+                const filters = JSON.parse(query.search);
+                (0, list_1.applyFilters)(qb, 'sale', filters);
+            }
+            else {
+                qb.andWhere('sale.sale_number ILIKE :search', { search: `%${query.search}%` });
+            }
         }
-        const [items, total] = await qb.getManyAndCount();
+        console.log("qb.getParameters()", qb.getSql(), qb.getParameters());
+        const [entities, total] = await qb.getManyAndCount();
+        const storeIds = [...new Set(entities.map((e) => e.storeId).filter(Boolean))];
+        const locationMap = new Map();
+        if (storeIds.length > 0) {
+            const locations = await this.dataSource
+                .createQueryBuilder()
+                .select('sl.id', 'id')
+                .addSelect('sl.name', 'name')
+                .from(entities_1.StockLocationOrmEntity, 'sl')
+                .where('sl.id::text IN (:...ids)', { ids: storeIds })
+                .getRawMany();
+            for (const loc of locations) {
+                locationMap.set(loc.id, loc.name);
+            }
+        }
         return {
-            items: items.map(toDomain),
+            items: entities.map((entity) => {
+                entity.storeLocationName = locationMap.get(entity.storeId) ?? null;
+                return toDomain(entity);
+            }),
             total,
         };
+    }
+    async getMetrics(query) {
+        const applySearch = async (qb) => {
+            if (query.search) {
+                if (query.search.includes('{')) {
+                    console.log(JSON.parse(query.search), 'JSON.parse(query.search)');
+                    await (0, list_1.applyFilters)(qb, 'sale', JSON.parse(query.search));
+                }
+                else {
+                    qb.andWhere('(sale.sale_number ILIKE :search OR sale.sale_channel ILIKE :search)', {
+                        search: `%${query.search}%`,
+                    });
+                }
+            }
+        };
+        const baseQb = this.saleRepository.createQueryBuilder('sale')
+            .where('sale.organization_id = :organizationId', { organizationId: query.organizationId });
+        await applySearch(baseQb);
+        const totalSales = await baseQb.clone().andWhere("sale.status = 'posted'").getCount();
+        const inProgress = await baseQb.clone().andWhere("sale.status = 'draft'").getCount();
+        const totalRevenueResult = await baseQb.clone()
+            .andWhere("sale.status = 'posted'")
+            .select('COALESCE(SUM(sale.total_amount), 0)', 'revenue')
+            .getRawOne();
+        const totalRevenue = Number(totalRevenueResult?.revenue ?? 0);
+        const channelRows = await baseQb.clone()
+            .andWhere("sale.status = 'posted'")
+            .select([
+            'sale.sale_channel AS channel',
+            'COUNT(*) AS count',
+            'COALESCE(SUM(sale.total_amount), 0) AS revenue',
+        ])
+            .groupBy('sale.sale_channel')
+            .getRawMany();
+        const byChannel = {};
+        for (const row of channelRows) {
+            byChannel[row.channel] = {
+                count: Number(row.count),
+                revenue: Number(row.revenue),
+            };
+        }
+        const categoryRows = await this.saleRepository
+            .createQueryBuilder('sale')
+            .innerJoin('sale.lines', 'sale_line')
+            .innerJoin('sale_line.item', 'item')
+            .innerJoin('item.category', 'cat')
+            .where('sale.organization_id = :organizationId', { organizationId: query.organizationId })
+            .andWhere("sale.status = 'posted'")
+            .select([
+            'cat.code AS category',
+            'COUNT(DISTINCT sale.id) AS count',
+            'COALESCE(SUM(sale_line.line_total), 0) AS revenue',
+        ])
+            .groupBy('cat.code')
+            .orderBy('revenue', 'DESC')
+            .getRawMany();
+        const byCategory = {};
+        for (const row of categoryRows) {
+            byCategory[row.category] = {
+                count: Number(row.count),
+                revenue: Number(row.revenue),
+            };
+        }
+        for (const row of categoryRows) {
+            byCategory[row.category] = {
+                count: Number(row.count),
+                revenue: Number(row.revenue),
+            };
+        }
+        return { totalSales, totalRevenue, inProgress, byChannel, byCategory };
     }
     async createWithSettlement(payload) {
         return this.dataSource.transaction(async (manager) => {

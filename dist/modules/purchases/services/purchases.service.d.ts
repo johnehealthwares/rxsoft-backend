@@ -1,8 +1,8 @@
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { WarehouseOrmEntity } from '../../inventory/entities';
-import { CreatePurchaseDto, UpdatePurchaseDto } from '../dto/purchases.dto';
+import { CreatePurchaseDto, CreatePurchaseLineDto, UpdatePurchaseDto, UpdatePurchaseLineDto } from '../dto/purchases.dto';
 import { PurchaseOrderLineOrmEntity, PurchaseOrderOrmEntity } from '../entities';
 type PurchaseSummaryType = {
     id: string;
@@ -27,6 +27,8 @@ type PurchaseSummaryType = {
     lines: Array<{
         id: string;
         itemId: string;
+        itemCode: string;
+        itemName: string;
         orderedQty: number;
         receivedQty: number;
         uomId: string;
@@ -52,9 +54,12 @@ export declare class PurchasesService {
     }>;
     createPurchase(payload: CreatePurchaseDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
     private resolveWarehouse;
-    getById(purchaseId: string, organizationId?: string): Promise<PurchaseSummaryType>;
+    getById(purchaseId: string, organizationId?: string, manager?: EntityManager): Promise<PurchaseSummaryType>;
     updatePurchase(purchaseId: string, payload: UpdatePurchaseDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
     removePurchase(purchaseId: string, organizationId?: string): Promise<void>;
+    addLine(purchaseId: string, payload: CreatePurchaseLineDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
+    updateLine(purchaseId: string, lineId: string, payload: UpdatePurchaseLineDto, currentUser: RequestUser): Promise<PurchaseSummaryType>;
+    removeLine(purchaseId: string, lineId: string, currentUser: RequestUser): Promise<PurchaseSummaryType>;
     private resolveSortColumn;
     private normalizeLines;
     private computeLineSubtotal;
