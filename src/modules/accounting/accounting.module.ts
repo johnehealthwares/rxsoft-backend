@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountingController } from './controllers/accounting.controller';
 import { GlAccountOrmEntity, JournalEntryLineOrmEntity, JournalEntryOrmEntity, JournalOrmEntity } from './entities';
 import { AccountingService } from './services/accounting.service';
+import { AccountingIntegrationService } from './services/accounting-integration.service';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { AccountingService } from './services/accounting.service';
     TypeOrmModule.forFeature([GlAccountOrmEntity, JournalOrmEntity, JournalEntryOrmEntity, JournalEntryLineOrmEntity]),
   ],
   controllers: [AccountingController],
-  providers: [AccountingService],
+  providers: [AccountingService, AccountingIntegrationService],
+  exports: [AccountingIntegrationService],
 })
 export class AccountingModule {}

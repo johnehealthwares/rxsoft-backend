@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLotOrmEntity } from '../../inventory/entities/stock-lot.orm-entity';
-import { SaleOrmEntity } from './sale.orm-entity';
+import type { SaleOrmEntity } from './sale.orm-entity';
 import { UomOrmEntity } from './uom.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
@@ -11,7 +11,7 @@ export class SaleLineOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => SaleOrmEntity, (sale) => sale.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne('SaleOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sale_id' })
   sale!: SaleOrmEntity;
 

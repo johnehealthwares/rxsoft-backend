@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { LgaOrmEntity } from './lga.orm-entity';
-import { PollingUnitOrmEntity } from './polling-unit.orm-entity';
+import type { LgaOrmEntity } from './lga.orm-entity';
+import type { PollingUnitOrmEntity } from './polling-unit.orm-entity';
 
 @Entity('apm_wards')
 export class WardOrmEntity {
@@ -16,7 +16,7 @@ export class WardOrmEntity {
   @Column({ name: 'lga_id', type: 'text' })
   lgaId!: string;
 
-  @ManyToOne(() => LgaOrmEntity, (lga) => lga.wards)
+  @ManyToOne('LgaOrmEntity', 'wards')
   @JoinColumn({ name: 'lga_id' })
   lga!: LgaOrmEntity;
 
@@ -29,7 +29,7 @@ export class WardOrmEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @OneToMany(() => PollingUnitOrmEntity, (pu) => pu.ward)
+  @OneToMany('PollingUnitOrmEntity', 'ward')
   pollingUnits!: PollingUnitOrmEntity[];
 
   @CreateDateColumn({ name: 'created_at' })

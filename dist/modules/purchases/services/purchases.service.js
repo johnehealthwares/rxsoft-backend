@@ -36,6 +36,7 @@ let PurchasesService = class PurchasesService {
             .createQueryBuilder('purchase')
             .leftJoinAndSelect('purchase.lines', 'line')
             .leftJoinAndSelect('line.item', 'lineItem')
+            .leftJoinAndSelect('line.uom', 'lineUom')
             .leftJoinAndSelect('purchase.warehouse', 'warehouse')
             .leftJoinAndSelect('purchase.supplier', 'supplier')
             .where('purchase.organization_id = :organizationId', { organizationId });
@@ -166,7 +167,7 @@ let PurchasesService = class PurchasesService {
         const repo = manager ? manager.getRepository(entities_2.PurchaseOrderOrmEntity) : this.purchaseOrderRepository;
         const row = await repo.findOne({
             where: { id: purchaseId, organizationId },
-            relations: ['lines', 'lines.item', 'warehouse', 'supplier'],
+            relations: ['lines', 'lines.item', 'lines.uom', 'warehouse', 'supplier'],
         });
         if (!row) {
             throw new common_1.NotFoundException('Purchase order not found');
@@ -474,6 +475,7 @@ let PurchasesService = class PurchasesService {
             orderedQty: Number(line.orderedQty),
             receivedQty: Number(line.receivedQty),
             uomId: line.uomId,
+            uomName: line.uom?.name ?? '',
             unitCost: Number(line.unitCost),
             discountPercent: Number(line.discountPercent),
             taxPercent: Number(line.taxPercent),

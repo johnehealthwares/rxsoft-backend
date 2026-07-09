@@ -64,6 +64,7 @@ export class UomsService {
       .where('uom.organization_id = :organizationId', { organizationId })
     //.orderBy('uom.name', 'ASC')
 
+    console.log(query.search)
     if (query.search) {
       try {
         const filters = JSON.parse(query.search);
@@ -72,7 +73,6 @@ export class UomsService {
         qb.andWhere('(uom.code ILIKE :search OR uom.name ILIKE :search)', { search: `%${query.search}%` });
       }
     }
-
     qb
       .skip(query.offset)
       .take(query.limit);

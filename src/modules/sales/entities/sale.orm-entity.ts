@@ -2,7 +2,6 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 import { SaleLineOrmEntity } from './sale-line.orm-entity';
 import { SalePaymentOrmEntity } from './sale-payment.orm-entity';
 import { SaleRefundOrmEntity } from './sale-refund.orm-entity';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { PartyOrmEntity } from '../../customers/entities/party.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 import { DEFAULT_SYSTEM_USER_ID } from 'src/shared/constants/persistence-scope';
@@ -61,10 +60,6 @@ export class SaleOrmEntity {
 
   @CreateDateColumn({ name: 'sale_date'/* timestamptzz */ })
   saleDate!: Date;
-
-  @ManyToOne(() => UserOrmEntity, { nullable: false })
-  @JoinColumn({ name: 'sold_by_user_id' })
-  soldBy!: UserOrmEntity;
 
   @Column({ name: 'sold_by_user_id', type: 'text' })
   soldByUserId!: string;

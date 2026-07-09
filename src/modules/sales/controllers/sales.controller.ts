@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotFoundException, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -12,11 +12,15 @@ import { CreateSaleResponseDto } from '../dto/create-sale-response.dto';
 import { CreateSaleRefundResponseDto } from '../dto/create-sale-refund-response.dto';
 import { ListSalesDto } from '../dto/list-sales.dto';
 import { SaleResponseDto } from '../dto/sale-response.dto';
+import { SaleDetailResponseDto } from '../dto/sale-detail-response.dto';
 import { CreateSaleRefundUseCase } from '../services/create-sale-refund.use-case';
 import { CreateSaleUseCase } from '../services/create-sale.use-case';
 import { ListSalesUseCase } from '../services/list-sales.use-case';
 import { SALES_REPOSITORY } from '../services/sales.di-tokens';
 import type { SalesRepository, SalesMetricsQuery } from '../repositories/sales.repository';
+import { SaleOrmEntity } from '../entities/sale.orm-entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 type SalesListResponse = {
   data: SaleResponseDto[];
@@ -34,7 +38,87 @@ export class SalesController {
     private readonly createSaleRefundUseCase: CreateSaleRefundUseCase,
     @Inject(SALES_REPOSITORY)
     private readonly salesRepository: SalesRepository,
+    @InjectRepository(SaleOrmEntity)
+    private readonly saleOrmRepository: Repository<SaleOrmEntity>,
   ) {}
+
+  @Get(':saleId')
+  @Roles('admin', 'super_admin', 'cashier', 'auditor')
+  @ApiOperation({ summary: 'Get sale detail by ID' })
+  @ApiResponse({ status: 200, type: SaleDetailResponseDto })
+  async getSale(
+    @Param('saleId') saleId: string,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<SaleDetailResponseDto> {
+    const entity = await this.saleOrmRepository.findOne({
+      where: { id: saleId, organizationId: currentUser.organizationId },
+      relations: [
+        'customer',
+        'lines',
+        'lines.item',
+        'lines.item.category',
+        'lines.item.baseUom',
+        'lines.item.saleUom',
+        'lines.uom',
+        'payments',
+        'payments.paymentMethod',
+      ],
+    });
+    if (!entity) throw new NotFoundException('Sale not found');
+
+    return {
+      id: entity.id,
+      saleNumber: entity.saleNumber,
+      saleChannel: entity.saleChannel,
+      customer: entity.customer
+        ? {
+            id: entity.customer.id,
+            name: entity.customer.name,
+            phone: entity.customer.phone ?? undefined,
+            email: entity.customer.email ?? undefined,
+          }
+        : null,
+      status: entity.status,
+      totalAmount: entity.totalAmount,
+      paidAmount: entity.paidAmount,
+      lines: (entity.lines ?? []).map((line) => ({
+        id: line.id,
+        lineNumber: line.lineNumber,
+        item: {
+          id: line.item.id,
+          code: line.item.code,
+          name: line.item.name,
+          category: line.item.category
+            ? { id: line.item.category.id, name: line.item.category.name }
+            : null,
+          baseUomId: line.item.baseUomId,
+          saleUomId: (line.item as any).saleUomId ?? undefined,
+          saleUom: line.item.saleUom
+            ? { id: line.item.saleUom.id, name: line.item.saleUom.name }
+            : null,
+          baseUom: line.item.baseUom
+            ? { id: line.item.baseUom.id, name: line.item.baseUom.name }
+            : null,
+        },
+        quantity: line.quantity,
+        unitPrice: line.unitPrice,
+        lineTotal: line.lineTotal,
+      })),
+      payments: (entity.payments ?? []).map((payment) => ({
+        id: payment.id,
+        paymentMethod: {
+          id: payment.paymentMethod.id,
+          code: payment.paymentMethod.code,
+          name: payment.paymentMethod.name,
+          methodType: payment.paymentMethod.methodType,
+          isActive: payment.paymentMethod.isActive,
+        },
+        amount: payment.amount,
+      })),
+      saleDate: entity.saleDate.toISOString(),
+      notes: entity.notes ?? null,
+    };
+  }
 
   @Get()
   @Roles('admin', 'super_admin', 'cashier', 'auditor')

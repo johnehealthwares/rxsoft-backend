@@ -92,6 +92,7 @@ export interface SalesRepository {
         items: Sale[];
         total: number;
     }>;
+    findById(organizationId: string, saleId: string): Promise<Sale | null>;
     createWithSettlement(payload: CreateSaleRepositoryPayload): Promise<CreateSaleResult>;
     createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult>;
     findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null>;

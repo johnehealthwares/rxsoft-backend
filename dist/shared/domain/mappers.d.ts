@@ -12,7 +12,7 @@ import type { UomCategoryOrmEntity } from '../../modules/sales/entities/uom-cate
 import type { UomOrmEntity } from '../../modules/sales/entities/uom.orm-entity';
 import type { ManufacturerType } from './catalog.types';
 import type { PaymentMethodType, PartyType, PriceListItemType, PriceListType, ItemSummaryType, ItemCategoryType, PurchaseOrderType, StockBalanceType, StockLocationType, UomType, UomCategoryType, WarehouseType } from './index';
-import { ItemCategoryOrmEntity } from 'src/modules/catalog/entities';
+import { ItemCategoryOrmEntity } from "../../modules/catalog/entities";
 export declare const toManufacturerType: (entity: ManufacturerOrmEntity) => ManufacturerType;
 export declare const toItemSummaryType: (entity: ItemOrmEntity) => ItemSummaryType;
 export declare const toItemCategoryType: (entity: ItemCategoryOrmEntity) => ItemCategoryType;
@@ -69,7 +69,7 @@ export declare const toJournalType: (entity: JournalOrmEntity) => {
     organizationId: string;
     code: string;
     name: string;
-    journalType: "sale" | "cash" | "purchase" | "bank" | "general";
+    journalType: "sale" | "purchase" | "cash" | "bank" | "general";
     defaultDebitAccountId: string | null;
     defaultCreditAccountId: string | null;
     isActive: boolean;
@@ -97,7 +97,7 @@ export declare const toJournalEntryType: (entity: JournalEntryOrmEntity) => {
     reference: string | null;
     sourceType: string | null;
     sourceId: string | null;
-    status: "posted" | "draft" | "reversed";
+    status: "draft" | "posted" | "reversed";
     createdByUserId: string | null;
     postedAt: string | null;
     createdAt: string;

@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JournalEntryLineOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const journal_entry_orm_entity_1 = require("./journal-entry.orm-entity");
 let JournalEntryLineOrmEntity = class JournalEntryLineOrmEntity {
     id;
     journalEntryId;
@@ -35,9 +34,9 @@ __decorate([
     __metadata("design:type", String)
 ], JournalEntryLineOrmEntity.prototype, "journalEntryId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => journal_entry_orm_entity_1.JournalEntryOrmEntity, (journalEntry) => journalEntry.lines, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('JournalEntryOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'journal_entry_id' }),
-    __metadata("design:type", journal_entry_orm_entity_1.JournalEntryOrmEntity)
+    __metadata("design:type", Function)
 ], JournalEntryLineOrmEntity.prototype, "journalEntry", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'line_number', type: 'int' }),

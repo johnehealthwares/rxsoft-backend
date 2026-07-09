@@ -1,4 +1,4 @@
-import { ForeignProperty } from "src/modules/catalog/dto/item-response.dto";
+import { ForeignProperty } from "../../modules/catalog/dto/item-response.dto";
 export type UomCategoryType = {
     id: string;
     organizationId: string;

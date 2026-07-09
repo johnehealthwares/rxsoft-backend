@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const typeorm_1 = require("@nestjs/typeorm");
-const user_orm_entity_1 = require("../identity/entities/user.orm-entity");
 const entities_1 = require("../sales/entities");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const receivables_controller_1 = require("./controllers/receivables.controller");
 const entities_2 = require("./entities");
+const users_proxy_module_1 = require("../users-proxy/users-proxy.module");
+const accounting_module_1 = require("../accounting/accounting.module");
 const in_memory_receivables_repository_1 = require("./repositories/in-memory-receivables.repository");
 const typeorm_receivables_repository_1 = require("./repositories/typeorm-receivables.repository");
 const apply_receivable_adjustment_use_case_1 = require("./services/apply-receivable-adjustment.use-case");
@@ -29,7 +30,7 @@ const receivablesConfigService = new config_1.ConfigService();
 const useInMemoryRepos = receivablesConfigService.get('USE_IN_MEMORY_REPOS', 'false') === 'true';
 const receivablesPersistenceImports = useInMemoryRepos
     ? []
-    : [typeorm_1.TypeOrmModule.forFeature([entities_1.AccountReceivableOrmEntity, entities_2.ReceivableTransactionOrmEntity, entities_1.PaymentMethodOrmEntity, user_orm_entity_1.UserOrmEntity])];
+    : [typeorm_1.TypeOrmModule.forFeature([entities_1.AccountReceivableOrmEntity, entities_2.ReceivableTransactionOrmEntity, entities_1.PaymentMethodOrmEntity])];
 const receivablesRepositoryProviders = useInMemoryRepos
     ? [
         in_memory_receivables_repository_1.InMemoryReceivablesRepository,
@@ -50,7 +51,7 @@ let ReceivablesModule = class ReceivablesModule {
 exports.ReceivablesModule = ReceivablesModule;
 exports.ReceivablesModule = ReceivablesModule = __decorate([
     (0, common_1.Module)({
-        imports: [jwt_1.JwtModule.register({}), ...receivablesPersistenceImports],
+        imports: [jwt_1.JwtModule.register({}), users_proxy_module_1.UsersProxyModule, accounting_module_1.AccountingModule, ...receivablesPersistenceImports],
         controllers: [receivables_controller_1.ReceivablesController],
         providers: [
             list_receivables_use_case_1.ListReceivablesUseCase,

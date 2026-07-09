@@ -17,7 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const item_orm_entity_1 = require("../../catalog/entities/item.orm-entity");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
+const users_proxy_service_1 = require("../../users-proxy/users-proxy.service");
 const entities_1 = require("../../inventory/entities");
 const uom_converter_service_1 = require("../services/uom-converter.service");
 const entities_2 = require("../../receivables/entities");
@@ -33,6 +33,35 @@ let TypeormSalesRepository = class TypeormSalesRepository {
     uomRepository;
     dataSource;
     uomConverter;
+    usersProxy;
+    async findById(organizationId, saleId) {
+        const entity = await this.saleRepository.findOne({
+            where: { id: saleId, organizationId },
+            relations: [
+                'customer',
+                'lines',
+                'lines.item',
+                'lines.item.category',
+                'lines.item.baseUom',
+                'lines.item.saleUom',
+                'lines.uom',
+                'payments',
+                'payments.paymentMethod',
+            ],
+        });
+        if (!entity)
+            return null;
+        if (entity.storeId) {
+            const location = await this.dataSource
+                .createQueryBuilder()
+                .select('sl.name', 'name')
+                .from(entities_1.StockLocationOrmEntity, 'sl')
+                .where('sl.id::text = :id', { id: entity.storeId })
+                .getRawOne();
+            entity.storeLocationName = location?.name ?? null;
+        }
+        return toDomain(entity);
+    }
     async findLastCreated(organizationId) {
         const entity = await this.saleRepository.findOne({
             where: { organizationId },
@@ -41,12 +70,13 @@ let TypeormSalesRepository = class TypeormSalesRepository {
         });
         return entity ? { saleNumber: entity.saleNumber } : null;
     }
-    constructor(saleRepository, itemRepository, uomRepository, dataSource, uomConverter) {
+    constructor(saleRepository, itemRepository, uomRepository, dataSource, uomConverter, usersProxy) {
         this.saleRepository = saleRepository;
         this.itemRepository = itemRepository;
         this.uomRepository = uomRepository;
         this.dataSource = dataSource;
         this.uomConverter = uomConverter;
+        this.usersProxy = usersProxy;
     }
     async list(query) {
         const qb = this.saleRepository
@@ -162,6 +192,15 @@ let TypeormSalesRepository = class TypeormSalesRepository {
         return { totalSales, totalRevenue, inProgress, byChannel, byCategory };
     }
     async createWithSettlement(payload) {
+        await this.usersProxy.findById(payload.organizationId, payload.soldByUserId);
+        const receiverIds = [
+            ...new Set(payload.payments
+                .map((payment) => payment.receivedByUserId)
+                .filter((receivedByUserId) => Boolean(receivedByUserId))),
+        ];
+        if (receiverIds.length) {
+            await Promise.all(receiverIds.map((id) => this.usersProxy.findById(payload.organizationId, id)));
+        }
         return this.dataSource.transaction(async (manager) => {
             const saleRepo = manager.getRepository(entities_3.SaleOrmEntity);
             const saleLineRepo = manager.getRepository(entities_3.SaleLineOrmEntity);
@@ -172,13 +211,6 @@ let TypeormSalesRepository = class TypeormSalesRepository {
             const lotRepo = manager.getRepository(entities_1.StockLotOrmEntity);
             const uomRepo = manager.getRepository(entities_3.UomOrmEntity);
             const paymentMethodRepo = manager.getRepository(entities_3.PaymentMethodOrmEntity);
-            const userRepo = manager.getRepository(user_orm_entity_1.UserOrmEntity);
-            const soldByUser = await userRepo.findOne({
-                where: { id: payload.soldByUserId, organizationId: payload.organizationId },
-            });
-            if (!soldByUser) {
-                throw new Error('Sold-by user is not valid for this organization');
-            }
             const itemIds = [...new Set(payload.lines.map((line) => line.itemId))];
             const items = [];
             if (itemIds.length) {
@@ -234,23 +266,6 @@ let TypeormSalesRepository = class TypeormSalesRepository {
                     throw new Error('One or more payment method references are invalid');
                 }
             }
-            const receiverIds = [
-                ...new Set(payload.payments
-                    .map((payment) => payment.receivedByUserId)
-                    .filter((receivedByUserId) => Boolean(receivedByUserId))),
-            ];
-            if (receiverIds.length) {
-                const receivers = await userRepo.find({
-                    where: {
-                        id: (0, typeorm_2.In)(receiverIds),
-                        organizationId: payload.organizationId,
-                    },
-                    select: ['id'],
-                });
-                if (receivers.length !== receiverIds.length) {
-                    throw new Error('One or more receiver user references are invalid');
-                }
-            }
             const saleEntity = saleRepo.create({
                 organizationId: payload.organizationId,
                 saleNumber: payload.saleNumber,
@@ -291,7 +306,7 @@ let TypeormSalesRepository = class TypeormSalesRepository {
                     amount: payment.amount,
                     paymentReference: payment.paymentReference,
                     paidAt: payment.paidAt,
-                    receivedByUser: payment.receivedByUserId ? { id: payment.receivedByUserId } : null,
+                    receivedByUserId: payment.receivedByUserId ?? null,
                 }));
                 await salePaymentRepo.save(paymentEntities);
             }
@@ -317,7 +332,7 @@ let TypeormSalesRepository = class TypeormSalesRepository {
                     transactionDate: payload.saleDate,
                     paymentMethod: null,
                     referenceNumber: savedSale.saleNumber,
-                    receivedByUser: null,
+                    receivedByUserId: null,
                 }));
                 receivableId = savedReceivable.id;
                 outstandingAmount = savedReceivable.outstandingAmount;
@@ -418,6 +433,7 @@ let TypeormSalesRepository = class TypeormSalesRepository {
         });
     }
     async createRefund(payload) {
+        await this.usersProxy.findById(payload.organizationId, payload.refundedByUserId);
         return this.dataSource.transaction(async (manager) => {
             const saleRepo = manager.getRepository(entities_3.SaleOrmEntity);
             const saleLineRepo = manager.getRepository(entities_3.SaleLineOrmEntity);
@@ -428,13 +444,6 @@ let TypeormSalesRepository = class TypeormSalesRepository {
             const storeStockLocationRepo = manager.getRepository(entities_1.StoreStockLocationOrmEntity);
             const stockBalanceRepo = manager.getRepository(entities_1.StockBalanceOrmEntity);
             const stockAdjustmentRepo = manager.getRepository(entities_1.StockAdjustmentOrmEntity);
-            const userRepo = manager.getRepository(user_orm_entity_1.UserOrmEntity);
-            const actor = await userRepo.findOne({
-                where: { id: payload.refundedByUserId, organizationId: payload.organizationId },
-            });
-            if (!actor) {
-                throw new common_1.NotFoundException('Refund user not found');
-            }
             const sale = await saleRepo.findOne({
                 where: { id: payload.saleId, organizationId: payload.organizationId },
             });
@@ -490,7 +499,7 @@ let TypeormSalesRepository = class TypeormSalesRepository {
                 totalAmount: 0,
                 refundDate: payload.refundDate,
                 reason: payload.reason,
-                refundedByUser: actor,
+                refundedByUserId: payload.refundedByUserId,
             });
             const savedRefund = await refundRepo.save(refund);
             const saleLineById = new Map(saleLines.map((line) => [line.id, line]));
@@ -548,7 +557,7 @@ let TypeormSalesRepository = class TypeormSalesRepository {
                     stockBalance: savedBalance,
                     reason: `sale_refund:${savedRefund.refundNumber}`,
                     deltaQuantity: line.quantity,
-                    performedByUserId: actor.id,
+                    performedByUserId: payload.refundedByUserId,
                     performedAt: payload.refundDate,
                 }));
             }
@@ -579,7 +588,7 @@ let TypeormSalesRepository = class TypeormSalesRepository {
                         transactionDate: payload.refundDate,
                         paymentMethod: null,
                         referenceNumber: savedRefund.refundNumber,
-                        receivedByUser: actor,
+                        receivedByUserId: payload.refundedByUserId,
                         note: `Auto credit from refund ${savedRefund.refundNumber}`,
                     }));
                 }
@@ -629,6 +638,7 @@ exports.TypeormSalesRepository = TypeormSalesRepository = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.DataSource,
-        uom_converter_service_1.UomConverterService])
+        uom_converter_service_1.UomConverterService,
+        users_proxy_service_1.UsersProxyService])
 ], TypeormSalesRepository);
 //# sourceMappingURL=typeorm-sales.repository.js.map

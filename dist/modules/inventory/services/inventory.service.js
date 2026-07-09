@@ -11,16 +11,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var InventoryService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InventoryService = void 0;
 const common_1 = require("@nestjs/common");
 const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
 const mappers_1 = require("../../../shared/domain/mappers");
+const accounting_integration_service_1 = require("../../accounting/services/accounting-integration.service");
 const inventory_di_tokens_1 = require("./inventory.di-tokens");
-let InventoryService = class InventoryService {
+let InventoryService = InventoryService_1 = class InventoryService {
     inventoryRepository;
-    constructor(inventoryRepository) {
+    accountingIntegration;
+    logger = new common_1.Logger(InventoryService_1.name);
+    constructor(inventoryRepository, accountingIntegration) {
         this.inventoryRepository = inventoryRepository;
+        this.accountingIntegration = accountingIntegration;
     }
     async list(query) {
         const result = await this.inventoryRepository.listStockBalances({
@@ -65,6 +70,16 @@ let InventoryService = class InventoryService {
             reorderMinQty: payload.reorderMinQty ?? null,
             reorderMaxQty: payload.reorderMaxQty ?? null,
         });
+        if (this.accountingIntegration) {
+            this.accountingIntegration
+                .recordStockAdjustment(organizationId, {
+                stockBalanceId: stockBalance.id,
+                deltaQuantity: payload.deltaQuantity,
+                reason: payload.reason,
+                averageCost: stockBalance.averageCost,
+            })
+                .catch((err) => this.logger.error(`Accounting: failed to record adjust-by-ref: ${err.message}`, err.stack));
+        }
         return (0, mappers_1.toStockBalanceType)(stockBalance);
     }
     async transfer(payload, performedByUserId, organizationId) {
@@ -78,6 +93,16 @@ let InventoryService = class InventoryService {
             reason: payload.reason ?? 'stock_transfer',
             performedByUserId,
         });
+        if (this.accountingIntegration) {
+            this.accountingIntegration
+                .recordStockTransfer(organizationId, {
+                itemId: payload.itemId,
+                quantity: payload.quantity,
+                fromLocationId: payload.fromLocationId,
+                toLocationId: payload.toLocationId,
+            })
+                .catch((err) => this.logger.error(`Accounting: failed to record stock transfer: ${err.message}`, err.stack));
+        }
         return {
             fromBalance: (0, mappers_1.toStockBalanceType)(result.fromBalance),
             toBalance: (0, mappers_1.toStockBalanceType)(result.toBalance),
@@ -85,9 +110,10 @@ let InventoryService = class InventoryService {
     }
 };
 exports.InventoryService = InventoryService;
-exports.InventoryService = InventoryService = __decorate([
+exports.InventoryService = InventoryService = InventoryService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(inventory_di_tokens_1.INVENTORY_REPOSITORY)),
-    __metadata("design:paramtypes", [Object])
+    __param(1, (0, common_1.Optional)()),
+    __metadata("design:paramtypes", [Object, accounting_integration_service_1.AccountingIntegrationService])
 ], InventoryService);
 //# sourceMappingURL=inventory.service.js.map

@@ -17,7 +17,6 @@ describe('GetItemUseCase', () => {
     findByBarcode: jest.fn(),
     findLastCreated: jest.fn().mockResolvedValue(null),
   };
-  };
 
   const useCase = new GetItemUseCase(itemRepository);
 
@@ -35,26 +34,6 @@ describe('GetItemUseCase', () => {
         id: 'c1',
         code: 'ANALGESICS',
         name: 'Analgesics',
-      },
-      genericProduct: {
-        id: 'g1',
-        code: 'GEN001',
-        name: 'Paracetamol',
-        generalUse: '',
-        adultDosage: '',
-        pediatricDosage: '',
-        isPrescriptionRequired: false,
-        isControlledSubstance: false,
-        pharmaceutics: {
-          id: 'ph1',
-          code: 'PHARM1',
-          clinicalName: '',
-          drugClass: '',
-          pharmaceutics: '',
-          indications: '',
-          contraindications: '',
-          mechanism: '',
-        },
       },
       baseUomId: 'u1',
       purchaseUomId: null,

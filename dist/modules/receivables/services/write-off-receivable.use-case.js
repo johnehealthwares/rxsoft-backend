@@ -11,17 +11,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var WriteOffReceivableUseCase_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WriteOffReceivableUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const cache_service_1 = require("../../../common/cache/cache.service");
+const accounting_integration_service_1 = require("../../accounting/services/accounting-integration.service");
 const receivables_di_tokens_1 = require("./receivables.di-tokens");
-let WriteOffReceivableUseCase = class WriteOffReceivableUseCase {
+let WriteOffReceivableUseCase = WriteOffReceivableUseCase_1 = class WriteOffReceivableUseCase {
     receivablesRepository;
     cacheService;
-    constructor(receivablesRepository, cacheService) {
+    accountingIntegration;
+    logger = new common_1.Logger(WriteOffReceivableUseCase_1.name);
+    constructor(receivablesRepository, cacheService, accountingIntegration) {
         this.receivablesRepository = receivablesRepository;
         this.cacheService = cacheService;
+        this.accountingIntegration = accountingIntegration;
     }
     async execute(receivableId, payload, organizationId, writtenOffByUserId) {
         const result = await this.receivablesRepository.writeOff({
@@ -33,14 +38,22 @@ let WriteOffReceivableUseCase = class WriteOffReceivableUseCase {
         });
         await this.cacheService?.invalidateByPrefix(`receivables:list:${organizationId}:`);
         await this.cacheService?.invalidateByPrefix(`receivables:tx:${organizationId}:${receivableId}:`);
+        if (this.accountingIntegration) {
+            const writeOffAmount = result.receivable.originalAmount;
+            this.accountingIntegration
+                .recordWriteOff(organizationId, { id: receivableId, receivableNumber: result.receivable.receivableNumber }, writeOffAmount)
+                .catch((err) => this.logger.error(`Accounting: failed to record write-off: ${err.message}`, err.stack));
+        }
         return result;
     }
 };
 exports.WriteOffReceivableUseCase = WriteOffReceivableUseCase;
-exports.WriteOffReceivableUseCase = WriteOffReceivableUseCase = __decorate([
+exports.WriteOffReceivableUseCase = WriteOffReceivableUseCase = WriteOffReceivableUseCase_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(receivables_di_tokens_1.RECEIVABLES_REPOSITORY)),
     __param(1, (0, common_1.Optional)()),
-    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService])
+    __param(2, (0, common_1.Optional)()),
+    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService,
+        accounting_integration_service_1.AccountingIntegrationService])
 ], WriteOffReceivableUseCase);
 //# sourceMappingURL=write-off-receivable.use-case.js.map

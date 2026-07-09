@@ -17,6 +17,10 @@ class ListStockMovementsDto {
     page = 1;
     limit = 20;
     movementType;
+    itemId;
+    locationId;
+    fromDate;
+    toDate;
     get offset() {
         return (this.page - 1) * this.limit;
     }
@@ -45,4 +49,28 @@ __decorate([
     (0, class_validator_1.IsIn)(['in', 'out', 'transfer', 'adjustment']),
     __metadata("design:type", String)
 ], ListStockMovementsDto.prototype, "movementType", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], ListStockMovementsDto.prototype, "itemId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], ListStockMovementsDto.prototype, "locationId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], ListStockMovementsDto.prototype, "fromDate", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], ListStockMovementsDto.prototype, "toDate", void 0);
 //# sourceMappingURL=list-stock-movements.dto.js.map

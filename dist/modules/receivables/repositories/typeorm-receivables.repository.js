@@ -16,7 +16,7 @@ exports.TypeormReceivablesRepository = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
+const users_proxy_service_1 = require("../../users-proxy/users-proxy.service");
 const entities_1 = require("../../sales/entities");
 const account_receivable_entity_1 = require("../domains/account-receivable.entity");
 const receivable_transaction_entity_1 = require("../domains/receivable-transaction.entity");
@@ -25,14 +25,16 @@ function toDomain(entity) {
     return new account_receivable_entity_1.AccountReceivable(entity.id, entity.organizationId, entity.customerId, entity.customer?.name ?? null, entity.saleId, entity.receivableNumber, entity.originalAmount, entity.outstandingAmount, entity.status, entity.openedAt, entity.closedAt);
 }
 function toTransactionDomain(entity) {
-    return new receivable_transaction_entity_1.ReceivableTransaction(entity.id, entity.receivable.id, entity.transactionType, entity.amount, entity.transactionDate, entity.paymentMethod?.id ?? null, entity.referenceNumber, entity.receivedByUser?.id ?? null, entity.note);
+    return new receivable_transaction_entity_1.ReceivableTransaction(entity.id, entity.receivable.id, entity.transactionType, entity.amount, entity.transactionDate, entity.paymentMethod?.id ?? null, entity.referenceNumber, entity.receivedByUserId, entity.note);
 }
 let TypeormReceivablesRepository = class TypeormReceivablesRepository {
     receivableRepository;
     dataSource;
-    constructor(receivableRepository, dataSource) {
+    usersProxy;
+    constructor(receivableRepository, dataSource, usersProxy) {
         this.receivableRepository = receivableRepository;
         this.dataSource = dataSource;
+        this.usersProxy = usersProxy;
     }
     async list(query) {
         const qb = this.receivableRepository
@@ -52,22 +54,16 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
         return { items: items.map(toDomain), total };
     }
     async collectPayment(payload) {
+        await this.usersProxy.findById(payload.organizationId, payload.receivedByUserId);
         return this.dataSource.transaction(async (manager) => {
             const receivableRepo = manager.getRepository(entities_1.AccountReceivableOrmEntity);
             const txnRepo = manager.getRepository(entities_2.ReceivableTransactionOrmEntity);
             const paymentMethodRepo = manager.getRepository(entities_1.PaymentMethodOrmEntity);
-            const userRepo = manager.getRepository(user_orm_entity_1.UserOrmEntity);
             const paymentMethod = await paymentMethodRepo.findOne({
                 where: { id: payload.paymentMethodId, organizationId: payload.organizationId },
             });
             if (!paymentMethod) {
                 throw new common_1.NotFoundException('Payment method not found');
-            }
-            const receiver = await userRepo.findOne({
-                where: { id: payload.receivedByUserId, organizationId: payload.organizationId },
-            });
-            if (!receiver) {
-                throw new common_1.NotFoundException('Receiver user not found');
             }
             const receivable = await receivableRepo.findOne({
                 where: { id: payload.receivableId, organizationId: payload.organizationId },
@@ -101,7 +97,7 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
                 transactionDate: payload.transactionDate,
                 paymentMethod,
                 referenceNumber: payload.referenceNumber,
-                receivedByUser: receiver,
+                receivedByUserId: payload.receivedByUserId,
                 note: payload.note,
             });
             const savedTransaction = await txnRepo.save(transaction);
@@ -112,16 +108,10 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
         });
     }
     async applyAdjustment(payload) {
+        await this.usersProxy.findById(payload.organizationId, payload.adjustedByUserId);
         return this.dataSource.transaction(async (manager) => {
             const receivableRepo = manager.getRepository(entities_1.AccountReceivableOrmEntity);
             const txnRepo = manager.getRepository(entities_2.ReceivableTransactionOrmEntity);
-            const userRepo = manager.getRepository(user_orm_entity_1.UserOrmEntity);
-            const actor = await userRepo.findOne({
-                where: { id: payload.adjustedByUserId, organizationId: payload.organizationId },
-            });
-            if (!actor) {
-                throw new common_1.NotFoundException('Adjustment user not found');
-            }
             const receivable = await receivableRepo.findOne({
                 where: { id: payload.receivableId, organizationId: payload.organizationId },
             });
@@ -153,7 +143,7 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
                 transactionDate: payload.transactionDate,
                 paymentMethod: null,
                 referenceNumber: payload.referenceNumber,
-                receivedByUser: actor,
+                receivedByUserId: payload.adjustedByUserId,
                 note: payload.note,
             });
             const savedTransaction = await txnRepo.save(transaction);
@@ -164,16 +154,10 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
         });
     }
     async writeOff(payload) {
+        await this.usersProxy.findById(payload.organizationId, payload.writtenOffByUserId);
         return this.dataSource.transaction(async (manager) => {
             const receivableRepo = manager.getRepository(entities_1.AccountReceivableOrmEntity);
             const txnRepo = manager.getRepository(entities_2.ReceivableTransactionOrmEntity);
-            const userRepo = manager.getRepository(user_orm_entity_1.UserOrmEntity);
-            const actor = await userRepo.findOne({
-                where: { id: payload.writtenOffByUserId, organizationId: payload.organizationId },
-            });
-            if (!actor) {
-                throw new common_1.NotFoundException('Write-off user not found');
-            }
             const receivable = await receivableRepo.findOne({
                 where: { id: payload.receivableId, organizationId: payload.organizationId },
             });
@@ -198,7 +182,7 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
                 transactionDate: payload.transactionDate,
                 paymentMethod: null,
                 referenceNumber: null,
-                receivedByUser: actor,
+                receivedByUserId: payload.writtenOffByUserId,
                 note: payload.note,
             });
             const savedTransaction = await txnRepo.save(transaction);
@@ -214,7 +198,6 @@ let TypeormReceivablesRepository = class TypeormReceivablesRepository {
             .createQueryBuilder('transaction')
             .innerJoinAndSelect('transaction.receivable', 'receivable')
             .leftJoinAndSelect('transaction.paymentMethod', 'paymentMethod')
-            .leftJoinAndSelect('transaction.receivedByUser', 'receivedByUser')
             .where('receivable.organizationId = :organizationId', { organizationId: query.organizationId })
             .andWhere('receivable.id = :receivableId', { receivableId: query.receivableId })
             .orderBy('transaction.transactionDate', 'DESC')
@@ -238,6 +221,7 @@ exports.TypeormReceivablesRepository = TypeormReceivablesRepository = __decorate
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.AccountReceivableOrmEntity)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.DataSource])
+        typeorm_2.DataSource,
+        users_proxy_service_1.UsersProxyService])
 ], TypeormReceivablesRepository);
 //# sourceMappingURL=typeorm-receivables.repository.js.map

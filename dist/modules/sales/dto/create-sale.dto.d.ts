@@ -4,6 +4,7 @@ declare class CreateSaleLineDto {
     lotId?: string | null;
     quantity: number;
     unitPrice: number;
+    uomFactor?: number | null;
 }
 declare class CreateSalePaymentDto {
     paymentMethodId: string;

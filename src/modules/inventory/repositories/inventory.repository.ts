@@ -43,6 +43,10 @@ export type StockMovementQuery = {
   offset: number;
   limit: number;
   movementType?: 'in' | 'out' | 'transfer' | 'adjustment';
+  itemId?: string;
+  locationId?: string;
+  fromDate?: string;
+  toDate?: string;
 };
 
 export type StoreStockLocationQuery = {

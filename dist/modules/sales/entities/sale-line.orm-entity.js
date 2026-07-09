@@ -13,7 +13,6 @@ exports.SaleLineOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
 const item_orm_entity_1 = require("../../catalog/entities/item.orm-entity");
 const stock_lot_orm_entity_1 = require("../../inventory/entities/stock-lot.orm-entity");
-const sale_orm_entity_1 = require("./sale.orm-entity");
 const uom_orm_entity_1 = require("./uom.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 let SaleLineOrmEntity = class SaleLineOrmEntity {
@@ -38,9 +37,9 @@ __decorate([
     __metadata("design:type", String)
 ], SaleLineOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => sale_orm_entity_1.SaleOrmEntity, (sale) => sale.lines, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('SaleOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'sale_id' }),
-    __metadata("design:type", sale_orm_entity_1.SaleOrmEntity)
+    __metadata("design:type", Function)
 ], SaleLineOrmEntity.prototype, "sale", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'line_number', type: 'int' }),

@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { StockBalanceOrmEntity } from './stock-balance.orm-entity';
+import type { StockBalanceOrmEntity } from './stock-balance.orm-entity';
 
 @Entity('stock_lots')
 @Unique('uq_stock_lots_org_code', ['organizationId', 'code'])
@@ -13,7 +13,7 @@ export class StockLotOrmEntity {
   @Column({ type: 'text' })
   code!: string;
 
-  @OneToMany(() => StockBalanceOrmEntity, (stockBalance) => stockBalance.lot)
+  @OneToMany('StockBalanceOrmEntity', 'lot')
   stockBalances!: StockBalanceOrmEntity[];
 
   @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })

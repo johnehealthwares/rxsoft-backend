@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PriceListOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const price_list_item_orm_entity_1 = require("./price-list-item.orm-entity");
 let PriceListOrmEntity = class PriceListOrmEntity {
     id;
     organizationId;
@@ -49,7 +48,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], PriceListOrmEntity.prototype, "isActive", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => price_list_item_orm_entity_1.PriceListItemOrmEntity, (item) => item.priceList),
+    (0, typeorm_1.OneToMany)('PriceListItemOrmEntity', 'priceList'),
     __metadata("design:type", Array)
 ], PriceListOrmEntity.prototype, "items", void 0);
 __decorate([

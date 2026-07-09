@@ -1,6 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { RefreshTokenOrmEntity } from './refresh-token.orm-entity';
-import { RoleOrmEntity } from './role.orm-entity';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 @Entity('users')
 @Unique('uq_users_org_username', ['organizationId', 'username'])
@@ -23,23 +21,15 @@ export class UserOrmEntity {
   @Column({ type: 'text', nullable: true })
   phone?: string;
 
-  @ManyToMany(() => RoleOrmEntity, (role) => role.users)
-  @JoinTable({
-    name: 'user_roles',
-    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
-  })
-  roles!: RoleOrmEntity[];
+  @Column({ type: 'text', nullable: true })
+  email?: string;
 
-  @OneToMany(() => RefreshTokenOrmEntity, (refreshToken) => refreshToken.user)
-  refreshTokens!: RefreshTokenOrmEntity[];
-
-  @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at'/* timestamptzz */ })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at'/* timestamptzz */, nullable: true })
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt!: Date | null;
 }

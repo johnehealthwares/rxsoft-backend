@@ -14,7 +14,6 @@ const typeorm_1 = require("typeorm");
 const sale_line_orm_entity_1 = require("./sale-line.orm-entity");
 const sale_payment_orm_entity_1 = require("./sale-payment.orm-entity");
 const sale_refund_orm_entity_1 = require("./sale-refund.orm-entity");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
 const party_orm_entity_1 = require("../../customers/entities/party.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
@@ -36,7 +35,6 @@ let SaleOrmEntity = class SaleOrmEntity {
     paidAmount;
     changeAmount;
     saleDate;
-    soldBy;
     soldByUserId;
     createdBy;
     lines;
@@ -115,11 +113,6 @@ __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'sale_date' }),
     __metadata("design:type", Date)
 ], SaleOrmEntity.prototype, "saleDate", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => user_orm_entity_1.UserOrmEntity, { nullable: false }),
-    (0, typeorm_1.JoinColumn)({ name: 'sold_by_user_id' }),
-    __metadata("design:type", user_orm_entity_1.UserOrmEntity)
-], SaleOrmEntity.prototype, "soldBy", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'sold_by_user_id', type: 'text' }),
     __metadata("design:type", String)

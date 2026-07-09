@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CanvassingVisitOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const canvassing_session_orm_entity_1 = require("./canvassing-session.orm-entity");
 let CanvassingVisitOrmEntity = class CanvassingVisitOrmEntity {
     id;
     sessionId;
@@ -35,9 +34,9 @@ __decorate([
     __metadata("design:type", String)
 ], CanvassingVisitOrmEntity.prototype, "sessionId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => canvassing_session_orm_entity_1.CanvassingSessionOrmEntity, (s) => s.visits),
+    (0, typeorm_1.ManyToOne)('CanvassingSessionOrmEntity', 'visits'),
     (0, typeorm_1.JoinColumn)({ name: 'session_id' }),
-    __metadata("design:type", canvassing_session_orm_entity_1.CanvassingSessionOrmEntity)
+    __metadata("design:type", Function)
 ], CanvassingVisitOrmEntity.prototype, "session", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text' }),

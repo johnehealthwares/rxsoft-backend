@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { JournalEntryOrmEntity } from './journal-entry.orm-entity';
+import type { JournalEntryOrmEntity } from './journal-entry.orm-entity';
 
 @Entity('journals')
 @Unique('uq_journals_org_code', ['organizationId', 'code'])
@@ -28,7 +28,7 @@ export class JournalOrmEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @OneToMany(() => JournalEntryOrmEntity, (entry) => entry.journal)
+  @OneToMany('JournalEntryOrmEntity', 'journal')
   entries!: JournalEntryOrmEntity[];
 
   @CreateDateColumn({ name: 'created_at' })

@@ -1,4 +1,4 @@
-import { StockBalanceOrmEntity } from './stock-balance.orm-entity';
+import type { StockBalanceOrmEntity } from './stock-balance.orm-entity';
 export declare class StockLotOrmEntity {
     id: string;
     organizationId: string;

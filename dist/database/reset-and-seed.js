@@ -6,7 +6,6 @@ const node_path_1 = require("node:path");
 const config_1 = require("@nestjs/config");
 const pg_1 = require("pg");
 const typeorm_1 = require("typeorm");
-const run_1 = require("./seeds/run");
 function getConfig() {
     const config = new config_1.ConfigService();
     return {
@@ -52,7 +51,6 @@ async function resetPostgresDatabase(config, sqlFilePath) {
     await dataSource.initialize();
     try {
         await runSqlFile(dataSource, sqlFilePath);
-        await (0, run_1.runSeeds)(dataSource);
     }
     finally {
         await dataSource.destroy();
@@ -70,7 +68,6 @@ async function resetSqliteDatabase(config, sqlFilePath) {
     await dataSource.initialize();
     try {
         await runSqlFile(dataSource, sqlFilePath);
-        await (0, run_1.runSeeds)(dataSource);
     }
     finally {
         await dataSource.destroy();

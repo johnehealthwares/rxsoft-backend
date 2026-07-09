@@ -1,5 +1,6 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import { AppCacheService } from '../../../common/cache/cache.service';
+import { AccountingIntegrationService } from '../../accounting/services/accounting-integration.service';
 import { ReceiveGoodsDto } from '../dto/goods-receipt.dto';
 import { PURCHASES_REPOSITORY } from './purchases.di-tokens';
 import type { PurchasesRepository } from '../repositories/purchases.repository';
@@ -7,11 +8,15 @@ import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 @Injectable()
 export class ReceiveGoodsUseCase {
+  private readonly logger = new Logger(ReceiveGoodsUseCase.name);
+
   constructor(
     @Inject(PURCHASES_REPOSITORY)
     private readonly purchasesRepository: PurchasesRepository,
     @Optional()
     private readonly cacheService?: AppCacheService,
+    @Optional()
+    private readonly accountingIntegration?: AccountingIntegrationService,
   ) {}
 
   async execute(
@@ -72,6 +77,21 @@ export class ReceiveGoodsUseCase {
     });
 
     await this.cacheService?.invalidateByPrefix(`purchases:list:${organizationId}:`);
+
+    if (this.accountingIntegration) {
+      this.accountingIntegration
+        .recordGoodsReceipt(organizationId, {
+          receiptNumber: result.receiptNumber,
+          purchaseOrderId: payload.purchaseOrderId,
+          lines: payload.lines.map((l) => ({
+            itemId: l.itemId,
+            receivedQty: l.receivedQty,
+            unitCost: l.unitCost,
+          })),
+        })
+        .catch((err: Error) => this.logger.error(`Accounting: failed to record goods receipt: ${err.message}`, err.stack));
+    }
+
     return result;
   }
 }

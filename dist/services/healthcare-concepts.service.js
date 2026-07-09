@@ -20,7 +20,7 @@ let HealthcareConceptsService = HealthcareConceptsService_1 = class HealthcareCo
     baseUrl;
     constructor(http, configService) {
         this.http = http;
-        this.baseUrl = configService.get('HEALTHCARE_CONCEPTS_API_URL', 'http://localhost:3011/api/v1');
+        this.baseUrl = configService.get('HEALTHCARE_CONCEPTS_API_URL', 'http://localhost:8004/api/v1');
     }
     async getGenericProductByCode(code) {
         try {

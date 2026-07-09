@@ -1,4 +1,4 @@
-import { JournalEntryOrmEntity } from './journal-entry.orm-entity';
+import type { JournalEntryOrmEntity } from './journal-entry.orm-entity';
 export declare class JournalOrmEntity {
     id: string;
     organizationId: string;

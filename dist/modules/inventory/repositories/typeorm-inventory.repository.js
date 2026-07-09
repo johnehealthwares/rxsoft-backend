@@ -94,6 +94,18 @@ let TypeormInventoryRepository = class TypeormInventoryRepository {
         if (query.movementType) {
             qb.andWhere('stock_movement.movement_type = :movementType', { movementType: query.movementType });
         }
+        if (query.itemId) {
+            qb.andWhere('stock_movement.item_id = :itemId', { itemId: query.itemId });
+        }
+        if (query.locationId) {
+            qb.andWhere('(stock_movement.from_location_id = :locationId OR stock_movement.to_location_id = :locationId)', { locationId: query.locationId });
+        }
+        if (query.fromDate) {
+            qb.andWhere('stock_movement.occurred_at >= :fromDate', { fromDate: query.fromDate });
+        }
+        if (query.toDate) {
+            qb.andWhere('stock_movement.occurred_at <= :toDate', { toDate: query.toDate });
+        }
         const [items, total] = await qb.getManyAndCount();
         return {
             items: items.map((movement) => ({

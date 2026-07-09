@@ -11,8 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SaleRefundOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
-const sale_orm_entity_1 = require("./sale.orm-entity");
 const sale_refund_line_orm_entity_1 = require("./sale-refund-line.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 let SaleRefundOrmEntity = class SaleRefundOrmEntity {
@@ -24,7 +22,7 @@ let SaleRefundOrmEntity = class SaleRefundOrmEntity {
     totalAmount;
     refundDate;
     reason;
-    refundedByUser;
+    refundedByUserId;
     lines;
     createdAt;
     updatedAt;
@@ -39,9 +37,9 @@ __decorate([
     __metadata("design:type", String)
 ], SaleRefundOrmEntity.prototype, "organizationId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => sale_orm_entity_1.SaleOrmEntity, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('SaleOrmEntity', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'sale_id' }),
-    __metadata("design:type", sale_orm_entity_1.SaleOrmEntity)
+    __metadata("design:type", Function)
 ], SaleRefundOrmEntity.prototype, "sale", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'refund_number', type: 'text' }),
@@ -64,10 +62,9 @@ __decorate([
     __metadata("design:type", Object)
 ], SaleRefundOrmEntity.prototype, "reason", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_orm_entity_1.UserOrmEntity, { nullable: false }),
-    (0, typeorm_1.JoinColumn)({ name: 'refunded_by_user_id' }),
-    __metadata("design:type", user_orm_entity_1.UserOrmEntity)
-], SaleRefundOrmEntity.prototype, "refundedByUser", void 0);
+    (0, typeorm_1.Column)({ name: 'refunded_by_user_id', type: 'text' }),
+    __metadata("design:type", String)
+], SaleRefundOrmEntity.prototype, "refundedByUserId", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => sale_refund_line_orm_entity_1.SaleRefundLineOrmEntity, (line) => line.refund),
     __metadata("design:type", Array)

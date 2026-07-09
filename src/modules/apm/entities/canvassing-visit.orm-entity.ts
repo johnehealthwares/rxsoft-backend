@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { CanvassingSessionOrmEntity } from './canvassing-session.orm-entity';
+import type { CanvassingSessionOrmEntity } from './canvassing-session.orm-entity';
 
 @Entity('apm_canvassing_visits')
 export class CanvassingVisitOrmEntity {
@@ -9,7 +9,7 @@ export class CanvassingVisitOrmEntity {
   @Column({ name: 'session_id', type: 'text' })
   sessionId!: string;
 
-  @ManyToOne(() => CanvassingSessionOrmEntity, (s) => s.visits)
+  @ManyToOne('CanvassingSessionOrmEntity', 'visits')
   @JoinColumn({ name: 'session_id' })
   session!: CanvassingSessionOrmEntity;
 

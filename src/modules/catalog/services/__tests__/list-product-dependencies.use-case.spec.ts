@@ -16,7 +16,6 @@ describe('ListItemDependenciesUseCase', () => {
     findByBarcode: jest.fn(),
     findLastCreated: jest.fn().mockResolvedValue(null),
   };
-  };
 
   const useCase = new ListItemDependenciesUseCase(itemRepository);
 

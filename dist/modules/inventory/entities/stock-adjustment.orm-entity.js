@@ -11,15 +11,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StockAdjustmentOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const stock_balance_orm_entity_1 = require("./stock-balance.orm-entity");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 let StockAdjustmentOrmEntity = class StockAdjustmentOrmEntity {
     id;
     stockBalance;
     reason;
     deltaQuantity;
-    performedBy;
     performedByUserId;
     performedAt;
     createdAt;
@@ -30,11 +27,11 @@ __decorate([
     __metadata("design:type", String)
 ], StockAdjustmentOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => stock_balance_orm_entity_1.StockBalanceOrmEntity, (stockBalance) => stockBalance.adjustments, {
+    (0, typeorm_1.ManyToOne)('StockBalanceOrmEntity', 'adjustments', {
         nullable: false,
     }),
     (0, typeorm_1.JoinColumn)({ name: 'stock_balance_id' }),
-    __metadata("design:type", stock_balance_orm_entity_1.StockBalanceOrmEntity)
+    __metadata("design:type", Function)
 ], StockAdjustmentOrmEntity.prototype, "stockBalance", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text' }),
@@ -44,11 +41,6 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'delta_quantity', type: 'decimal', precision: 10, scale: 2, transformer: new column_transformer_1.ColumnNumericTransformer() }),
     __metadata("design:type", Number)
 ], StockAdjustmentOrmEntity.prototype, "deltaQuantity", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => user_orm_entity_1.UserOrmEntity, { nullable: false }),
-    (0, typeorm_1.JoinColumn)({ name: 'performed_by_user_id' }),
-    __metadata("design:type", user_orm_entity_1.UserOrmEntity)
-], StockAdjustmentOrmEntity.prototype, "performedBy", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'performed_by_user_id', type: 'text' }),
     __metadata("design:type", String)

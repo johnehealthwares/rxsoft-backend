@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { ItemOrmEntity } from './item.orm-entity';
+import type { ItemOrmEntity } from './item.orm-entity';
 import { DEFAULT_ORGANIZATION_ID } from 'src/shared/constants/persistence-scope';
 
 @Entity('item_categories')
@@ -24,7 +24,7 @@ export class ItemCategoryOrmEntity {
   @Column({ type: 'text' })
   name!: string;
 
-  @OneToMany(() => ItemOrmEntity, (item) => item.category)
+  @OneToMany('ItemOrmEntity', 'category')
   items!: ItemOrmEntity[];
 
   @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })

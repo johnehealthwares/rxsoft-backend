@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const organisation_config_service_1 = require("../../organisation-config/services/organisation-config.service");
+const stock_location_orm_entity_1 = require("../../inventory/entities/stock-location.orm-entity");
 const user_pos_config_orm_entity_1 = require("../entities/user-pos-config.orm-entity");
 function toType(entity) {
     return {
@@ -48,9 +49,11 @@ function toType(entity) {
 }
 let UserPosConfigService = class UserPosConfigService {
     repo;
+    entityManager;
     orgConfigService;
-    constructor(repo, orgConfigService) {
+    constructor(repo, entityManager, orgConfigService) {
         this.repo = repo;
+        this.entityManager = entityManager;
         this.orgConfigService = orgConfigService;
     }
     async getOrCreate(userId, organizationId) {
@@ -60,13 +63,24 @@ let UserPosConfigService = class UserPosConfigService {
         });
         if (!entity) {
             const orgConfig = await this.orgConfigService.getOrCreate(organizationId);
+            const defaultLocation = await this.entityManager
+                .getRepository(stock_location_orm_entity_1.StockLocationOrmEntity)
+                .findOne({
+                where: { organizationId, isActive: true },
+                order: { createdAt: 'ASC' },
+            });
             entity = this.repo.create({
                 userId,
                 organizationId,
+                stockLocationId: defaultLocation?.id ?? null,
                 allowA4Print: orgConfig.defaultAllowA4Print,
                 allowPos: orgConfig.defaultAllowPos,
             });
             entity = await this.repo.save(entity);
+            entity = await this.repo.findOne({
+                where: { id: entity.id },
+                relations: ['stockLocation', 'defaultCustomer', 'defaultPriceList'],
+            });
         }
         return toType(entity);
     }
@@ -105,14 +119,20 @@ let UserPosConfigService = class UserPosConfigService {
         if (payload.autoSelectPriceList !== undefined)
             entity.autoSelectPriceList = payload.autoSelectPriceList;
         const saved = await this.repo.save(entity);
-        return toType(saved);
+        const reloaded = await this.repo.findOne({
+            where: { id: saved.id },
+            relations: ['stockLocation', 'defaultCustomer', 'defaultPriceList'],
+        });
+        return toType(reloaded);
     }
 };
 exports.UserPosConfigService = UserPosConfigService;
 exports.UserPosConfigService = UserPosConfigService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_pos_config_orm_entity_1.UserPosConfigOrmEntity)),
+    __param(1, (0, typeorm_1.InjectEntityManager)()),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.EntityManager,
         organisation_config_service_1.OrganisationConfigService])
 ], UserPosConfigService);
 //# sourceMappingURL=user-pos-config.service.js.map

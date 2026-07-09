@@ -25,20 +25,96 @@ const create_sale_refund_dto_1 = require("../dto/create-sale-refund.dto");
 const create_sale_response_dto_1 = require("../dto/create-sale-response.dto");
 const create_sale_refund_response_dto_1 = require("../dto/create-sale-refund-response.dto");
 const list_sales_dto_1 = require("../dto/list-sales.dto");
+const sale_detail_response_dto_1 = require("../dto/sale-detail-response.dto");
 const create_sale_refund_use_case_1 = require("../services/create-sale-refund.use-case");
 const create_sale_use_case_1 = require("../services/create-sale.use-case");
 const list_sales_use_case_1 = require("../services/list-sales.use-case");
 const sales_di_tokens_1 = require("../services/sales.di-tokens");
+const sale_orm_entity_1 = require("../entities/sale.orm-entity");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 let SalesController = class SalesController {
     listSalesUseCase;
     createSaleUseCase;
     createSaleRefundUseCase;
     salesRepository;
-    constructor(listSalesUseCase, createSaleUseCase, createSaleRefundUseCase, salesRepository) {
+    saleOrmRepository;
+    constructor(listSalesUseCase, createSaleUseCase, createSaleRefundUseCase, salesRepository, saleOrmRepository) {
         this.listSalesUseCase = listSalesUseCase;
         this.createSaleUseCase = createSaleUseCase;
         this.createSaleRefundUseCase = createSaleRefundUseCase;
         this.salesRepository = salesRepository;
+        this.saleOrmRepository = saleOrmRepository;
+    }
+    async getSale(saleId, currentUser) {
+        const entity = await this.saleOrmRepository.findOne({
+            where: { id: saleId, organizationId: currentUser.organizationId },
+            relations: [
+                'customer',
+                'lines',
+                'lines.item',
+                'lines.item.category',
+                'lines.item.baseUom',
+                'lines.item.saleUom',
+                'lines.uom',
+                'payments',
+                'payments.paymentMethod',
+            ],
+        });
+        if (!entity)
+            throw new common_1.NotFoundException('Sale not found');
+        return {
+            id: entity.id,
+            saleNumber: entity.saleNumber,
+            saleChannel: entity.saleChannel,
+            customer: entity.customer
+                ? {
+                    id: entity.customer.id,
+                    name: entity.customer.name,
+                    phone: entity.customer.phone ?? undefined,
+                    email: entity.customer.email ?? undefined,
+                }
+                : null,
+            status: entity.status,
+            totalAmount: entity.totalAmount,
+            paidAmount: entity.paidAmount,
+            lines: (entity.lines ?? []).map((line) => ({
+                id: line.id,
+                lineNumber: line.lineNumber,
+                item: {
+                    id: line.item.id,
+                    code: line.item.code,
+                    name: line.item.name,
+                    category: line.item.category
+                        ? { id: line.item.category.id, name: line.item.category.name }
+                        : null,
+                    baseUomId: line.item.baseUomId,
+                    saleUomId: line.item.saleUomId ?? undefined,
+                    saleUom: line.item.saleUom
+                        ? { id: line.item.saleUom.id, name: line.item.saleUom.name }
+                        : null,
+                    baseUom: line.item.baseUom
+                        ? { id: line.item.baseUom.id, name: line.item.baseUom.name }
+                        : null,
+                },
+                quantity: line.quantity,
+                unitPrice: line.unitPrice,
+                lineTotal: line.lineTotal,
+            })),
+            payments: (entity.payments ?? []).map((payment) => ({
+                id: payment.id,
+                paymentMethod: {
+                    id: payment.paymentMethod.id,
+                    code: payment.paymentMethod.code,
+                    name: payment.paymentMethod.name,
+                    methodType: payment.paymentMethod.methodType,
+                    isActive: payment.paymentMethod.isActive,
+                },
+                amount: payment.amount,
+            })),
+            saleDate: entity.saleDate.toISOString(),
+            notes: entity.notes ?? null,
+        };
     }
     async listSales(query, currentUser) {
         const result = await this.listSalesUseCase.execute(query, currentUser.organizationId);
@@ -101,6 +177,17 @@ let SalesController = class SalesController {
 };
 exports.SalesController = SalesController;
 __decorate([
+    (0, common_1.Get)(':saleId'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin', 'cashier', 'auditor'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get sale detail by ID' }),
+    (0, swagger_1.ApiResponse)({ status: 200, type: sale_detail_response_dto_1.SaleDetailResponseDto }),
+    __param(0, (0, common_1.Param)('saleId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], SalesController.prototype, "getSale", null);
+__decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)('admin', 'super_admin', 'cashier', 'auditor'),
     (0, swagger_1.ApiOperation)({ summary: 'List sales with pagination and optional status filter' }),
@@ -151,8 +238,9 @@ exports.SalesController = SalesController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, common_1.Controller)('sales'),
     __param(3, (0, common_1.Inject)(sales_di_tokens_1.SALES_REPOSITORY)),
+    __param(4, (0, typeorm_1.InjectRepository)(sale_orm_entity_1.SaleOrmEntity)),
     __metadata("design:paramtypes", [list_sales_use_case_1.ListSalesUseCase,
         create_sale_use_case_1.CreateSaleUseCase,
-        create_sale_refund_use_case_1.CreateSaleRefundUseCase, Object])
+        create_sale_refund_use_case_1.CreateSaleRefundUseCase, Object, typeorm_2.Repository])
 ], SalesController);
 //# sourceMappingURL=sales.controller.js.map

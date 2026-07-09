@@ -1,5 +1,5 @@
-import { AdjustStockByReferenceDto } from 'src/modules/inventory/dto/stock-locations.dto';
-import { CreatePriceListItemDto } from 'src/modules/pricing/dto/pricing.dto';
+import { AdjustStockByReferenceDto } from "../../inventory/dto/stock-locations.dto";
+import { CreatePriceListItemDto } from "../../pricing/dto/pricing.dto";
 export declare class ReplaceItemDto {
     code: string;
     name: string;

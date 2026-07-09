@@ -1,6 +1,6 @@
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLotOrmEntity } from '../../inventory/entities/stock-lot.orm-entity';
-import { SaleOrmEntity } from './sale.orm-entity';
+import type { SaleOrmEntity } from './sale.orm-entity';
 import { UomOrmEntity } from './uom.orm-entity';
 export declare class SaleLineOrmEntity {
     id: string;

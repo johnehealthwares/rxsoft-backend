@@ -7,17 +7,31 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import {
+  CreateGlAccountDto,
   CreateJournalDto,
   CreateJournalEntryDto,
   CreateJournalEntryLineDto,
+  ListGlAccountsDto,
   ListJournalEntriesDto,
   ListJournalEntryLinesDto,
   ListJournalsDto,
+  UpdateGlAccountDto,
   UpdateJournalDto,
   UpdateJournalEntryDto,
   UpdateJournalEntryLineDto,
 } from '../dto/accounting.dto';
-import { AccountingService, JournalEntryLineType, JournalEntryType, JournalType } from '../services/accounting.service';
+import {
+  AccountingService,
+  GlAccountType,
+  JournalEntryLineType,
+  JournalEntryType,
+  JournalType,
+} from '../services/accounting.service';
+
+type GlAccountListResponse = {
+  data: GlAccountType[];
+  meta: { page: number; limit: number; total: number };
+};
 
 type JournalListResponse = {
   data: JournalType[];
@@ -169,5 +183,96 @@ export class AccountingController {
     @CurrentUser() currentUser: RequestUser,
   ): Promise<void> {
     await this.accountingService.removeJournalEntryLine(entryId, lineId, currentUser.organizationId);
+  }
+
+  // ─── GL Account CRUD ───────────────────────────────────────────────
+
+  @Get('gl-accounts')
+  @Roles('admin', 'super_admin', 'auditor')
+  async listGlAccounts(
+    @Query() query: ListGlAccountsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<GlAccountListResponse> {
+    const result = await this.accountingService.listGlAccounts(query, currentUser.organizationId);
+    return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
+  }
+
+  @Get('gl-accounts/:accountId')
+  @Roles('admin', 'super_admin', 'auditor')
+  async getGlAccount(@Param('accountId') accountId: string, @CurrentUser() currentUser: RequestUser): Promise<GlAccountType> {
+    return this.accountingService.getGlAccount(accountId, currentUser.organizationId);
+  }
+
+  @Post('gl-accounts')
+  @Roles('admin', 'super_admin')
+  @AuditAction('accounting.gl_account.create')
+  async createGlAccount(@Body() payload: CreateGlAccountDto, @CurrentUser() currentUser: RequestUser): Promise<GlAccountType> {
+    return this.accountingService.createGlAccount(payload, currentUser.organizationId);
+  }
+
+  @Patch('gl-accounts/:accountId')
+  @Roles('admin', 'super_admin')
+  @AuditAction('accounting.gl_account.update')
+  async updateGlAccount(
+    @Param('accountId') accountId: string,
+    @Body() payload: UpdateGlAccountDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<GlAccountType> {
+    return this.accountingService.updateGlAccount(accountId, payload, currentUser.organizationId);
+  }
+
+  @Delete('gl-accounts/:accountId')
+  @Roles('admin', 'super_admin')
+  @AuditAction('accounting.gl_account.delete')
+  async removeGlAccount(@Param('accountId') accountId: string, @CurrentUser() currentUser: RequestUser): Promise<void> {
+    await this.accountingService.removeGlAccount(accountId, currentUser.organizationId);
+  }
+
+  // ─── Posting / Reversal ─────────────────────────────────────────────
+
+  @Post('journal-entries/:entryId/post')
+  @Roles('admin', 'super_admin')
+  @AuditAction('accounting.journal_entry.post')
+  async postJournalEntry(@Param('entryId') entryId: string, @CurrentUser() currentUser: RequestUser): Promise<JournalEntryType> {
+    return this.accountingService.postJournalEntry(entryId, currentUser.organizationId);
+  }
+
+  @Post('journal-entries/:entryId/reverse')
+  @Roles('admin', 'super_admin')
+  @AuditAction('accounting.journal_entry.reverse')
+  async reverseJournalEntry(@Param('entryId') entryId: string, @CurrentUser() currentUser: RequestUser): Promise<JournalEntryType> {
+    return this.accountingService.reverseJournalEntry(entryId, currentUser.organizationId, currentUser.sub);
+  }
+
+  // ─── Reports ────────────────────────────────────────────────────────
+
+  @Get('reports/trial-balance')
+  @Roles('admin', 'super_admin', 'auditor')
+  async getTrialBalance(
+    @Query('asOfDate') asOfDate: string,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    return this.accountingService.getTrialBalance(currentUser.organizationId, asOfDate ?? new Date().toISOString().slice(0, 10));
+  }
+
+  @Get('reports/balance-sheet')
+  @Roles('admin', 'super_admin', 'auditor')
+  async getBalanceSheet(
+    @Query('asOfDate') asOfDate: string,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    return this.accountingService.getBalanceSheet(currentUser.organizationId, asOfDate ?? new Date().toISOString().slice(0, 10));
+  }
+
+  @Get('reports/income-statement')
+  @Roles('admin', 'super_admin', 'auditor')
+  async getIncomeStatement(
+    @Query('fromDate') fromDate: string,
+    @Query('toDate') toDate: string,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    const to = toDate ?? new Date().toISOString().slice(0, 10);
+    const from = fromDate ?? new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
+    return this.accountingService.getIncomeStatement(currentUser.organizationId, from, to);
   }
 }

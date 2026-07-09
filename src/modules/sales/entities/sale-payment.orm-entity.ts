@@ -1,7 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { PaymentMethodOrmEntity } from './payment-method.orm-entity';
-import { SaleOrmEntity } from './sale.orm-entity';
+import type { SaleOrmEntity } from './sale.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
 @Entity('sale_payments')
@@ -10,7 +9,7 @@ export class SalePaymentOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => SaleOrmEntity, (sale) => sale.payments, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne('SaleOrmEntity', 'payments', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sale_id' })
   sale!: SaleOrmEntity;
 
@@ -27,9 +26,8 @@ export class SalePaymentOrmEntity {
   @CreateDateColumn({ name: 'paid_at'/* timestamptzz */ })
   paidAt!: Date;
 
-  @ManyToOne(() => UserOrmEntity, { nullable: true })
-  @JoinColumn({ name: 'received_by_user_id' })
-  receivedByUser!: UserOrmEntity | null;
+  @Column({ name: 'received_by_user_id', type: 'text', nullable: true })
+  receivedByUserId!: string | null;
 
   @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })
   createdAt!: Date;

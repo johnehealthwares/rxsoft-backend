@@ -1,5 +1,6 @@
+import type { StakeholderOrmEntity } from './stakeholder.orm-entity';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { StakeholderOrmEntity } from './stakeholder.orm-entity';
+import type { CanvassingSessionOrmEntity } from './canvassing-session.orm-entity';
 
 @Entity('apm_conversion_activities')
 export class ConversionActivityOrmEntity {
@@ -9,7 +10,7 @@ export class ConversionActivityOrmEntity {
   @Column({ name: 'stakeholder_id', type: 'text' })
   stakeholderId!: string;
 
-  @ManyToOne(() => StakeholderOrmEntity, (s) => s.activities)
+  @ManyToOne('StakeholderOrmEntity', 'activities')
   @JoinColumn({ name: 'stakeholder_id' })
   stakeholder!: StakeholderOrmEntity;
 

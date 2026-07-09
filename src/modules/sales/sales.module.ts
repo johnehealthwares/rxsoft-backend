@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ItemOrmEntity } from '../catalog/entities/item.orm-entity';
-import { UserOrmEntity } from '../identity/entities/user.orm-entity';
 import { StockLotOrmEntity } from '../inventory/entities/stock-lot.orm-entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -33,6 +32,8 @@ import { PaymentMethodsService } from './services/payment-methods.service';
 import { UomCategoriesService } from './services/uom-categories.service';
 import { UomConverterService } from './services/uom-converter.service';
 import { SALES_REPOSITORY } from './services/sales.di-tokens';
+import { UsersProxyModule } from '../users-proxy/users-proxy.module';
+import { AccountingModule } from '../accounting/accounting.module';
 
 const salesConfigService = new ConfigService();
 const useInMemoryRepos = salesConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -51,7 +52,6 @@ const salesPersistenceImports = useInMemoryRepos
         UomOrmEntity,
         ItemOrmEntity,
         StockLotOrmEntity,
-        UserOrmEntity,
       ]),
     ];
 const salesRepositoryProviders = useInMemoryRepos
@@ -71,7 +71,7 @@ const salesRepositoryProviders = useInMemoryRepos
     ];
 
 @Module({
-  imports: [JwtModule.register({}), ...salesPersistenceImports],
+  imports: [JwtModule.register({}), UsersProxyModule, AccountingModule, ...salesPersistenceImports],
   controllers: [SalesController, UomsController, UomCategoriesController, PaymentMethodsController],
   providers: [
     ListSalesUseCase,

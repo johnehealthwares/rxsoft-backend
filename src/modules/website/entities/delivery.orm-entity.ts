@@ -1,12 +1,12 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { OrderOrmEntity } from './order.orm-entity';
+import type { OrderOrmEntity } from './order.orm-entity';
 
 @Entity('website_deliveries')
 export class DeliveryOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @OneToOne(() => OrderOrmEntity, (order) => order.delivery, { nullable: false, onDelete: 'CASCADE' })
+  @OneToOne('OrderOrmEntity', 'delivery', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' })
   order!: OrderOrmEntity;
 

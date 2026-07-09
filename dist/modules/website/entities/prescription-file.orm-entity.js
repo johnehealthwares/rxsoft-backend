@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrescriptionFileOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const prescription_orm_entity_1 = require("./prescription.orm-entity");
 let PrescriptionFileOrmEntity = class PrescriptionFileOrmEntity {
     id;
     prescription;
@@ -27,9 +26,9 @@ __decorate([
     __metadata("design:type", String)
 ], PrescriptionFileOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => prescription_orm_entity_1.PrescriptionOrmEntity, (p) => p.files, { onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('PrescriptionOrmEntity', 'files', { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'prescription_id' }),
-    __metadata("design:type", prescription_orm_entity_1.PrescriptionOrmEntity)
+    __metadata("design:type", Function)
 ], PrescriptionFileOrmEntity.prototype, "prescription", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'file_url', type: 'text' }),

@@ -1,4 +1,4 @@
-import { CanvassingSessionOrmEntity } from './canvassing-session.orm-entity';
+import type { CanvassingSessionOrmEntity } from './canvassing-session.orm-entity';
 export declare class CanvassingVisitOrmEntity {
     id: string;
     sessionId: string;

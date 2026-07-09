@@ -1,6 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { PaymentMethodOrmEntity } from '../../sales/entities/payment-method.orm-entity';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { AccountReceivableOrmEntity } from '../../sales/entities/account-receivable.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
@@ -30,9 +29,8 @@ export class ReceivableTransactionOrmEntity {
   @Column({ name: 'reference_number', type: 'text', nullable: true })
   referenceNumber!: string | null;
 
-  @ManyToOne(() => UserOrmEntity, { nullable: true })
-  @JoinColumn({ name: 'received_by_user_id' })
-  receivedByUser!: UserOrmEntity | null;
+  @Column({ name: 'received_by_user_id', type: 'text', nullable: true })
+  receivedByUserId!: string | null;
 
   @Column({ type: 'text', nullable: true })
   note!: string | null;

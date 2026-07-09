@@ -16,7 +16,6 @@ describe('ListItemsUseCase', () => {
     findByBarcode: jest.fn(),
     findLastCreated: jest.fn().mockResolvedValue(null),
   };
-  };
 
   const useCase = new ListItemsUseCase(itemRepository);
 

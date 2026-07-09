@@ -20,6 +20,7 @@ import {
   WarehouseOrmEntity,
 } from '../inventory/entities';
 import { PartyOrmEntity } from '../customers/entities/party.orm-entity';
+import { AccountingModule } from '../accounting/accounting.module';
 
 const purchasesConfigService = new ConfigService();
 const useInMemoryRepos = purchasesConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -56,7 +57,7 @@ const purchasesRepositoryProviders = useInMemoryRepos
     ];
 
 @Module({
-  imports: [JwtModule.register({}), ...purchasesPersistenceImports],
+  imports: [JwtModule.register({}), AccountingModule, ...purchasesPersistenceImports],
   controllers: [PurchasesController, InflowController],
   providers: [
     PurchasesService,

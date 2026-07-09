@@ -56,6 +56,7 @@ export type GoodsReceiptPayload = {
 export type ReceiveGoodsResult = {
     receiptId: string;
     receiptNumber: string;
+    poStatus: string;
     lines: Array<{
         itemId: string;
         receiptLineId: string;

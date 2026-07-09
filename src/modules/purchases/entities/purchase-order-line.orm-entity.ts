@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
-import { PurchaseOrderOrmEntity } from './purchase-order.orm-entity';
+import type { PurchaseOrderOrmEntity } from './purchase-order.orm-entity';
 import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 
 @Entity('purchase_order_lines')
@@ -8,7 +8,7 @@ export class PurchaseOrderLineOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => PurchaseOrderOrmEntity, (purchaseOrder) => purchaseOrder.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne('PurchaseOrderOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'purchase_order_id' })
   purchaseOrder!: PurchaseOrderOrmEntity;
 

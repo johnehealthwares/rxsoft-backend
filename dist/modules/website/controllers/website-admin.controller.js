@@ -213,8 +213,8 @@ let WebsiteAdminController = class WebsiteAdminController {
         const itemMap = new Map(items.map((i) => [i.id, i]));
         const sale = this.saleRepo.create({
             organizationId: currentUser.organizationId,
-            saleNumber: `S-ORD-${order.orderNumber.replace('ORD-', '')}`,
-            saleChannel: 'mobile',
+            saleNumber: `WEBORD-${order.orderNumber.replace('ORD-', '')}`,
+            saleChannel: 'website',
             storeId: persistence_scope_1.DEFAULT_STORE_ID,
             customerId: order.customerId,
             status: 'draft',

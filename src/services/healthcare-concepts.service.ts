@@ -66,7 +66,7 @@ export class HealthcareConceptsService {
     private readonly http: HttpService,
     configService: ConfigService,
   ) {
-    this.baseUrl = configService.get<string>('HEALTHCARE_CONCEPTS_API_URL', 'http://localhost:3011/api/v1');
+    this.baseUrl = configService.get<string>('HEALTHCARE_CONCEPTS_API_URL', 'http://localhost:8004/api/v1');
   }
 
   async getGenericProductByCode(code: string): Promise<CachedGenericProduct | null> {

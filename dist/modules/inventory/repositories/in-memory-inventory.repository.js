@@ -56,6 +56,20 @@ let InMemoryInventoryRepository = class InMemoryInventoryRepository {
         if (query.movementType) {
             items = items.filter((item) => item.movementType === query.movementType);
         }
+        if (query.itemId) {
+            items = items.filter((item) => item.itemId === query.itemId);
+        }
+        if (query.locationId) {
+            items = items.filter((item) => item.fromLocationId === query.locationId || item.toLocationId === query.locationId);
+        }
+        if (query.fromDate) {
+            const from = new Date(query.fromDate);
+            items = items.filter((item) => item.occurredAt >= from);
+        }
+        if (query.toDate) {
+            const to = new Date(query.toDate);
+            items = items.filter((item) => item.occurredAt <= to);
+        }
         items.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime());
         const total = items.length;
         return {

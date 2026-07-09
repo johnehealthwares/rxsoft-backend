@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ItemCategoryOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const item_orm_entity_1 = require("./item.orm-entity");
 const persistence_scope_1 = require("../../../shared/constants/persistence-scope");
 let ItemCategoryOrmEntity = class ItemCategoryOrmEntity {
     id;
@@ -52,7 +51,7 @@ __decorate([
     __metadata("design:type", String)
 ], ItemCategoryOrmEntity.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => item_orm_entity_1.ItemOrmEntity, (item) => item.category),
+    (0, typeorm_1.OneToMany)('ItemOrmEntity', 'category'),
     __metadata("design:type", Array)
 ], ItemCategoryOrmEntity.prototype, "items", void 0);
 __decorate([

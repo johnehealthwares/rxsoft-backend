@@ -1,5 +1,6 @@
 import { DataSource, Repository } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
+import { UsersProxyService } from '../../users-proxy/users-proxy.service';
 import { UomConverterService } from '../services/uom-converter.service';
 import { Sale } from '../domains/sale.entity';
 import { SaleOrmEntity, UomOrmEntity } from '../entities';
@@ -10,8 +11,10 @@ export declare class TypeormSalesRepository implements SalesRepository {
     private readonly uomRepository;
     private readonly dataSource;
     private readonly uomConverter;
+    private readonly usersProxy;
+    findById(organizationId: string, saleId: string): Promise<Sale | null>;
     findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null>;
-    constructor(saleRepository: Repository<SaleOrmEntity>, itemRepository: Repository<ItemOrmEntity>, uomRepository: Repository<UomOrmEntity>, dataSource: DataSource, uomConverter: UomConverterService);
+    constructor(saleRepository: Repository<SaleOrmEntity>, itemRepository: Repository<ItemOrmEntity>, uomRepository: Repository<UomOrmEntity>, dataSource: DataSource, uomConverter: UomConverterService, usersProxy: UsersProxyService);
     list(query: SalesListQuery): Promise<{
         items: Sale[];
         total: number;

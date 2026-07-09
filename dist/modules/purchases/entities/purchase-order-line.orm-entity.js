@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PurchaseOrderLineOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
 const item_orm_entity_1 = require("../../catalog/entities/item.orm-entity");
-const purchase_order_orm_entity_1 = require("./purchase-order.orm-entity");
 const uom_orm_entity_1 = require("../../sales/entities/uom.orm-entity");
 let PurchaseOrderLineOrmEntity = class PurchaseOrderLineOrmEntity {
     id;
@@ -37,9 +36,9 @@ __decorate([
     __metadata("design:type", String)
 ], PurchaseOrderLineOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => purchase_order_orm_entity_1.PurchaseOrderOrmEntity, (purchaseOrder) => purchaseOrder.lines, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('PurchaseOrderOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'purchase_order_id' }),
-    __metadata("design:type", purchase_order_orm_entity_1.PurchaseOrderOrmEntity)
+    __metadata("design:type", Function)
 ], PurchaseOrderLineOrmEntity.prototype, "purchaseOrder", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => item_orm_entity_1.ItemOrmEntity, { nullable: false }),

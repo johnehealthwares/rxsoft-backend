@@ -4,10 +4,10 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { RequestLoggingInterceptor } from './common/interceptors/request-logging.interceptor';
 import { DatabaseSeeedService } from './database/seeding.service';
 import * as yaml from 'js-yaml'
 import * as fs from 'fs'
-
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,6 +22,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalInterceptors(new RequestLoggingInterceptor());
   app.setGlobalPrefix('api'); // All routes now start with /api
   app.enableCors();
 

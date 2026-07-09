@@ -1,5 +1,5 @@
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
-import { PurchaseOrderOrmEntity } from './purchase-order.orm-entity';
+import type { PurchaseOrderOrmEntity } from './purchase-order.orm-entity';
 import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 export declare class PurchaseOrderLineOrmEntity {
     id: string;

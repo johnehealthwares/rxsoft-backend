@@ -1,6 +1,5 @@
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { PaymentMethodOrmEntity } from './payment-method.orm-entity';
-import { SaleOrmEntity } from './sale.orm-entity';
+import type { SaleOrmEntity } from './sale.orm-entity';
 export declare class SalePaymentOrmEntity {
     id: string;
     sale: SaleOrmEntity;
@@ -8,7 +7,7 @@ export declare class SalePaymentOrmEntity {
     amount: number;
     paymentReference: string | null;
     paidAt: Date;
-    receivedByUser: UserOrmEntity | null;
+    receivedByUserId: string | null;
     createdAt: Date;
     updatedAt: Date;
 }

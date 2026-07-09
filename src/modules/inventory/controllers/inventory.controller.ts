@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -6,6 +6,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
+import { toCsv } from '../../../shared/utils/csv';
 import { CreateStockAdjustmentDto } from '../dto/create-stock-adjustment.dto';
 import { CreateStockTransferDto } from '../dto/create-stock-transfer.dto';
 import { ListStockBalancesDto } from '../dto/list-stock-balances.dto';
@@ -96,6 +97,19 @@ export class InventoryController {
         total: result.total,
       },
     };
+  }
+
+  @Get('stock-movements/export')
+  @Roles('admin', 'super_admin', 'inventory_clerk')
+  @ApiOperation({ summary: 'Export stock movements as CSV' })
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename="stock_movements.csv"')
+  async exportStockMovements(
+    @Query() query: ListStockMovementsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<string> {
+    const result = await this.listStockMovementsUseCase.execute(query, currentUser.organizationId);
+    return toCsv(result.items as unknown as Array<Record<string, unknown>>);
   }
 
   @Post('adjustments')

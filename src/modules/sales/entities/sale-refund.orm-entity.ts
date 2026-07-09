@@ -9,8 +9,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
-import { SaleOrmEntity } from './sale.orm-entity';
+import type { SaleOrmEntity } from './sale.orm-entity';
 import { SaleRefundLineOrmEntity } from './sale-refund-line.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
@@ -24,7 +23,7 @@ export class SaleRefundOrmEntity {
   @Column({ name: 'organization_id', type: 'text' })
   organizationId!: string;
 
-  @ManyToOne(() => SaleOrmEntity, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne('SaleOrmEntity', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sale_id' })
   sale!: SaleOrmEntity;
 
@@ -43,9 +42,8 @@ export class SaleRefundOrmEntity {
   @Column({ type: 'text', nullable: true })
   reason!: string | null;
 
-  @ManyToOne(() => UserOrmEntity, { nullable: false })
-  @JoinColumn({ name: 'refunded_by_user_id' })
-  refundedByUser!: UserOrmEntity;
+  @Column({ name: 'refunded_by_user_id', type: 'text' })
+  refundedByUserId!: string;
 
   @OneToMany(() => SaleRefundLineOrmEntity, (line) => line.refund)
   lines!: SaleRefundLineOrmEntity[];

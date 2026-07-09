@@ -11,8 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const refresh_token_orm_entity_1 = require("./refresh-token.orm-entity");
-const role_orm_entity_1 = require("./role.orm-entity");
 let UserOrmEntity = class UserOrmEntity {
     id;
     organizationId;
@@ -20,8 +18,7 @@ let UserOrmEntity = class UserOrmEntity {
     passwordHash;
     isActive;
     phone;
-    roles;
-    refreshTokens;
+    email;
     createdAt;
     updatedAt;
     deletedAt;
@@ -52,18 +49,9 @@ __decorate([
     __metadata("design:type", String)
 ], UserOrmEntity.prototype, "phone", void 0);
 __decorate([
-    (0, typeorm_1.ManyToMany)(() => role_orm_entity_1.RoleOrmEntity, (role) => role.users),
-    (0, typeorm_1.JoinTable)({
-        name: 'user_roles',
-        joinColumn: { name: 'user_id', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
-    }),
-    __metadata("design:type", Array)
-], UserOrmEntity.prototype, "roles", void 0);
-__decorate([
-    (0, typeorm_1.OneToMany)(() => refresh_token_orm_entity_1.RefreshTokenOrmEntity, (refreshToken) => refreshToken.user),
-    __metadata("design:type", Array)
-], UserOrmEntity.prototype, "refreshTokens", void 0);
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], UserOrmEntity.prototype, "email", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)

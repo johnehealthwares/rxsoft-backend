@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JournalOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const journal_entry_orm_entity_1 = require("./journal-entry.orm-entity");
 let JournalOrmEntity = class JournalOrmEntity {
     id;
     organizationId;
@@ -59,7 +58,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], JournalOrmEntity.prototype, "isActive", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => journal_entry_orm_entity_1.JournalEntryOrmEntity, (entry) => entry.journal),
+    (0, typeorm_1.OneToMany)('JournalEntryOrmEntity', 'journal'),
     __metadata("design:type", Array)
 ], JournalOrmEntity.prototype, "entries", void 0);
 __decorate([

@@ -27,6 +27,12 @@ class CreateSaleLineDto {
   @IsNumber()
   @Min(0)
   unitPrice!: number;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  uomFactor?: number | null;
 }
 
 class CreateSalePaymentDto {

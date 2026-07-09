@@ -11,7 +11,6 @@ const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const typeorm_1 = require("@nestjs/typeorm");
 const mongoose_1 = require("@nestjs/mongoose");
-const identity_module_1 = require("./modules/identity/identity.module");
 const health_controller_1 = require("./modules/health/controllers/health.controller");
 const catalog_module_1 = require("./modules/catalog/catalog.module");
 const inventory_module_1 = require("./modules/inventory/inventory.module");
@@ -36,6 +35,7 @@ const warehouses_module_1 = require("./modules/warehouses/warehouses.module");
 const website_module_1 = require("./modules/website/website.module");
 const apm_module_1 = require("./modules/apm/apm.module");
 const upload_module_1 = require("./modules/upload/upload.module");
+const users_proxy_module_1 = require("./modules/users-proxy/users-proxy.module");
 const config_1 = require("@nestjs/config");
 const serve_static_1 = require("@nestjs/serve-static");
 const path_1 = require("path");
@@ -99,9 +99,8 @@ const infrastructureImports = useInMemoryRepos
         }),
     ];
 const applicationModules = useInMemoryRepos
-    ? [identity_module_1.IdentityModule, catalog_module_1.CatalogModule, inventory_module_1.InventoryModule, sales_module_1.SalesModule, receivables_module_1.ReceivablesModule, reports_module_1.ReportsModule, upload_module_1.UploadModule]
+    ? [catalog_module_1.CatalogModule, inventory_module_1.InventoryModule, sales_module_1.SalesModule, receivables_module_1.ReceivablesModule, reports_module_1.ReportsModule, upload_module_1.UploadModule]
     : [
-        identity_module_1.IdentityModule,
         catalog_module_1.CatalogModule,
         categories_module_1.CategoriesModule,
         customers_module_1.CustomersModule,
@@ -121,6 +120,7 @@ const applicationModules = useInMemoryRepos
         user_pos_config_module_1.UserPosConfigModule,
         organisation_config_module_1.OrganisationConfigModule,
         warehouses_module_1.WarehousesModule,
+        users_proxy_module_1.UsersProxyModule,
     ];
 let AppModule = class AppModule {
 };

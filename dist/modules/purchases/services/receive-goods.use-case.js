@@ -11,18 +11,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var ReceiveGoodsUseCase_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReceiveGoodsUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const cache_service_1 = require("../../../common/cache/cache.service");
+const accounting_integration_service_1 = require("../../accounting/services/accounting-integration.service");
 const purchases_di_tokens_1 = require("./purchases.di-tokens");
 const code_validation_1 = require("../../../shared/utils/code-validation");
-let ReceiveGoodsUseCase = class ReceiveGoodsUseCase {
+let ReceiveGoodsUseCase = ReceiveGoodsUseCase_1 = class ReceiveGoodsUseCase {
     purchasesRepository;
     cacheService;
-    constructor(purchasesRepository, cacheService) {
+    accountingIntegration;
+    logger = new common_1.Logger(ReceiveGoodsUseCase_1.name);
+    constructor(purchasesRepository, cacheService, accountingIntegration) {
         this.purchasesRepository = purchasesRepository;
         this.cacheService = cacheService;
+        this.accountingIntegration = accountingIntegration;
     }
     async execute(payload, organizationId, userId) {
         const po = await this.purchasesRepository.getById(payload.purchaseOrderId, organizationId);
@@ -70,14 +75,29 @@ let ReceiveGoodsUseCase = class ReceiveGoodsUseCase {
             })),
         });
         await this.cacheService?.invalidateByPrefix(`purchases:list:${organizationId}:`);
+        if (this.accountingIntegration) {
+            this.accountingIntegration
+                .recordGoodsReceipt(organizationId, {
+                receiptNumber: result.receiptNumber,
+                purchaseOrderId: payload.purchaseOrderId,
+                lines: payload.lines.map((l) => ({
+                    itemId: l.itemId,
+                    receivedQty: l.receivedQty,
+                    unitCost: l.unitCost,
+                })),
+            })
+                .catch((err) => this.logger.error(`Accounting: failed to record goods receipt: ${err.message}`, err.stack));
+        }
         return result;
     }
 };
 exports.ReceiveGoodsUseCase = ReceiveGoodsUseCase;
-exports.ReceiveGoodsUseCase = ReceiveGoodsUseCase = __decorate([
+exports.ReceiveGoodsUseCase = ReceiveGoodsUseCase = ReceiveGoodsUseCase_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(purchases_di_tokens_1.PURCHASES_REPOSITORY)),
     __param(1, (0, common_1.Optional)()),
-    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService])
+    __param(2, (0, common_1.Optional)()),
+    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService,
+        accounting_integration_service_1.AccountingIntegrationService])
 ], ReceiveGoodsUseCase);
 //# sourceMappingURL=receive-goods.use-case.js.map

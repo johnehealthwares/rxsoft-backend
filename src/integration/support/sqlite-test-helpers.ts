@@ -4,12 +4,11 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import request from 'supertest';
+import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { ItemCategoryOrmEntity } from '../../modules/catalog/entities/item-category.orm-entity';
 import { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 import { PartyOrmEntity } from '../../modules/customers/entities/party.orm-entity';
-import { PermissionOrmEntity } from '../../modules/identity/entities/permission.orm-entity';
-import { RoleOrmEntity } from '../../modules/identity/entities/role.orm-entity';
 import { UserOrmEntity } from '../../modules/identity/entities/user.orm-entity';
 import {
   StockAdjustmentOrmEntity,
@@ -105,9 +104,7 @@ export type IntegrationTestContext = {
 };
 
 async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: SeededIds; repositories: Repositories }> {
-  const roleRepo = moduleFixture.get<Repository<RoleOrmEntity>>(getRepositoryToken(RoleOrmEntity));
   const userRepo = moduleFixture.get<Repository<UserOrmEntity>>(getRepositoryToken(UserOrmEntity));
-  const permissionRepo = moduleFixture.get<Repository<PermissionOrmEntity>>(getRepositoryToken(PermissionOrmEntity));
   const categoryRepo = moduleFixture.get<Repository<ItemCategoryOrmEntity>>(getRepositoryToken(ItemCategoryOrmEntity));
   const itemRepo = moduleFixture.get<Repository<ItemOrmEntity>>(getRepositoryToken(ItemOrmEntity));
   const stockLocationRepo = moduleFixture.get<Repository<StockLocationOrmEntity>>(getRepositoryToken(StockLocationOrmEntity));
@@ -134,52 +131,12 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
 
   const organizationId = 'org1';
 
-  const permissions = await permissionRepo.save([
-    permissionRepo.create({
-      code: 'users:manage',
-      resource: 'users',
-      action: 'manage',
-      description: 'Manage users',
-    }),
-    permissionRepo.create({
-      code: 'sales:manage',
-      resource: 'sales',
-      action: 'manage',
-      description: 'Manage sales',
-    }),
-  ]);
-
-  const [superAdminRole, adminRole, cashierRole] = await roleRepo.save([
-    roleRepo.create({
-      organizationId,
-      code: 'super_admin',
-      name: 'Super Admin',
-      description: 'System role',
-      permissions,
-    }),
-    roleRepo.create({
-      organizationId,
-      code: 'admin',
-      name: 'Admin',
-      description: 'Admin role',
-      permissions,
-    }),
-    roleRepo.create({
-      organizationId,
-      code: 'cashier',
-      name: 'Cashier',
-      description: 'Cashier role',
-      permissions: [],
-    }),
-  ]);
-
   const adminUser = await userRepo.save(
     userRepo.create({
       organizationId,
       username: 'admin',
       passwordHash: createHash('sha256').update('test123').digest('hex'),
       isActive: true,
-      roles: [superAdminRole],
     }),
   );
 
@@ -317,10 +274,8 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     }),
   );
 
-  // Link existing location to warehouse
   await stockLocationRepo.update(location.id, { warehouseId: warehouse.id });
 
-  // Seed sale_return store stock location for refunds
   await storeStockLocationRepo.save(
     storeStockLocationRepo.create({
       organizationId,
@@ -387,6 +342,7 @@ export async function createIntegrationTestContext(): Promise<IntegrationTestCon
   );
   await app.init();
 
+  const jwtService = app.get(JwtService);
   const seeded = await seedBaseData(moduleFixture);
 
   return {
@@ -396,15 +352,15 @@ export async function createIntegrationTestContext(): Promise<IntegrationTestCon
     repositories: seeded.repositories,
     httpApp: () => app.getHttpAdapter().getInstance(),
     loginAsAdmin: async () => {
-      const response = await request(app.getHttpAdapter().getInstance()).post('/auth/login').send({
-        username: 'admin',
-        password: 'test123',
-      });
-
-      return {
-        accessToken: response.body.accessToken as string,
-        refreshToken: response.body.refreshToken as string,
-      };
+      const accessToken = await jwtService.signAsync(
+        { sub: seeded.ids.adminUserId, organizationId: seeded.ids.organizationId, username: 'admin', roles: ['admin'], permissions: [] },
+        { secret: 'test-access-secret', expiresIn: '15m' },
+      );
+      const refreshToken = await jwtService.signAsync(
+        { sub: seeded.ids.adminUserId, organizationId: seeded.ids.organizationId, username: 'admin', roles: ['admin'], permissions: [] },
+        { secret: 'test-refresh-secret', expiresIn: '7d' },
+      );
+      return { accessToken, refreshToken };
     },
   };
 }

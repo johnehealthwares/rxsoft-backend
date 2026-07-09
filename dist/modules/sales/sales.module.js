@@ -12,7 +12,6 @@ const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const typeorm_1 = require("@nestjs/typeorm");
 const item_orm_entity_1 = require("../catalog/entities/item.orm-entity");
-const user_orm_entity_1 = require("../identity/entities/user.orm-entity");
 const stock_lot_orm_entity_1 = require("../inventory/entities/stock-lot.orm-entity");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
@@ -32,6 +31,8 @@ const payment_methods_service_1 = require("./services/payment-methods.service");
 const uom_categories_service_1 = require("./services/uom-categories.service");
 const uom_converter_service_1 = require("./services/uom-converter.service");
 const sales_di_tokens_1 = require("./services/sales.di-tokens");
+const users_proxy_module_1 = require("../users-proxy/users-proxy.module");
+const accounting_module_1 = require("../accounting/accounting.module");
 const salesConfigService = new config_1.ConfigService();
 const useInMemoryRepos = salesConfigService.get('USE_IN_MEMORY_REPOS', 'false') === 'true';
 const salesPersistenceImports = useInMemoryRepos
@@ -49,7 +50,6 @@ const salesPersistenceImports = useInMemoryRepos
             entities_1.UomOrmEntity,
             item_orm_entity_1.ItemOrmEntity,
             stock_lot_orm_entity_1.StockLotOrmEntity,
-            user_orm_entity_1.UserOrmEntity,
         ]),
     ];
 const salesRepositoryProviders = useInMemoryRepos
@@ -72,7 +72,7 @@ let SalesModule = class SalesModule {
 exports.SalesModule = SalesModule;
 exports.SalesModule = SalesModule = __decorate([
     (0, common_1.Module)({
-        imports: [jwt_1.JwtModule.register({}), ...salesPersistenceImports],
+        imports: [jwt_1.JwtModule.register({}), users_proxy_module_1.UsersProxyModule, accounting_module_1.AccountingModule, ...salesPersistenceImports],
         controllers: [sales_controller_1.SalesController, uoms_controller_1.UomsController, uom_categories_controller_1.UomCategoriesController, payment_methods_controller_1.PaymentMethodsController],
         providers: [
             list_sales_use_case_1.ListSalesUseCase,

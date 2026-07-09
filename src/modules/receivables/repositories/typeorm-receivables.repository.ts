@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
+import { UsersProxyService } from '../../users-proxy/users-proxy.service';
 import { AccountReceivableOrmEntity, PaymentMethodOrmEntity } from '../../sales/entities';
 import { AccountReceivable } from '../domains/account-receivable.entity';
 import { ReceivableTransaction } from '../domains/receivable-transaction.entity';
@@ -41,7 +41,7 @@ function toTransactionDomain(entity: ReceivableTransactionOrmEntity): Receivable
     entity.transactionDate,
     entity.paymentMethod?.id ?? null,
     entity.referenceNumber,
-    entity.receivedByUser?.id ?? null,
+    entity.receivedByUserId,
     entity.note,
   );
 }
@@ -52,6 +52,7 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
     @InjectRepository(AccountReceivableOrmEntity)
     private readonly receivableRepository: Repository<AccountReceivableOrmEntity>,
     private readonly dataSource: DataSource,
+    private readonly usersProxy: UsersProxyService,
   ) {}
 
   async list(query: ReceivableListQuery): Promise<{ items: AccountReceivable[]; total: number }> {
@@ -76,25 +77,18 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
   }
 
   async collectPayment(payload: CollectPaymentPayload): Promise<CollectPaymentResult> {
+    await this.usersProxy.findById(payload.organizationId, payload.receivedByUserId);
+
     return this.dataSource.transaction(async (manager) => {
       const receivableRepo = manager.getRepository(AccountReceivableOrmEntity);
       const txnRepo = manager.getRepository(ReceivableTransactionOrmEntity);
       const paymentMethodRepo = manager.getRepository(PaymentMethodOrmEntity);
-      const userRepo = manager.getRepository(UserOrmEntity);
 
-      // Validate foreign references in the same tenant scope before write.
       const paymentMethod = await paymentMethodRepo.findOne({
         where: { id: payload.paymentMethodId, organizationId: payload.organizationId },
       });
       if (!paymentMethod) {
         throw new NotFoundException('Payment method not found');
-      }
-
-      const receiver = await userRepo.findOne({
-        where: { id: payload.receivedByUserId, organizationId: payload.organizationId },
-      });
-      if (!receiver) {
-        throw new NotFoundException('Receiver user not found');
       }
 
       const receivable = await receivableRepo.findOne({
@@ -130,7 +124,7 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
         transactionDate: payload.transactionDate,
         paymentMethod,
         referenceNumber: payload.referenceNumber,
-        receivedByUser: receiver,
+        receivedByUserId: payload.receivedByUserId,
         note: payload.note,
       });
       const savedTransaction = await txnRepo.save(transaction);
@@ -143,17 +137,11 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
   }
 
   async applyAdjustment(payload: ApplyAdjustmentPayload): Promise<CollectPaymentResult> {
+    await this.usersProxy.findById(payload.organizationId, payload.adjustedByUserId);
+
     return this.dataSource.transaction(async (manager) => {
       const receivableRepo = manager.getRepository(AccountReceivableOrmEntity);
       const txnRepo = manager.getRepository(ReceivableTransactionOrmEntity);
-      const userRepo = manager.getRepository(UserOrmEntity);
-
-      const actor = await userRepo.findOne({
-        where: { id: payload.adjustedByUserId, organizationId: payload.organizationId },
-      });
-      if (!actor) {
-        throw new NotFoundException('Adjustment user not found');
-      }
 
       const receivable = await receivableRepo.findOne({
         where: { id: payload.receivableId, organizationId: payload.organizationId },
@@ -187,7 +175,7 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
         transactionDate: payload.transactionDate,
         paymentMethod: null,
         referenceNumber: payload.referenceNumber,
-        receivedByUser: actor,
+        receivedByUserId: payload.adjustedByUserId,
         note: payload.note,
       });
       const savedTransaction = await txnRepo.save(transaction);
@@ -200,17 +188,11 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
   }
 
   async writeOff(payload: WriteOffPayload): Promise<CollectPaymentResult> {
+    await this.usersProxy.findById(payload.organizationId, payload.writtenOffByUserId);
+
     return this.dataSource.transaction(async (manager) => {
       const receivableRepo = manager.getRepository(AccountReceivableOrmEntity);
       const txnRepo = manager.getRepository(ReceivableTransactionOrmEntity);
-      const userRepo = manager.getRepository(UserOrmEntity);
-
-      const actor = await userRepo.findOne({
-        where: { id: payload.writtenOffByUserId, organizationId: payload.organizationId },
-      });
-      if (!actor) {
-        throw new NotFoundException('Write-off user not found');
-      }
 
       const receivable = await receivableRepo.findOne({
         where: { id: payload.receivableId, organizationId: payload.organizationId },
@@ -238,7 +220,7 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
         transactionDate: payload.transactionDate,
         paymentMethod: null,
         referenceNumber: null,
-        receivedByUser: actor,
+        receivedByUserId: payload.writtenOffByUserId,
         note: payload.note,
       });
       const savedTransaction = await txnRepo.save(transaction);
@@ -259,7 +241,6 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
       .createQueryBuilder('transaction')
       .innerJoinAndSelect('transaction.receivable', 'receivable')
       .leftJoinAndSelect('transaction.paymentMethod', 'paymentMethod')
-      .leftJoinAndSelect('transaction.receivedByUser', 'receivedByUser')
       .where('receivable.organizationId = :organizationId', { organizationId: query.organizationId })
       .andWhere('receivable.id = :receivableId', { receivableId: query.receivableId })
       .orderBy('transaction.transactionDate', 'DESC')

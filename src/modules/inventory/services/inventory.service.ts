@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import type { StockBalanceType } from '../../../shared/domain';
 import { toStockBalanceType } from '../../../shared/domain/mappers';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
+import { AccountingIntegrationService } from '../../accounting/services/accounting-integration.service';
 import type { InventoryRepository } from '../repositories/inventory.repository';
 import { AdjustStockByReferenceDto } from '../dto/stock-locations.dto';
 import { CreateStockTransferDto } from '../dto/create-stock-transfer.dto';
@@ -10,9 +11,13 @@ import { INVENTORY_REPOSITORY } from './inventory.di-tokens';
 
 @Injectable()
 export class InventoryService {
+  private readonly logger = new Logger(InventoryService.name);
+
   constructor(
     @Inject(INVENTORY_REPOSITORY)
     private readonly inventoryRepository: InventoryRepository,
+    @Optional()
+    private readonly accountingIntegration?: AccountingIntegrationService,
   ) {}
 
   async list(query: ListQueryDto): Promise<{ data: Array<Record<string, unknown>>; total: number }> {
@@ -67,6 +72,17 @@ export class InventoryService {
       reorderMaxQty: payload.reorderMaxQty ?? null,
     });
 
+    if (this.accountingIntegration) {
+      this.accountingIntegration
+        .recordStockAdjustment(organizationId, {
+          stockBalanceId: stockBalance.id,
+          deltaQuantity: payload.deltaQuantity,
+          reason: payload.reason,
+          averageCost: stockBalance.averageCost,
+        })
+        .catch((err: Error) => this.logger.error(`Accounting: failed to record adjust-by-ref: ${err.message}`, err.stack));
+    }
+
     return toStockBalanceType(stockBalance);
   }
 
@@ -85,6 +101,17 @@ export class InventoryService {
       reason: payload.reason ?? 'stock_transfer',
       performedByUserId,
     });
+
+    if (this.accountingIntegration) {
+      this.accountingIntegration
+        .recordStockTransfer(organizationId, {
+          itemId: payload.itemId,
+          quantity: payload.quantity,
+          fromLocationId: payload.fromLocationId,
+          toLocationId: payload.toLocationId,
+        })
+        .catch((err: Error) => this.logger.error(`Accounting: failed to record stock transfer: ${err.message}`, err.stack));
+    }
 
     return {
       fromBalance: toStockBalanceType(result.fromBalance),

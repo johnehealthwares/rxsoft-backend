@@ -1,4 +1,4 @@
-import { OrderOrmEntity } from './order.orm-entity';
+import type { OrderOrmEntity } from './order.orm-entity';
 export declare class DeliveryOrmEntity {
     id: string;
     order: OrderOrmEntity;

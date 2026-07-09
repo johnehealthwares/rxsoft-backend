@@ -1,5 +1,5 @@
-import { LgaOrmEntity } from './lga.orm-entity';
-import { PollingUnitOrmEntity } from './polling-unit.orm-entity';
+import type { LgaOrmEntity } from './lga.orm-entity';
+import type { PollingUnitOrmEntity } from './polling-unit.orm-entity';
 export declare class WardOrmEntity {
     id: string;
     name: string;

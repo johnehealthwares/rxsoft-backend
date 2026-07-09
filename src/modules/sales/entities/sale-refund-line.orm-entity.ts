@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { SaleLineOrmEntity } from './sale-line.orm-entity';
-import { SaleRefundOrmEntity } from './sale-refund.orm-entity';
+import type { SaleRefundOrmEntity } from './sale-refund.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
 @Entity('sale_refund_lines')
@@ -9,7 +9,7 @@ export class SaleRefundLineOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => SaleRefundOrmEntity, (refund) => refund.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne('SaleRefundOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'refund_id' })
   refund!: SaleRefundOrmEntity;
 

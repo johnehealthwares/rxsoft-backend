@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { PriceListItemOrmEntity } from './price-list-item.orm-entity';
+import type { PriceListItemOrmEntity } from './price-list-item.orm-entity';
 
 @Entity('price_lists')
 @Unique('uq_price_lists_org_code', ['organizationId', 'code'])
@@ -22,7 +22,7 @@ export class PriceListOrmEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @OneToMany(() => PriceListItemOrmEntity, (item) => item.priceList)
+  @OneToMany('PriceListItemOrmEntity', 'priceList')
   items!: PriceListItemOrmEntity[];
 
   @CreateDateColumn({ name: 'created_at' })

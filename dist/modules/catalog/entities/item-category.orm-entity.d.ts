@@ -1,4 +1,4 @@
-import { ItemOrmEntity } from './item.orm-entity';
+import type { ItemOrmEntity } from './item.orm-entity';
 export declare class ItemCategoryOrmEntity {
     id: string;
     organizationId: string;

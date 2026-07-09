@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { ItemCategoryOrmEntity } from './item-category.orm-entity';
-import { UomOrmEntity } from '../../sales/entities';
+import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 
 @Entity('items')
 @Unique('uq_items_org_code', ['organizationId', 'code'])

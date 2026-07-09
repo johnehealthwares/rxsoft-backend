@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { StockBalanceOrmEntity } from './stock-balance.orm-entity';
-import { WarehouseOrmEntity } from './warehouse.orm-entity';
+import type { StockBalanceOrmEntity } from './stock-balance.orm-entity';
+import type { WarehouseOrmEntity } from './warehouse.orm-entity';
 
 @Entity('stock_locations')
 @Unique('uq_stock_locations_org_name', ['organizationId', 'name'])
@@ -14,7 +14,7 @@ export class StockLocationOrmEntity {
   @Column({ name: 'warehouse_id', type: 'text', nullable: true })
   warehouseId!: string | null;
 
-  @ManyToOne(() => WarehouseOrmEntity, (warehouse) => warehouse.stockLocations, { nullable: true })
+  @ManyToOne('WarehouseOrmEntity', 'stockLocations', { nullable: true })
   @JoinColumn({ name: 'warehouse_id' })
   warehouse!: WarehouseOrmEntity | null;
 
@@ -47,7 +47,7 @@ export class StockLocationOrmEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @OneToMany(() => StockBalanceOrmEntity, (stockBalance) => stockBalance.location)
+  @OneToMany('StockBalanceOrmEntity', 'location')
   stockBalances!: StockBalanceOrmEntity[];
 
   @CreateDateColumn({ name: 'created_at'/* timestamptzz */ })

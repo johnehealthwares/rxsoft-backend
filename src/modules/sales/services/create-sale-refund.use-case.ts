@@ -1,16 +1,21 @@
-import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { AppCacheService } from '../../../common/cache/cache.service';
+import { AccountingIntegrationService } from '../../accounting/services/accounting-integration.service';
 import { CreateSaleRefundDto } from '../dto/create-sale-refund.dto';
 import type { SalesRepository } from '../repositories/sales.repository';
 import { SALES_REPOSITORY } from './sales.di-tokens';
 
 @Injectable()
 export class CreateSaleRefundUseCase {
+  private readonly logger = new Logger(CreateSaleRefundUseCase.name);
+
   constructor(
     @Inject(SALES_REPOSITORY)
     private readonly salesRepository: SalesRepository,
     @Optional()
     private readonly cacheService?: AppCacheService,
+    @Optional()
+    private readonly accountingIntegration?: AccountingIntegrationService,
   ) {}
 
   async execute(
@@ -37,6 +42,18 @@ export class CreateSaleRefundUseCase {
     });
 
     await this.cacheService?.invalidateByPrefix(`sales:list:${organizationId}:`);
+
+    if (this.accountingIntegration) {
+      this.accountingIntegration
+        .recordSaleRefund(organizationId, {
+          id: result.id,
+          saleId,
+          totalAmount: result.totalAmount,
+          refundNumber: result.refundNumber,
+        })
+        .catch((err: Error) => this.logger.error(`Accounting: failed to record refund: ${err.message}`, err.stack));
+    }
+
     return result;
   }
 }

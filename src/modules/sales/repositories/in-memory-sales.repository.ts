@@ -14,6 +14,11 @@ import {
 
 @Injectable()
 export class InMemorySalesRepository implements SalesRepository {
+  async findById(organizationId: string, saleId: string): Promise<Sale | null> {
+    const sale = this.sales.find((s) => s.organizationId === organizationId && s.id === saleId);
+    return sale ?? null;
+  }
+
   async findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null> {
     const sale = this.sales.find((s) => s.organizationId === organizationId);
     return sale ? { saleNumber: sale.saleNumber } : null;

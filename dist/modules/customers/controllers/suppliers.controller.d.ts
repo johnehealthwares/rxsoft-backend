@@ -1,7 +1,7 @@
 import { CreateSupplierDto } from '../dto/create-supplier.dto';
 import { SuppliersService } from '../services/suppliers.service';
-import { ListQueryDto } from 'src/shared/dto/list-query.dto';
-import { PartyType } from 'src/shared/domain';
+import { ListQueryDto } from "../../../shared/dto/list-query.dto";
+import { PartyType } from "../../../shared/domain";
 type SupplierListResponse = {
     data: PartyType[];
     meta: {

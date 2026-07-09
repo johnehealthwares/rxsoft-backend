@@ -10,339 +10,6 @@ paths:
       summary: Health check
       tags:
         - health
-  /api/auth/login:
-    post:
-      operationId: AuthController_login
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginDto'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponseDto'
-      summary: Authenticate and issue access/refresh tokens
-      tags: &ref_0
-        - auth
-  /api/auth/refresh-token:
-    post:
-      operationId: AuthController_refreshToken
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshTokenDto'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponseDto'
-      summary: Rotate refresh token and issue a new token pair
-      tags: *ref_0
-  /api/auth/me:
-    get:
-      operationId: AuthController_me
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MeResponseDto'
-      security:
-        - bearer: []
-      summary: Get current user profile with accessible modules
-      tags: *ref_0
-  /api/users:
-    post:
-      operationId: UsersController_create
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserDto'
-      responses:
-        '201':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponseDto'
-      security: &ref_1
-        - bearer: []
-      summary: Create a user account
-      tags: &ref_2
-        - users
-    get:
-      operationId: UsersController_list
-      parameters:
-        - name: page
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: limit
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-      responses:
-        '200':
-          description: ''
-      security: *ref_1
-      summary: List users with pagination
-      tags: *ref_2
-  /api/users/{id}:
-    get:
-      operationId: UsersController_getById
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponseDto'
-      security: *ref_1
-      summary: Get user by ID
-      tags: *ref_2
-    put:
-      operationId: UsersController_update
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateUserDto'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponseDto'
-      security: *ref_1
-      summary: Update a user
-      tags: *ref_2
-    delete:
-      operationId: UsersController_delete
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '204':
-          description: ''
-      security: *ref_1
-      summary: Delete a user
-      tags: *ref_2
-  /api/users/{userId}/roles:
-    patch:
-      operationId: UsersController_assignRole
-      parameters:
-        - name: userId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AssignRoleDto'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponseDto'
-      security: *ref_1
-      summary: Assign role to user
-      tags: *ref_2
-  /api/roles:
-    post:
-      operationId: RolesController_create
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateRoleDto'
-      responses:
-        '201':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoleResponseDto'
-      security: &ref_3
-        - bearer: []
-      summary: Create a role
-      tags: &ref_4
-        - roles
-    get:
-      operationId: RolesController_list
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RoleResponseDto'
-      security: *ref_3
-      summary: List all roles
-      tags: *ref_4
-  /api/roles/{id}:
-    get:
-      operationId: RolesController_getById
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoleResponseDto'
-      security: *ref_3
-      summary: Get a role by ID
-      tags: *ref_4
-    put:
-      operationId: RolesController_update
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRoleDto'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RoleResponseDto'
-      security: *ref_3
-      summary: Update a role
-      tags: *ref_4
-    delete:
-      operationId: RolesController_delete
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '204':
-          description: ''
-      security: *ref_3
-      summary: Delete a role
-      tags: *ref_4
-  /api/permissions/modules:
-    get:
-      operationId: PermissionsController_listModules
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      security:
-        - bearer: []
-      summary: Get all permissions grouped by module
-      tags:
-        - permissions
-  /api/organisation-config:
-    get:
-      operationId: OrganisationConfigController_getConfig
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      security: &ref_5
-        - bearer: []
-      tags: &ref_6
-        - organisation-config
-    patch:
-      operationId: OrganisationConfigController_updateConfig
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateOrganisationConfigDto'
-      responses:
-        '200':
-          description: ''
-      security: *ref_5
-      tags: *ref_6
-  /api/user-pos-config/me:
-    get:
-      operationId: UserPosConfigController_getMyConfig
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      security: &ref_7
-        - bearer: []
-      tags: &ref_8
-        - user-pos-config
-    patch:
-      operationId: UserPosConfigController_updateMyConfig
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateUserPosConfigDto'
-      responses:
-        '200':
-          description: ''
-      security: *ref_7
-      tags: *ref_8
   /api/items:
     get:
       operationId: ItemsController_list
@@ -351,12 +18,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -403,10 +77,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_9
+      security: &ref_0
         - bearer: []
       summary: List items with pagination, filtering and sorting
-      tags: &ref_10
+      tags: &ref_1
         - items
     post:
       operationId: ItemsController_create
@@ -424,9 +98,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_9
+      security: *ref_0
       summary: Create a catalog item
-      tags: *ref_10
+      tags: *ref_1
   /api/items/dependencies/categories:
     get:
       operationId: ItemsController_listCategories
@@ -435,12 +109,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -450,9 +131,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
+      security: *ref_0
       summary: Search item categories by name or code
-      tags: *ref_10
+      tags: *ref_1
   /api/items/dependencies/generic-products:
     get:
       operationId: ItemsController_listGenericProducts
@@ -461,12 +142,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -476,9 +164,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
+      security: *ref_0
       summary: Search generic products by name or code
-      tags: *ref_10
+      tags: *ref_1
   /api/items/dependencies/uoms:
     get:
       operationId: ItemsController_listUoms
@@ -487,12 +175,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -502,9 +197,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
+      security: *ref_0
       summary: Search UOMs by name or code
-      tags: *ref_10
+      tags: *ref_1
   /api/items/metrics:
     get:
       operationId: ItemsController_metrics
@@ -513,12 +208,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -565,9 +267,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
+      security: *ref_0
       summary: Get item metrics
-      tags: *ref_10
+      tags: *ref_1
   /api/items/{itemId}:
     get:
       operationId: ItemsController_get
@@ -584,9 +286,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_9
+      security: *ref_0
       summary: Get item details by id
-      tags: *ref_10
+      tags: *ref_1
     put:
       operationId: ItemsController_replace
       parameters:
@@ -608,9 +310,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_9
+      security: *ref_0
       summary: Replace a catalog item (full update)
-      tags: *ref_10
+      tags: *ref_1
     patch:
       operationId: ItemsController_patch
       parameters:
@@ -632,9 +334,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResponseDto'
-      security: *ref_9
+      security: *ref_0
       summary: Partially update a catalog item
-      tags: *ref_10
+      tags: *ref_1
   /api/items/{itemId}/uoms:
     get:
       operationId: ItemsController_listItemUoms
@@ -647,9 +349,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_9
+      security: *ref_0
       summary: List available UOMs for an item (same category as base UOM)
-      tags: *ref_10
+      tags: *ref_1
   /api/generic-products:
     get:
       operationId: GenericProductsController_list
@@ -658,12 +360,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -674,7 +380,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -699,10 +407,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_11
+      security: &ref_2
         - bearer: []
       summary: List generic products
-      tags: &ref_12
+      tags: &ref_3
         - generic-products
     post:
       operationId: GenericProductsController_create
@@ -716,8 +424,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_2
+      tags: *ref_3
   /api/generic-products/search:
     get:
       operationId: GenericProductsController_search
@@ -726,12 +434,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -742,7 +454,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -767,8 +481,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_2
+      tags: *ref_3
   /api/generic-products/{genericProductId}:
     get:
       operationId: GenericProductsController_get
@@ -781,8 +495,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_2
+      tags: *ref_3
     put:
       operationId: GenericProductsController_replace
       parameters:
@@ -800,8 +514,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_2
+      tags: *ref_3
     patch:
       operationId: GenericProductsController_patch
       parameters:
@@ -819,8 +533,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_11
-      tags: *ref_12
+      security: *ref_2
+      tags: *ref_3
   /api/pharmaceutics:
     get:
       operationId: PharmaceuticsController_list
@@ -829,12 +543,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -845,7 +563,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -870,9 +590,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_13
+      security: &ref_4
         - bearer: []
-      tags: &ref_14
+      tags: &ref_5
         - pharmaceutics
     post:
       operationId: PharmaceuticsController_create
@@ -886,8 +606,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_13
-      tags: *ref_14
+      security: *ref_4
+      tags: *ref_5
   /api/pharmaceutics/{pharmaceuticsId}:
     get:
       operationId: PharmaceuticsController_get
@@ -900,8 +620,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_13
-      tags: *ref_14
+      security: *ref_4
+      tags: *ref_5
     put:
       operationId: PharmaceuticsController_replace
       parameters:
@@ -919,8 +639,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_13
-      tags: *ref_14
+      security: *ref_4
+      tags: *ref_5
     patch:
       operationId: PharmaceuticsController_patch
       parameters:
@@ -938,8 +658,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_13
-      tags: *ref_14
+      security: *ref_4
+      tags: *ref_5
     delete:
       operationId: PharmaceuticsController_remove
       parameters:
@@ -951,8 +671,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_13
-      tags: *ref_14
+      security: *ref_4
+      tags: *ref_5
   /api/drug-components:
     get:
       operationId: DrugComponentsController_list
@@ -961,12 +681,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -977,7 +701,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1002,9 +728,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_15
+      security: &ref_6
         - bearer: []
-      tags: &ref_16
+      tags: &ref_7
         - drug-components
     post:
       operationId: DrugComponentsController_create
@@ -1018,8 +744,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_6
+      tags: *ref_7
   /api/drug-components/{drugComponentId}:
     get:
       operationId: DrugComponentsController_get
@@ -1032,8 +758,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_6
+      tags: *ref_7
     put:
       operationId: DrugComponentsController_replace
       parameters:
@@ -1051,8 +777,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_6
+      tags: *ref_7
     patch:
       operationId: DrugComponentsController_patch
       parameters:
@@ -1070,8 +796,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_6
+      tags: *ref_7
     delete:
       operationId: DrugComponentsController_remove
       parameters:
@@ -1083,8 +809,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_15
-      tags: *ref_16
+      security: *ref_6
+      tags: *ref_7
   /api/inventory/stock-balances:
     get:
       operationId: InventoryController_listStockBalances
@@ -1093,12 +819,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: itemId
           required: false
           in: query
@@ -1112,10 +845,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_17
+      security: &ref_8
         - bearer: []
       summary: List stock balances with pagination and filters
-      tags: &ref_18
+      tags: &ref_9
         - inventory
   /api/inventory/stock-movements:
     get:
@@ -1125,12 +858,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: movementType
           required: false
           in: query
@@ -1141,12 +881,89 @@ paths:
               - out
               - transfer
               - adjustment
+        - name: itemId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: fromDate
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: toDate
+          required: false
+          in: query
+          schema:
+            type: string
       responses:
         '200':
           description: ''
-      security: *ref_17
+      security: *ref_8
       summary: List stock movements with pagination and optional movement type filter
-      tags: *ref_18
+      tags: *ref_9
+  /api/inventory/stock-movements/export:
+    get:
+      operationId: InventoryController_exportStockMovements
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: movementType
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - in
+              - out
+              - transfer
+              - adjustment
+        - name: itemId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: fromDate
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: toDate
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_8
+      summary: Export stock movements as CSV
+      tags: *ref_9
   /api/inventory/adjustments:
     post:
       operationId: InventoryController_createAdjustment
@@ -1160,9 +977,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_17
+      security: *ref_8
       summary: Apply stock adjustment to an existing stock balance record
-      tags: *ref_18
+      tags: *ref_9
   /api/inventory/adjust-quantity:
     post:
       operationId: InventoryController_adjustQuantity
@@ -1176,11 +993,11 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_17
+      security: *ref_8
       summary: >-
         Adjust stock quantity by product and location, creating balance if
         needed
-      tags: *ref_18
+      tags: *ref_9
   /api/inventory/transfers:
     post:
       operationId: InventoryController_transferStock
@@ -1194,9 +1011,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_17
+      security: *ref_8
       summary: Transfer stock between locations
-      tags: *ref_18
+      tags: *ref_9
   /api/stock-locations:
     get:
       operationId: StockLocationsController_list
@@ -1205,12 +1022,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1221,7 +1042,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1256,10 +1079,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_19
+      security: &ref_10
         - bearer: []
       summary: List stock locations
-      tags: &ref_20
+      tags: &ref_11
         - stock-locations
     post:
       operationId: StockLocationsController_create
@@ -1273,8 +1096,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_10
+      tags: *ref_11
   /api/stock-locations/search:
     get:
       operationId: StockLocationsController_search
@@ -1283,12 +1106,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1299,7 +1126,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1334,8 +1163,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_10
+      tags: *ref_11
   /api/stock-locations/{stockLocationId}:
     get:
       operationId: StockLocationsController_get
@@ -1348,8 +1177,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_10
+      tags: *ref_11
     put:
       operationId: StockLocationsController_replace
       parameters:
@@ -1367,8 +1196,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
+      security: *ref_10
+      tags: *ref_11
     patch:
       operationId: StockLocationsController_patch
       parameters:
@@ -1386,22 +1215,26 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_19
-      tags: *ref_20
-  /api/price-lists:
+      security: *ref_10
+      tags: *ref_11
+  /api/journals:
     get:
-      operationId: PricingController_list
+      operationId: AccountingController_listJournals
       parameters:
         - name: page
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1412,7 +1245,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1437,10 +1272,573 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_21
+      security: &ref_12
+        - bearer: []
+      tags: &ref_13
+        - accounting
+    post:
+      operationId: AccountingController_createJournal
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/journals/{journalId}:
+    get:
+      operationId: AccountingController_getJournal
+      parameters:
+        - name: journalId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    patch:
+      operationId: AccountingController_updateJournal
+      parameters:
+        - name: journalId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    delete:
+      operationId: AccountingController_removeJournal
+      parameters:
+        - name: journalId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/journal-entries:
+    get:
+      operationId: AccountingController_listJournalEntries
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    post:
+      operationId: AccountingController_createJournalEntry
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalEntryDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/journal-entries/{entryId}:
+    get:
+      operationId: AccountingController_getJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    patch:
+      operationId: AccountingController_updateJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalEntryDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    delete:
+      operationId: AccountingController_removeJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/journal-entries/{entryId}/lines:
+    get:
+      operationId: AccountingController_listJournalEntryLines
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    post:
+      operationId: AccountingController_createJournalEntryLine
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalEntryLineDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/journal-entries/{entryId}/lines/{lineId}:
+    patch:
+      operationId: AccountingController_updateJournalEntryLine
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: lineId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalEntryLineDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    delete:
+      operationId: AccountingController_removeJournalEntryLine
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: lineId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/gl-accounts:
+    get:
+      operationId: AccountingController_listGlAccounts
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+        - name: accountType
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - asset
+              - liability
+              - equity
+              - income
+              - expense
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    post:
+      operationId: AccountingController_createGlAccount
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGlAccountDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/gl-accounts/{accountId}:
+    get:
+      operationId: AccountingController_getGlAccount
+      parameters:
+        - name: accountId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    patch:
+      operationId: AccountingController_updateGlAccount
+      parameters:
+        - name: accountId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGlAccountDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+    delete:
+      operationId: AccountingController_removeGlAccount
+      parameters:
+        - name: accountId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/journal-entries/{entryId}/post:
+    post:
+      operationId: AccountingController_postJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/journal-entries/{entryId}/reverse:
+    post:
+      operationId: AccountingController_reverseJournalEntry
+      parameters:
+        - name: entryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/reports/trial-balance:
+    get:
+      operationId: AccountingController_getTrialBalance
+      parameters:
+        - name: asOfDate
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/reports/balance-sheet:
+    get:
+      operationId: AccountingController_getBalanceSheet
+      parameters:
+        - name: asOfDate
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/reports/income-statement:
+    get:
+      operationId: AccountingController_getIncomeStatement
+      parameters:
+        - name: fromDate
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: toDate
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_12
+      tags: *ref_13
+  /api/price-lists:
+    get:
+      operationId: PricingController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_14
         - bearer: []
       summary: List price lists
-      tags: &ref_22
+      tags: &ref_15
         - price-lists
     post:
       operationId: PricingController_create
@@ -1454,8 +1852,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/price-lists/search:
     get:
       operationId: PricingController_search
@@ -1464,12 +1862,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1480,7 +1882,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1505,8 +1909,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/price-lists/items:
     post:
       operationId: PricingController_createItem
@@ -1520,8 +1924,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
     get:
       operationId: PricingController_listAllItems
       parameters:
@@ -1529,12 +1933,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1545,7 +1953,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1580,8 +1990,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/price-lists/{priceListId}:
     get:
       operationId: PricingController_get
@@ -1594,8 +2004,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
     put:
       operationId: PricingController_update
       parameters:
@@ -1613,8 +2023,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
     delete:
       operationId: PricingController_remove
       parameters:
@@ -1626,8 +2036,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/price-lists/{priceListId}/items:
     get:
       operationId: PricingController_listPriceListItems
@@ -1641,12 +2051,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1657,7 +2071,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1692,8 +2108,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/price-lists/{priceListId}/items/{priceListItemId}:
     patch:
       operationId: PricingController_updateItem
@@ -1717,8 +2133,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/price-lists/adjust-price:
     post:
       operationId: PricingController_adjustPrice
@@ -1732,8 +2148,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/price-lists/{priceListId}/items/{itemId}:
     delete:
       operationId: PricingController_removeItem
@@ -1751,8 +2167,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_21
-      tags: *ref_22
+      security: *ref_14
+      tags: *ref_15
   /api/categories:
     get:
       operationId: CategoriesController_list
@@ -1761,12 +2177,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1777,7 +2197,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1802,10 +2224,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_23
+      security: &ref_16
         - bearer: []
       summary: List categories with pagination/filter/sort
-      tags: &ref_24
+      tags: &ref_17
         - categories
     post:
       operationId: CategoriesController_create
@@ -1819,8 +2241,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_23
-      tags: *ref_24
+      security: *ref_16
+      tags: *ref_17
   /api/categories/metrics:
     get:
       operationId: CategoriesController_metrics
@@ -1828,8 +2250,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_23
-      tags: *ref_24
+      security: *ref_16
+      tags: *ref_17
   /api/categories/export:
     get:
       operationId: CategoriesController_export
@@ -1838,12 +2260,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1854,7 +2280,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1879,8 +2307,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_23
-      tags: *ref_24
+      security: *ref_16
+      tags: *ref_17
   /api/categories/{categoryId}:
     put:
       operationId: CategoriesController_replace
@@ -1899,8 +2327,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_23
-      tags: *ref_24
+      security: *ref_16
+      tags: *ref_17
     patch:
       operationId: CategoriesController_patch
       parameters:
@@ -1918,8 +2346,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_23
-      tags: *ref_24
+      security: *ref_16
+      tags: *ref_17
     get:
       operationId: CategoriesController_get
       parameters:
@@ -1931,8 +2359,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_23
-      tags: *ref_24
+      security: *ref_16
+      tags: *ref_17
     delete:
       operationId: CategoriesController_remove
       parameters:
@@ -1944,8 +2372,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_23
-      tags: *ref_24
+      security: *ref_16
+      tags: *ref_17
   /api/customers:
     get:
       operationId: CustomersController_list
@@ -1954,12 +2382,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -1970,7 +2402,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -1995,9 +2429,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_25
+      security: &ref_18
         - bearer: []
-      tags: &ref_26
+      tags: &ref_19
         - customers
     post:
       operationId: CustomersController_create
@@ -2011,8 +2445,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_25
-      tags: *ref_26
+      security: *ref_18
+      tags: *ref_19
   /api/customers/export:
     get:
       operationId: CustomersController_export
@@ -2021,12 +2455,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2037,7 +2475,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -2062,8 +2502,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_25
-      tags: *ref_26
+      security: *ref_18
+      tags: *ref_19
   /api/customers/{customerId}:
     put:
       operationId: CustomersController_replace
@@ -2082,8 +2522,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_25
-      tags: *ref_26
+      security: *ref_18
+      tags: *ref_19
     patch:
       operationId: CustomersController_patch
       parameters:
@@ -2101,8 +2541,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_25
-      tags: *ref_26
+      security: *ref_18
+      tags: *ref_19
     delete:
       operationId: CustomersController_remove
       parameters:
@@ -2114,8 +2554,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_25
-      tags: *ref_26
+      security: *ref_18
+      tags: *ref_19
   /api/suppliers:
     get:
       operationId: SuppliersController_list
@@ -2124,12 +2564,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2140,7 +2584,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -2165,9 +2611,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_27
+      security: &ref_20
         - bearer: []
-      tags: &ref_28
+      tags: &ref_21
         - suppliers
     post:
       operationId: SuppliersController_create
@@ -2181,9 +2627,30 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_27
+      security: *ref_20
       summary: Create a supplier
-      tags: *ref_28
+      tags: *ref_21
+  /api/sales/{saleId}:
+    get:
+      operationId: SalesController_getSale
+      parameters:
+        - name: saleId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleDetailResponseDto'
+      security: &ref_22
+        - bearer: []
+      summary: Get sale detail by ID
+      tags: &ref_23
+        - sales
   /api/sales:
     get:
       operationId: SalesController_listSales
@@ -2192,12 +2659,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2216,11 +2690,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_29
-        - bearer: []
+      security: *ref_22
       summary: List sales with pagination and optional status filter
-      tags: &ref_30
-        - sales
+      tags: *ref_23
     post:
       operationId: SalesController_createSale
       parameters: []
@@ -2237,9 +2709,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSaleResponseDto'
-      security: *ref_29
+      security: *ref_22
       summary: Create posted sale and receivable on underpayment
-      tags: *ref_30
+      tags: *ref_23
   /api/sales/metrics:
     get:
       operationId: SalesController_metrics
@@ -2248,12 +2720,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2272,9 +2751,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_29
+      security: *ref_22
       summary: Get sales metrics
-      tags: *ref_30
+      tags: *ref_23
   /api/sales/{saleId}/refunds:
     post:
       operationId: SalesController_createRefund
@@ -2297,9 +2776,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSaleRefundResponseDto'
-      security: *ref_29
+      security: *ref_22
       summary: Create sale refund with quantity validation against original sale lines
-      tags: *ref_30
+      tags: *ref_23
   /api/uoms:
     get:
       operationId: UomsController_list
@@ -2308,12 +2787,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2356,10 +2842,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_31
+      security: &ref_24
         - bearer: []
       summary: List/search UOMs by name or code
-      tags: &ref_32
+      tags: &ref_25
         - uoms
     post:
       operationId: UomsController_create
@@ -2373,9 +2859,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_31
+      security: *ref_24
       summary: Create UOM
-      tags: *ref_32
+      tags: *ref_25
   /api/uoms/{uomId}:
     get:
       operationId: UomsController_getById
@@ -2388,9 +2874,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_31
+      security: *ref_24
       summary: Get UOM by id
-      tags: *ref_32
+      tags: *ref_25
     put:
       operationId: UomsController_replace
       parameters:
@@ -2408,9 +2894,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_31
+      security: *ref_24
       summary: Update UOM
-      tags: *ref_32
+      tags: *ref_25
     patch:
       operationId: UomsController_patch
       parameters:
@@ -2428,9 +2914,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_31
+      security: *ref_24
       summary: Patch UOM
-      tags: *ref_32
+      tags: *ref_25
   /api/uom-categories:
     get:
       operationId: UomCategoriesController_list
@@ -2439,12 +2925,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2453,10 +2946,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_33
+      security: &ref_26
         - bearer: []
       summary: List/search UOM categories
-      tags: &ref_34
+      tags: &ref_27
         - uom-categories
     post:
       operationId: UomCategoriesController_create
@@ -2470,8 +2963,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_26
+      tags: *ref_27
   /api/uom-categories/{categoryId}:
     get:
       operationId: UomCategoriesController_get
@@ -2484,8 +2977,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_26
+      tags: *ref_27
     put:
       operationId: UomCategoriesController_replace
       parameters:
@@ -2503,8 +2996,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_26
+      tags: *ref_27
     patch:
       operationId: UomCategoriesController_patch
       parameters:
@@ -2522,8 +3015,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_33
-      tags: *ref_34
+      security: *ref_26
+      tags: *ref_27
   /api/payment-methods:
     get:
       operationId: PaymentMethodsController_list
@@ -2532,12 +3025,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2548,7 +3045,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -2573,9 +3072,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_35
+      security: &ref_28
         - bearer: []
-      tags: &ref_36
+      tags: &ref_29
         - payment-methods
     post:
       operationId: PaymentMethodsController_create
@@ -2589,8 +3088,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_35
-      tags: *ref_36
+      security: *ref_28
+      tags: *ref_29
   /api/payment-methods/{paymentMethodId}:
     get:
       operationId: PaymentMethodsController_get
@@ -2603,8 +3102,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_35
-      tags: *ref_36
+      security: *ref_28
+      tags: *ref_29
     put:
       operationId: PaymentMethodsController_replace
       parameters:
@@ -2622,8 +3121,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_35
-      tags: *ref_36
+      security: *ref_28
+      tags: *ref_29
     patch:
       operationId: PaymentMethodsController_patch
       parameters:
@@ -2641,8 +3140,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_35
-      tags: *ref_36
+      security: *ref_28
+      tags: *ref_29
     delete:
       operationId: PaymentMethodsController_remove
       parameters:
@@ -2654,8 +3153,272 @@ paths:
       responses:
         '200':
           description: ''
+      security: *ref_28
+      tags: *ref_29
+  /api/users:
+    get:
+      operationId: UsersProxyController_list
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_30
+        - bearer: []
+      summary: List users (proxied from rxsoft-identity)
+      tags: &ref_31
+        - users-proxy
+  /api/users/{id}:
+    get:
+      operationId: UsersProxyController_get
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_30
+      summary: Get user by ID (proxied from rxsoft-identity)
+      tags: *ref_31
+    put:
+      operationId: UsersProxyController_update
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_30
+      summary: Update user (proxied to identity; posConfig saved locally)
+      tags: *ref_31
+    post:
+      operationId: UsersProxyController_updateViaPost
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_30
+      summary: Update user via POST (proxied to identity; posConfig saved locally)
+      tags: *ref_31
+  /api/auth/login:
+    post:
+      operationId: AuthProxyController_login
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Login (proxied to rxsoft-identity)
+      tags: &ref_32
+        - auth-proxy
+  /api/auth/refresh-token:
+    post:
+      operationId: AuthProxyController_refreshToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Refresh token (proxied to rxsoft-identity)
+      tags: *ref_32
+  /api/auth/me:
+    get:
+      operationId: AuthProxyController_me
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearer: []
+      summary: Get current user (proxied to rxsoft-identity)
+      tags: *ref_32
+  /api/permissions/modules:
+    get:
+      operationId: RolesProxyController_listModules
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_33
+        - bearer: []
+      summary: List all permissions grouped by module (proxied from rxsoft-identity)
+      tags: &ref_34
+        - roles-proxy
+  /api/roles:
+    post:
+      operationId: RolesProxyController_create
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_33
+      summary: Create a role (proxied from rxsoft-identity)
+      tags: *ref_34
+    get:
+      operationId: RolesProxyController_list
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_33
+      summary: List roles (proxied from rxsoft-identity)
+      tags: *ref_34
+  /api/roles/{id}:
+    get:
+      operationId: RolesProxyController_get
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_33
+      summary: Get a role by ID (proxied from rxsoft-identity)
+      tags: *ref_34
+    put:
+      operationId: RolesProxyController_update
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_33
+      summary: Update a role (proxied from rxsoft-identity)
+      tags: *ref_34
+    delete:
+      operationId: RolesProxyController_delete
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+      security: *ref_33
+      summary: Delete a role (proxied from rxsoft-identity)
+      tags: *ref_34
+  /api/user-pos-config/me:
+    get:
+      operationId: UserPosConfigController_getMyConfig
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_35
+        - bearer: []
+      tags: &ref_36
+        - user-pos-config
+    patch:
+      operationId: UserPosConfigController_updateMyConfig
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserPosConfigDto'
+      responses:
+        '200':
+          description: ''
       security: *ref_35
       tags: *ref_36
+  /api/organisation-config:
+    get:
+      operationId: OrganisationConfigController_getConfig
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_37
+        - bearer: []
+      tags: &ref_38
+        - organisation-config
+    patch:
+      operationId: OrganisationConfigController_updateConfig
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganisationConfigDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_37
+      tags: *ref_38
   /api/receivables:
     get:
       operationId: ReceivablesController_list
@@ -2664,12 +3427,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: status
           required: false
           in: query
@@ -2688,10 +3458,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_37
+      security: &ref_39
         - bearer: []
       summary: List receivables with pagination and filters
-      tags: &ref_38
+      tags: &ref_40
         - receivables
   /api/receivables/{receivableId}/transactions:
     get:
@@ -2706,12 +3476,19 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: transactionType
           required: false
           in: query
@@ -2725,9 +3502,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_37
+      security: *ref_39
       summary: List receivable transactions with pagination and optional type filter
-      tags: *ref_38
+      tags: *ref_40
   /api/receivables/{receivableId}/payments:
     post:
       operationId: ReceivablesController_collectPayment
@@ -2746,9 +3523,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_37
+      security: *ref_39
       summary: Collect payment against an open receivable
-      tags: *ref_38
+      tags: *ref_40
   /api/receivables/{receivableId}/adjustments:
     post:
       operationId: ReceivablesController_applyAdjustment
@@ -2767,9 +3544,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_37
+      security: *ref_39
       summary: Apply signed adjustment to a receivable and record ledger entry
-      tags: *ref_38
+      tags: *ref_40
   /api/receivables/{receivableId}/write-off:
     post:
       operationId: ReceivablesController_writeOff
@@ -2788,9 +3565,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_37
+      security: *ref_39
       summary: Write off receivable outstanding amount and close it
-      tags: *ref_38
+      tags: *ref_40
   /api/purchases:
     get:
       operationId: PurchasesController_list
@@ -2799,12 +3576,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -2815,7 +3596,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -2840,9 +3623,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_39
+      security: &ref_41
         - bearer: []
-      tags: &ref_40
+      tags: &ref_42
         - purchases
     post:
       operationId: PurchasesController_create
@@ -2856,8 +3639,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
   /api/purchases/{purchaseId}:
     get:
       operationId: PurchasesController_getById
@@ -2870,8 +3653,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
     put:
       operationId: PurchasesController_replace
       parameters:
@@ -2889,8 +3672,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
     patch:
       operationId: PurchasesController_patch
       parameters:
@@ -2908,8 +3691,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
     delete:
       operationId: PurchasesController_remove
       parameters:
@@ -2921,8 +3704,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
   /api/purchases/{purchaseId}/lines:
     post:
       operationId: PurchasesController_addLine
@@ -2941,8 +3724,8 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
   /api/purchases/{purchaseId}/lines/{lineId}:
     put:
       operationId: PurchasesController_updateLine
@@ -2966,8 +3749,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
     delete:
       operationId: PurchasesController_removeLine
       parameters:
@@ -2984,8 +3767,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_39
-      tags: *ref_40
+      security: *ref_41
+      tags: *ref_42
   /api/purchases/{id}/receive:
     post:
       operationId: InflowController_receiveGoods
@@ -3004,10 +3787,10 @@ paths:
       responses:
         '201':
           description: ''
-      security: &ref_41
+      security: &ref_43
         - bearer: []
       summary: Receive goods for a purchase order
-      tags: &ref_42
+      tags: &ref_44
         - purchases-inflow
   /api/purchases/{id}/unpost:
     post:
@@ -3027,9 +3810,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_41
+      security: *ref_43
       summary: Unpost a goods receipt line
-      tags: *ref_42
+      tags: *ref_44
   /api/purchases/{id}/receipts:
     get:
       operationId: InflowController_listReceiptsByPo
@@ -3052,9 +3835,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
+      security: *ref_43
       summary: List receipts for a purchase order
-      tags: *ref_42
+      tags: *ref_44
   /api/receipts:
     get:
       operationId: InflowController_listAllReceipts
@@ -3063,12 +3846,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -3079,7 +3866,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -3104,9 +3893,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_41
+      security: *ref_43
       summary: List all goods receipts
-      tags: *ref_42
+      tags: *ref_44
   /api/organizations:
     get:
       operationId: OrganizationsController_list
@@ -3115,12 +3904,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -3131,139 +3924,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
-        - name: sortOrder
-          required: false
-          in: query
-          schema:
-            default: desc
-            type: string
-            enum:
-              - asc
-              - desc
-        - name: filter
-          required: false
-          in: query
-          description: Generic filter string
-          schema:
-            type: string
-        - name: organizationId
-          required: false
-          in: query
-          description: Filter by organization (superadmin only)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: &ref_43
-        - bearer: []
-      tags: &ref_44
-        - organizations
-    post:
-      operationId: OrganizationsController_create
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateOrganizationDto'
-      responses:
-        '201':
-          description: ''
-      security: *ref_43
-      tags: *ref_44
-  /api/organizations/{organizationId}:
-    get:
-      operationId: OrganizationsController_get
-      parameters:
-        - name: organizationId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: *ref_43
-      tags: *ref_44
-    put:
-      operationId: OrganizationsController_replace
-      parameters:
-        - name: organizationId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateOrganizationDto'
-      responses:
-        '200':
-          description: ''
-      security: *ref_43
-      tags: *ref_44
-    patch:
-      operationId: OrganizationsController_patch
-      parameters:
-        - name: organizationId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateOrganizationDto'
-      responses:
-        '200':
-          description: ''
-      security: *ref_43
-      tags: *ref_44
-    delete:
-      operationId: OrganizationsController_remove
-      parameters:
-        - name: organizationId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: *ref_43
-      tags: *ref_44
-  /api/manufacturers:
-    get:
-      operationId: ManufacturersController_list
-      parameters:
-        - name: page
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: limit
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: search
-          required: false
-          in: query
-          description: Search query
-          schema:
-            type: string
-        - name: sortBy
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -3291,35 +3954,26 @@ paths:
       security: &ref_45
         - bearer: []
       tags: &ref_46
-        - manufacturers
+        - organizations
     post:
-      operationId: ManufacturersController_create
+      operationId: OrganizationsController_create
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateManufacturerDto'
+              $ref: '#/components/schemas/CreateOrganizationDto'
       responses:
         '201':
           description: ''
       security: *ref_45
       tags: *ref_46
-  /api/manufacturers/metrics:
+  /api/organizations/{organizationId}:
     get:
-      operationId: ManufacturersController_metrics
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      security: *ref_45
-      tags: *ref_46
-  /api/manufacturers/{manufacturerId}:
-    get:
-      operationId: ManufacturersController_get
+      operationId: OrganizationsController_get
       parameters:
-        - name: manufacturerId
+        - name: organizationId
           required: true
           in: path
           schema:
@@ -3330,9 +3984,9 @@ paths:
       security: *ref_45
       tags: *ref_46
     put:
-      operationId: ManufacturersController_replace
+      operationId: OrganizationsController_replace
       parameters:
-        - name: manufacturerId
+        - name: organizationId
           required: true
           in: path
           schema:
@@ -3342,16 +3996,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateManufacturerDto'
+              $ref: '#/components/schemas/UpdateOrganizationDto'
       responses:
         '200':
           description: ''
       security: *ref_45
       tags: *ref_46
     patch:
-      operationId: ManufacturersController_patch
+      operationId: OrganizationsController_patch
       parameters:
-        - name: manufacturerId
+        - name: organizationId
           required: true
           in: path
           schema:
@@ -3361,16 +4015,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateManufacturerDto'
+              $ref: '#/components/schemas/UpdateOrganizationDto'
       responses:
         '200':
           description: ''
       security: *ref_45
       tags: *ref_46
     delete:
-      operationId: ManufacturersController_remove
+      operationId: OrganizationsController_remove
       parameters:
-        - name: manufacturerId
+        - name: organizationId
           required: true
           in: path
           schema:
@@ -3380,20 +4034,24 @@ paths:
           description: ''
       security: *ref_45
       tags: *ref_46
-  /api/journals:
+  /api/manufacturers:
     get:
-      operationId: AccountingController_listJournals
+      operationId: ManufacturersController_list
       parameters:
         - name: page
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -3404,7 +4062,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -3432,150 +4092,67 @@ paths:
       security: &ref_47
         - bearer: []
       tags: &ref_48
-        - accounting
+        - manufacturers
     post:
-      operationId: AccountingController_createJournal
+      operationId: ManufacturersController_create
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateJournalDto'
+              $ref: '#/components/schemas/CreateManufacturerDto'
       responses:
         '201':
           description: ''
       security: *ref_47
       tags: *ref_48
-  /api/journals/{journalId}:
+  /api/manufacturers/metrics:
     get:
-      operationId: AccountingController_getJournal
-      parameters:
-        - name: journalId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-    patch:
-      operationId: AccountingController_updateJournal
-      parameters:
-        - name: journalId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateJournalDto'
-      responses:
-        '200':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-    delete:
-      operationId: AccountingController_removeJournal
-      parameters:
-        - name: journalId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-  /api/journal-entries:
-    get:
-      operationId: AccountingController_listJournalEntries
-      parameters:
-        - name: page
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: limit
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: search
-          required: false
-          in: query
-          description: Search query
-          schema:
-            type: string
-        - name: sortBy
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: sortOrder
-          required: false
-          in: query
-          schema:
-            default: desc
-            type: string
-            enum:
-              - asc
-              - desc
-        - name: filter
-          required: false
-          in: query
-          description: Generic filter string
-          schema:
-            type: string
-        - name: organizationId
-          required: false
-          in: query
-          description: Filter by organization (superadmin only)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-    post:
-      operationId: AccountingController_createJournalEntry
+      operationId: ManufacturersController_metrics
       parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_47
+      tags: *ref_48
+  /api/manufacturers/{manufacturerId}:
+    get:
+      operationId: ManufacturersController_get
+      parameters:
+        - name: manufacturerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_47
+      tags: *ref_48
+    put:
+      operationId: ManufacturersController_replace
+      parameters:
+        - name: manufacturerId
+          required: true
+          in: path
+          schema:
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateJournalEntryDto'
-      responses:
-        '201':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-  /api/journal-entries/{entryId}:
-    get:
-      operationId: AccountingController_getJournalEntry
-      parameters:
-        - name: entryId
-          required: true
-          in: path
-          schema:
-            type: string
+              $ref: '#/components/schemas/UpdateManufacturerDto'
       responses:
         '200':
           description: ''
       security: *ref_47
       tags: *ref_48
     patch:
-      operationId: AccountingController_updateJournalEntry
+      operationId: ManufacturersController_patch
       parameters:
-        - name: entryId
+        - name: manufacturerId
           required: true
           in: path
           schema:
@@ -3585,134 +4162,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateJournalEntryDto'
+              $ref: '#/components/schemas/UpdateManufacturerDto'
       responses:
         '200':
           description: ''
       security: *ref_47
       tags: *ref_48
     delete:
-      operationId: AccountingController_removeJournalEntry
+      operationId: ManufacturersController_remove
       parameters:
-        - name: entryId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-  /api/journal-entries/{entryId}/lines:
-    get:
-      operationId: AccountingController_listJournalEntryLines
-      parameters:
-        - name: entryId
-          required: true
-          in: path
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: limit
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: search
-          required: false
-          in: query
-          description: Search query
-          schema:
-            type: string
-        - name: sortBy
-          required: false
-          in: query
-          schema:
-            $ref: '#/components/schemas/Object'
-        - name: sortOrder
-          required: false
-          in: query
-          schema:
-            default: desc
-            type: string
-            enum:
-              - asc
-              - desc
-        - name: filter
-          required: false
-          in: query
-          description: Generic filter string
-          schema:
-            type: string
-        - name: organizationId
-          required: false
-          in: query
-          description: Filter by organization (superadmin only)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-    post:
-      operationId: AccountingController_createJournalEntryLine
-      parameters:
-        - name: entryId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateJournalEntryLineDto'
-      responses:
-        '201':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-  /api/journal-entries/{entryId}/lines/{lineId}:
-    patch:
-      operationId: AccountingController_updateJournalEntryLine
-      parameters:
-        - name: entryId
-          required: true
-          in: path
-          schema:
-            type: string
-        - name: lineId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateJournalEntryLineDto'
-      responses:
-        '200':
-          description: ''
-      security: *ref_47
-      tags: *ref_48
-    delete:
-      operationId: AccountingController_removeJournalEntryLine
-      parameters:
-        - name: entryId
-          required: true
-          in: path
-          schema:
-            type: string
-        - name: lineId
+        - name: manufacturerId
           required: true
           in: path
           schema:
@@ -3759,12 +4218,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -3775,7 +4238,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -3810,12 +4275,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -3826,7 +4295,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -4227,10 +4698,6 @@ paths:
       responses:
         '201':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponseDto'
       summary: Register a new website user
       tags: &ref_52
         - website-auth
@@ -4238,19 +4705,9 @@ paths:
     post:
       operationId: WebsiteAuthController_login
       parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginDto'
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponseDto'
       summary: Login for website users
       tags: *ref_52
   /api/website/admin/health-concerns:
@@ -5869,12 +6326,16 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: limit
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: search
           required: false
           in: query
@@ -5885,7 +6346,9 @@ paths:
           required: false
           in: query
           schema:
-            $ref: '#/components/schemas/Object'
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
         - name: sortOrder
           required: false
           in: query
@@ -5993,300 +6456,9 @@ components:
       bearerFormat: JWT
       type: http
   schemas:
-    LoginDto:
-      type: object
-      properties:
-        username:
-          type: string
-          example: admin
-        password:
-          type: string
-          example: P@ssw0rd!
-      required:
-        - username
-        - password
-    AuthResponseDto:
-      type: object
-      properties:
-        accessToken:
-          type: string
-        refreshToken:
-          type: string
-        accessTokenExpiresIn:
-          type: number
-        refreshTokenExpiresIn:
-          type: number
-      required:
-        - accessToken
-        - refreshToken
-        - accessTokenExpiresIn
-        - refreshTokenExpiresIn
-    RefreshTokenDto:
-      type: object
-      properties:
-        refreshToken:
-          type: string
-      required:
-        - refreshToken
-    ModuleInfoDto:
-      type: object
-      properties:
-        id:
-          type: string
-          example: rxsoft
-        name:
-          type: string
-          example: RxSoft
-        description:
-          type: string
-          example: Pharmacy Admin
-        root:
-          type: string
-          example: /items
-      required:
-        - id
-        - name
-        - description
-        - root
-    MeResponseDto:
-      type: object
-      properties:
-        id:
-          type: string
-        username:
-          type: string
-        phone:
-          type: string
-        roles:
-          type: array
-          items:
-            type: array
-        permissions:
-          type: array
-          items:
-            type: array
-        modules:
-          type: array
-          items:
-            $ref: '#/components/schemas/ModuleInfoDto'
-      required:
-        - id
-        - username
-        - roles
-        - permissions
-        - modules
-    UpdateUserPosConfigDto:
-      type: object
-      properties:
-        stockLocationId:
-          type: object
-        storeId:
-          type: object
-        allowA4Print:
-          type: boolean
-        allowPos:
-          type: boolean
-        loginTimeoutMinutes:
-          type: object
-        defaultCustomerId:
-          type: object
-        defaultPriceListId:
-          type: object
-        autoSelectLocation:
-          type: boolean
-        autoSelectCustomer:
-          type: boolean
-        autoSelectPriceList:
-          type: boolean
-    CreateUserDto:
-      type: object
-      properties:
-        username:
-          type: string
-          example: cashier01
-        password:
-          type: string
-          example: P@ssw0rd!
-        phone:
-          type: string
-          example: '+1234567890'
-        roleCodes:
-          example:
-            - cashier
-          type: array
-          items:
-            type: string
-        posConfig:
-          description: POS configuration settings
-          allOf:
-            - $ref: '#/components/schemas/UpdateUserPosConfigDto'
-      required:
-        - username
-        - password
-    PosConfigResponse:
-      type: object
-      properties:
-        stockLocationId:
-          type: object
-        stockLocation:
-          type: object
-        storeId:
-          type: object
-        allowPos:
-          type: boolean
-        allowA4Print:
-          type: boolean
-        loginTimeoutMinutes:
-          type: object
-        defaultCustomerId:
-          type: object
-        defaultCustomer:
-          type: object
-        defaultPriceListId:
-          type: object
-        defaultPriceList:
-          type: object
-        autoSelectLocation:
-          type: boolean
-        autoSelectCustomer:
-          type: boolean
-        autoSelectPriceList:
-          type: boolean
-    UserResponseDto:
-      type: object
-      properties:
-        id:
-          type: string
-        username:
-          type: string
-        phone:
-          type: string
-        roles:
-          type: array
-          items:
-            type: array
-        posConfig:
-          $ref: '#/components/schemas/PosConfigResponse'
-      required:
-        - id
-        - username
-        - roles
     Object:
       type: object
       properties: {}
-    UpdateUserDto:
-      type: object
-      properties:
-        username:
-          type: string
-          example: cashier01
-        password:
-          type: string
-          example: N3wP@ss!
-        roleCodes:
-          example:
-            - cashier
-          type: array
-          items:
-            type: string
-        phone:
-          type: string
-          example: '+1234567890'
-        isActive:
-          type: boolean
-          example: true
-        posConfig:
-          description: POS configuration settings
-          allOf:
-            - $ref: '#/components/schemas/UpdateUserPosConfigDto'
-    AssignRoleDto:
-      type: object
-      properties:
-        roleCode:
-          type: string
-          example: cashier
-      required:
-        - roleCode
-    CreateRoleDto:
-      type: object
-      properties:
-        code:
-          type: string
-          example: manager
-        name:
-          type: string
-          example: Manager
-        description:
-          type: string
-          example: Can manage products and inventory
-        permissionCodes:
-          example:
-            - products:read
-            - inventory:write
-          type: array
-          items:
-            type: string
-        overrideCodeValidation:
-          type: boolean
-          default: false
-      required:
-        - code
-        - name
-    RoleResponseDto:
-      type: object
-      properties:
-        id:
-          type: string
-        code:
-          type: string
-        name:
-          type: string
-        description:
-          type: object
-          nullable: true
-        permissionCodes:
-          type: array
-          items:
-            type: array
-      required:
-        - id
-        - code
-        - name
-        - description
-        - permissionCodes
-    UpdateRoleDto:
-      type: object
-      properties:
-        code:
-          type: string
-          example: manager
-        name:
-          type: string
-          example: Manager
-        description:
-          type: string
-          example: Can manage products and inventory
-        permissionCodes:
-          example:
-            - products:read
-            - products:write
-          type: array
-          items:
-            type: string
-        overrideCodeValidation:
-          type: boolean
-          default: false
-    UpdateOrganisationConfigDto:
-      type: object
-      properties:
-        posHeader:
-          type: object
-        defaultLoginTimeoutMinutes:
-          type: number
-        defaultAllowPos:
-          type: boolean
-        defaultAllowA4Print:
-          type: boolean
     ItemCategoryResponse:
       type: object
       properties:
@@ -6355,6 +6527,7 @@ components:
           $ref: '#/components/schemas/ItemCategoryResponse'
         genericProduct:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/GenericProductResponse'
         barcode:
@@ -6837,6 +7010,179 @@ components:
             - transit
         isActive:
           type: boolean
+    CreateJournalDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        journalType:
+          type: string
+          enum:
+            - sale
+            - purchase
+            - cash
+            - bank
+            - general
+        defaultDebitAccountId:
+          type: string
+        defaultCreditAccountId:
+          type: string
+        isActive:
+          type: boolean
+        overrideCodeValidation:
+          type: boolean
+          default: false
+      required:
+        - code
+        - name
+        - journalType
+    UpdateJournalDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        journalType:
+          type: string
+          enum:
+            - sale
+            - purchase
+            - cash
+            - bank
+            - general
+        defaultDebitAccountId:
+          type: object
+        defaultCreditAccountId:
+          type: object
+        isActive:
+          type: boolean
+    CreateJournalEntryLineDto:
+      type: object
+      properties:
+        lineNumber:
+          type: number
+        glAccountId:
+          type: string
+        partyId:
+          type: string
+        itemId:
+          type: string
+        debitAmount:
+          type: number
+        creditAmount:
+          type: number
+        description:
+          type: string
+      required:
+        - lineNumber
+        - glAccountId
+    CreateJournalEntryDto:
+      type: object
+      properties:
+        journalId:
+          type: string
+        entryNumber:
+          type: string
+        entryDate:
+          type: string
+        reference:
+          type: string
+        sourceType:
+          type: string
+        sourceId:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - posted
+            - reversed
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateJournalEntryLineDto'
+      required:
+        - journalId
+        - entryNumber
+        - entryDate
+    UpdateJournalEntryDto:
+      type: object
+      properties:
+        journalId:
+          type: string
+        entryNumber:
+          type: string
+        entryDate:
+          type: string
+        reference:
+          type: object
+        sourceType:
+          type: object
+        sourceId:
+          type: object
+        status:
+          type: string
+          enum:
+            - draft
+            - posted
+            - reversed
+    UpdateJournalEntryLineDto:
+      type: object
+      properties:
+        lineNumber:
+          type: number
+        glAccountId:
+          type: string
+        partyId:
+          type: object
+        itemId:
+          type: object
+        debitAmount:
+          type: number
+        creditAmount:
+          type: number
+        description:
+          type: object
+    CreateGlAccountDto:
+      type: object
+      properties:
+        accountCode:
+          type: string
+        accountName:
+          type: string
+        accountType:
+          type: string
+          enum:
+            - asset
+            - liability
+            - equity
+            - income
+            - expense
+        allowsReconciliation:
+          type: boolean
+        isActive:
+          type: boolean
+        overrideCodeValidation:
+          type: boolean
+          default: false
+      required:
+        - accountCode
+        - accountName
+        - accountType
+    UpdateGlAccountDto:
+      type: object
+      properties:
+        accountCode:
+          type: string
+        accountName:
+          type: string
+        allowsReconciliation:
+          type: boolean
+        isActive:
+          type: boolean
     CreatePriceListItemDto:
       type: object
       properties:
@@ -6987,6 +7333,157 @@ components:
           type: string
       required:
         - name
+    SaleDetailCustomerDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+      required:
+        - id
+        - name
+    SaleDetailCategoryDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    SaleDetailUomDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    SaleDetailItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/SaleDetailCategoryDto'
+        baseUomId:
+          type: string
+        saleUomId:
+          type: string
+        saleUom:
+          $ref: '#/components/schemas/SaleDetailUomDto'
+        baseUom:
+          $ref: '#/components/schemas/SaleDetailUomDto'
+      required:
+        - id
+        - name
+    SaleDetailLineDto:
+      type: object
+      properties:
+        id:
+          type: string
+        lineNumber:
+          type: number
+        item:
+          $ref: '#/components/schemas/SaleDetailItemDto'
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        lineTotal:
+          type: number
+      required:
+        - id
+        - lineNumber
+        - item
+        - quantity
+        - unitPrice
+        - lineTotal
+    SaleDetailPaymentMethodDto:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        methodType:
+          type: string
+        isActive:
+          type: boolean
+      required:
+        - id
+        - name
+        - methodType
+        - isActive
+    SaleDetailPaymentDto:
+      type: object
+      properties:
+        id:
+          type: string
+        paymentMethod:
+          $ref: '#/components/schemas/SaleDetailPaymentMethodDto'
+        amount:
+          type: number
+      required:
+        - id
+        - paymentMethod
+        - amount
+    SaleDetailResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        saleNumber:
+          type: string
+        saleChannel:
+          type: string
+          enum:
+            - pos
+            - invoice
+            - mobile
+        customer:
+          $ref: '#/components/schemas/SaleDetailCustomerDto'
+        status:
+          type: string
+          enum:
+            - draft
+            - posted
+            - voided
+            - refunded
+        totalAmount:
+          type: number
+        paidAmount:
+          type: number
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleDetailLineDto'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleDetailPaymentDto'
+        saleDate:
+          type: string
+        notes:
+          type: object
+      required:
+        - id
+        - saleNumber
+        - saleChannel
+        - status
+        - totalAmount
+        - paidAmount
+        - lines
+        - payments
+        - saleDate
     CreateSaleLineDto:
       type: object
       properties:
@@ -7003,6 +7500,9 @@ components:
         unitPrice:
           type: number
           minimum: 0
+        uomFactor:
+          type: object
+          nullable: true
       required:
         - itemId
         - uomId
@@ -7284,6 +7784,40 @@ components:
             - insurance
         isActive:
           type: boolean
+    UpdateUserPosConfigDto:
+      type: object
+      properties:
+        stockLocationId:
+          type: object
+        storeId:
+          type: object
+        allowA4Print:
+          type: boolean
+        allowPos:
+          type: boolean
+        loginTimeoutMinutes:
+          type: object
+        defaultCustomerId:
+          type: object
+        defaultPriceListId:
+          type: object
+        autoSelectLocation:
+          type: boolean
+        autoSelectCustomer:
+          type: boolean
+        autoSelectPriceList:
+          type: boolean
+    UpdateOrganisationConfigDto:
+      type: object
+      properties:
+        posHeader:
+          type: object
+        defaultLoginTimeoutMinutes:
+          type: number
+        defaultAllowPos:
+          type: boolean
+        defaultAllowA4Print:
+          type: boolean
     CollectReceivablePaymentDto:
       type: object
       properties:
@@ -7555,142 +8089,6 @@ components:
           type: object
         name:
           type: string
-    CreateJournalDto:
-      type: object
-      properties:
-        code:
-          type: string
-        name:
-          type: string
-        journalType:
-          type: string
-          enum:
-            - sale
-            - purchase
-            - cash
-            - bank
-            - general
-        defaultDebitAccountId:
-          type: string
-        defaultCreditAccountId:
-          type: string
-        isActive:
-          type: boolean
-        overrideCodeValidation:
-          type: boolean
-          default: false
-      required:
-        - code
-        - name
-        - journalType
-    UpdateJournalDto:
-      type: object
-      properties:
-        code:
-          type: string
-        name:
-          type: string
-        journalType:
-          type: string
-          enum:
-            - sale
-            - purchase
-            - cash
-            - bank
-            - general
-        defaultDebitAccountId:
-          type: object
-        defaultCreditAccountId:
-          type: object
-        isActive:
-          type: boolean
-    CreateJournalEntryLineDto:
-      type: object
-      properties:
-        lineNumber:
-          type: number
-        glAccountId:
-          type: string
-        partyId:
-          type: string
-        itemId:
-          type: string
-        debitAmount:
-          type: number
-        creditAmount:
-          type: number
-        description:
-          type: string
-      required:
-        - lineNumber
-        - glAccountId
-    CreateJournalEntryDto:
-      type: object
-      properties:
-        journalId:
-          type: string
-        entryNumber:
-          type: string
-        entryDate:
-          type: string
-        reference:
-          type: string
-        sourceType:
-          type: string
-        sourceId:
-          type: string
-        status:
-          type: string
-          enum:
-            - draft
-            - posted
-            - reversed
-        lines:
-          type: array
-          items:
-            $ref: '#/components/schemas/CreateJournalEntryLineDto'
-      required:
-        - journalId
-        - entryNumber
-        - entryDate
-    UpdateJournalEntryDto:
-      type: object
-      properties:
-        journalId:
-          type: string
-        entryNumber:
-          type: string
-        entryDate:
-          type: string
-        reference:
-          type: object
-        sourceType:
-          type: object
-        sourceId:
-          type: object
-        status:
-          type: string
-          enum:
-            - draft
-            - posted
-            - reversed
-    UpdateJournalEntryLineDto:
-      type: object
-      properties:
-        lineNumber:
-          type: number
-        glAccountId:
-          type: string
-        partyId:
-          type: object
-        itemId:
-          type: object
-        debitAmount:
-          type: number
-        creditAmount:
-          type: number
-        description:
-          type: object
     CreatePrescriptionDto:
       type: object
       properties:

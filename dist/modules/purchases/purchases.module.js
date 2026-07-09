@@ -23,6 +23,7 @@ const purchases_service_1 = require("./services/purchases.service");
 const receive_goods_use_case_1 = require("./services/receive-goods.use-case");
 const entities_2 = require("../inventory/entities");
 const party_orm_entity_1 = require("../customers/entities/party.orm-entity");
+const accounting_module_1 = require("../accounting/accounting.module");
 const purchasesConfigService = new config_1.ConfigService();
 const useInMemoryRepos = purchasesConfigService.get('USE_IN_MEMORY_REPOS', 'false') === 'true';
 const purchasesPersistenceImports = useInMemoryRepos
@@ -61,7 +62,7 @@ let PurchasesModule = class PurchasesModule {
 exports.PurchasesModule = PurchasesModule;
 exports.PurchasesModule = PurchasesModule = __decorate([
     (0, common_1.Module)({
-        imports: [jwt_1.JwtModule.register({}), ...purchasesPersistenceImports],
+        imports: [jwt_1.JwtModule.register({}), accounting_module_1.AccountingModule, ...purchasesPersistenceImports],
         controllers: [purchases_controller_1.PurchasesController, inflow_controller_1.InflowController],
         providers: [
             purchases_service_1.PurchasesService,

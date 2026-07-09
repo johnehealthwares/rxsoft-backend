@@ -1,4 +1,4 @@
-import { PriceListItemOrmEntity } from './price-list-item.orm-entity';
+import type { PriceListItemOrmEntity } from './price-list-item.orm-entity';
 export declare class PriceListOrmEntity {
     id: string;
     organizationId: string;

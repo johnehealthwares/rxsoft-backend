@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm';
 import { PartyOrmEntity } from '../entities/party.orm-entity';
-import { PartyType } from 'src/shared/domain';
-import { ListQueryDto } from 'src/shared/dto/list-query.dto';
+import { PartyType } from "../../../shared/domain";
+import { ListQueryDto } from "../../../shared/dto/list-query.dto";
 export declare class SuppliersService {
     private readonly partyRepository;
     constructor(partyRepository: Repository<PartyOrmEntity>);

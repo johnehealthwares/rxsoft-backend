@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ItemOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
 const item_category_orm_entity_1 = require("./item-category.orm-entity");
-const entities_1 = require("../../sales/entities");
+const uom_orm_entity_1 = require("../../sales/entities/uom.orm-entity");
 let ItemOrmEntity = class ItemOrmEntity {
     id;
     organizationId;
@@ -72,16 +72,16 @@ __decorate([
     __metadata("design:type", String)
 ], ItemOrmEntity.prototype, "baseUomId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => entities_1.UomOrmEntity, { nullable: false }),
+    (0, typeorm_1.ManyToOne)(() => uom_orm_entity_1.UomOrmEntity, { nullable: false }),
     (0, typeorm_1.JoinColumn)({ name: 'base_uom_id' }),
-    __metadata("design:type", entities_1.UomOrmEntity)
+    __metadata("design:type", uom_orm_entity_1.UomOrmEntity)
 ], ItemOrmEntity.prototype, "baseUom", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'purchase_uom_id', type: 'text', nullable: true }),
     __metadata("design:type", Object)
 ], ItemOrmEntity.prototype, "purchaseUomId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => entities_1.UomOrmEntity, { nullable: true }),
+    (0, typeorm_1.ManyToOne)(() => uom_orm_entity_1.UomOrmEntity, { nullable: true }),
     (0, typeorm_1.JoinColumn)({ name: 'purchase_uom_id' }),
     __metadata("design:type", Object)
 ], ItemOrmEntity.prototype, "purchaseUom", void 0);
@@ -90,7 +90,7 @@ __decorate([
     __metadata("design:type", Object)
 ], ItemOrmEntity.prototype, "saleUomId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => entities_1.UomOrmEntity, { nullable: true }),
+    (0, typeorm_1.ManyToOne)(() => uom_orm_entity_1.UomOrmEntity, { nullable: true }),
     (0, typeorm_1.JoinColumn)({ name: 'sale_uom_id' }),
     __metadata("design:type", Object)
 ], ItemOrmEntity.prototype, "saleUom", void 0);

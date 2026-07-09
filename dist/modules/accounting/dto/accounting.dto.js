@@ -9,11 +9,93 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateJournalEntryDto = exports.CreateJournalEntryDto = exports.UpdateJournalEntryLineDto = exports.CreateJournalEntryLineDto = exports.UpdateJournalDto = exports.CreateJournalDto = exports.ListJournalEntryLinesDto = exports.ListJournalEntriesDto = exports.ListJournalsDto = void 0;
+exports.UpdateJournalEntryDto = exports.CreateJournalEntryDto = exports.UpdateJournalEntryLineDto = exports.CreateJournalEntryLineDto = exports.UpdateJournalDto = exports.CreateJournalDto = exports.ListJournalEntryLinesDto = exports.ListJournalEntriesDto = exports.ListJournalsDto = exports.UpdateGlAccountDto = exports.CreateGlAccountDto = exports.ListGlAccountsDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 const list_query_dto_1 = require("../../../shared/dto/list-query.dto");
+class ListGlAccountsDto extends list_query_dto_1.ListQueryDto {
+    accountType;
+}
+exports.ListGlAccountsDto = ListGlAccountsDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ enum: ['asset', 'liability', 'equity', 'income', 'expense'] }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsIn)(['asset', 'liability', 'equity', 'income', 'expense']),
+    __metadata("design:type", String)
+], ListGlAccountsDto.prototype, "accountType", void 0);
+class CreateGlAccountDto {
+    accountCode;
+    accountName;
+    accountType;
+    allowsReconciliation;
+    isActive;
+    overrideCodeValidation;
+}
+exports.CreateGlAccountDto = CreateGlAccountDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateGlAccountDto.prototype, "accountCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateGlAccountDto.prototype, "accountName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: ['asset', 'liability', 'equity', 'income', 'expense'] }),
+    (0, class_validator_1.IsIn)(['asset', 'liability', 'equity', 'income', 'expense']),
+    __metadata("design:type", String)
+], CreateGlAccountDto.prototype, "accountType", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], CreateGlAccountDto.prototype, "allowsReconciliation", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], CreateGlAccountDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateGlAccountDto.prototype, "overrideCodeValidation", void 0);
+class UpdateGlAccountDto {
+    accountCode;
+    accountName;
+    allowsReconciliation;
+    isActive;
+}
+exports.UpdateGlAccountDto = UpdateGlAccountDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateGlAccountDto.prototype, "accountCode", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateGlAccountDto.prototype, "accountName", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateGlAccountDto.prototype, "allowsReconciliation", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateGlAccountDto.prototype, "isActive", void 0);
 class ListJournalsDto extends list_query_dto_1.ListQueryDto {
 }
 exports.ListJournalsDto = ListJournalsDto;

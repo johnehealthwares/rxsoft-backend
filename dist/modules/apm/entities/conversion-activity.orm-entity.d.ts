@@ -1,4 +1,4 @@
-import { StakeholderOrmEntity } from './stakeholder.orm-entity';
+import type { StakeholderOrmEntity } from './stakeholder.orm-entity';
 export declare class ConversionActivityOrmEntity {
     id: string;
     stakeholderId: string;

@@ -23,6 +23,7 @@ const inventory_service_1 = require("./services/inventory.service");
 const stock_locations_service_1 = require("./services/stock-locations.service");
 const entities_1 = require("./entities");
 const list_stock_movements_use_case_1 = require("./services/list-stock-movements.use-case");
+const accounting_module_1 = require("../accounting/accounting.module");
 const inventoryConfigService = new config_1.ConfigService();
 const useInMemoryRepos = inventoryConfigService.get('USE_IN_MEMORY_REPOS', 'false') === 'true';
 const inventoryPersistenceImports = useInMemoryRepos
@@ -63,7 +64,7 @@ let InventoryModule = class InventoryModule {
 exports.InventoryModule = InventoryModule;
 exports.InventoryModule = InventoryModule = __decorate([
     (0, common_1.Module)({
-        imports: [jwt_1.JwtModule.register({}), ...inventoryPersistenceImports],
+        imports: [jwt_1.JwtModule.register({}), accounting_module_1.AccountingModule, ...inventoryPersistenceImports],
         controllers: inventoryControllers,
         providers: [
             list_stock_balances_use_case_1.ListStockBalancesUseCase,

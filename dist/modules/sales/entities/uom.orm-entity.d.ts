@@ -1,4 +1,4 @@
-import { UomCategoryOrmEntity } from './uom-category.orm-entity';
+import type { UomCategoryOrmEntity } from './uom-category.orm-entity';
 export declare class UomOrmEntity {
     id: string;
     organizationId: string;

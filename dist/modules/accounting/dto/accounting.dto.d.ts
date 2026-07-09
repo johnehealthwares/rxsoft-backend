@@ -1,4 +1,21 @@
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
+export declare class ListGlAccountsDto extends ListQueryDto {
+    accountType?: 'asset' | 'liability' | 'equity' | 'income' | 'expense';
+}
+export declare class CreateGlAccountDto {
+    accountCode: string;
+    accountName: string;
+    accountType: 'asset' | 'liability' | 'equity' | 'income' | 'expense';
+    allowsReconciliation?: boolean;
+    isActive?: boolean;
+    overrideCodeValidation?: boolean;
+}
+export declare class UpdateGlAccountDto {
+    accountCode?: string;
+    accountName?: string;
+    allowsReconciliation?: boolean;
+    isActive?: boolean;
+}
 export declare class ListJournalsDto extends ListQueryDto {
 }
 export declare class ListJournalEntriesDto extends ListQueryDto {

@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UomOrmEntity = void 0;
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 const typeorm_1 = require("typeorm");
-const uom_category_orm_entity_1 = require("./uom-category.orm-entity");
 let UomOrmEntity = class UomOrmEntity {
     id;
     organizationId;
@@ -41,7 +40,7 @@ __decorate([
     __metadata("design:type", Object)
 ], UomOrmEntity.prototype, "categoryId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => uom_category_orm_entity_1.UomCategoryOrmEntity, { nullable: false }),
+    (0, typeorm_1.ManyToOne)('UomCategoryOrmEntity', { nullable: false }),
     (0, typeorm_1.JoinColumn)({ name: 'category_id' }),
     __metadata("design:type", Object)
 ], UomOrmEntity.prototype, "category", void 0);

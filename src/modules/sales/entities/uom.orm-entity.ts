@@ -1,6 +1,6 @@
 import { ColumnNumericTransformer } from 'src/shared/utils/column-transformer';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { UomCategoryOrmEntity } from './uom-category.orm-entity';
+import type { UomCategoryOrmEntity } from './uom-category.orm-entity';
 
 @Entity('uoms')
 export class UomOrmEntity {
@@ -13,7 +13,7 @@ export class UomOrmEntity {
   @Column({ name: 'category_id', type: 'uuid', nullable: true })
   categoryId!: string | null;
 
-  @ManyToOne(() => UomCategoryOrmEntity, { nullable: false })
+  @ManyToOne('UomCategoryOrmEntity', { nullable: false })
   @JoinColumn({ name: 'category_id' })
   category!: UomCategoryOrmEntity | null;
 

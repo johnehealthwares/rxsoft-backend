@@ -39,6 +39,7 @@ const config_1 = require("@nestjs/config");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 const global_exception_filter_1 = require("./common/filters/global-exception.filter");
+const request_logging_interceptor_1 = require("./common/interceptors/request-logging.interceptor");
 const seeding_service_1 = require("./database/seeding.service");
 const yaml = __importStar(require("js-yaml"));
 const fs = __importStar(require("fs"));
@@ -52,6 +53,7 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
     }));
     app.useGlobalFilters(new global_exception_filter_1.GlobalExceptionFilter());
+    app.useGlobalInterceptors(new request_logging_interceptor_1.RequestLoggingInterceptor());
     app.setGlobalPrefix('api');
     app.enableCors();
     const swaggerConfig = new swagger_1.DocumentBuilder()

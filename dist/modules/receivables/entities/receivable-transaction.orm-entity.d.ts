@@ -1,5 +1,4 @@
 import { PaymentMethodOrmEntity } from '../../sales/entities/payment-method.orm-entity';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { AccountReceivableOrmEntity } from '../../sales/entities/account-receivable.orm-entity';
 export declare class ReceivableTransactionOrmEntity {
     id: string;
@@ -9,7 +8,7 @@ export declare class ReceivableTransactionOrmEntity {
     transactionDate: Date;
     paymentMethod: PaymentMethodOrmEntity | null;
     referenceNumber: string | null;
-    receivedByUser: UserOrmEntity | null;
+    receivedByUserId: string | null;
     note: string | null;
     createdAt: Date;
     updatedAt: Date;

@@ -20,6 +20,7 @@ const roles_decorator_1 = require("../../../common/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../../common/guards/roles.guard");
 const audit_action_decorator_1 = require("../../../common/decorators/audit-action.decorator");
+const csv_1 = require("../../../shared/utils/csv");
 const create_stock_adjustment_dto_1 = require("../dto/create-stock-adjustment.dto");
 const create_stock_transfer_dto_1 = require("../dto/create-stock-transfer.dto");
 const list_stock_balances_dto_1 = require("../dto/list-stock-balances.dto");
@@ -78,6 +79,10 @@ let InventoryController = class InventoryController {
             },
         };
     }
+    async exportStockMovements(query, currentUser) {
+        const result = await this.listStockMovementsUseCase.execute(query, currentUser.organizationId);
+        return (0, csv_1.toCsv)(result.items);
+    }
     async createAdjustment(payload, currentUser) {
         const result = await this.createStockAdjustmentUseCase.execute(payload, currentUser.sub, currentUser.organizationId);
         return mapBalance(result);
@@ -116,6 +121,18 @@ __decorate([
     __metadata("design:paramtypes", [list_stock_movements_dto_1.ListStockMovementsDto, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "listStockMovements", null);
+__decorate([
+    (0, common_1.Get)('stock-movements/export'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin', 'inventory_clerk'),
+    (0, swagger_1.ApiOperation)({ summary: 'Export stock movements as CSV' }),
+    (0, common_1.Header)('Content-Type', 'text/csv'),
+    (0, common_1.Header)('Content-Disposition', 'attachment; filename="stock_movements.csv"'),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [list_stock_movements_dto_1.ListStockMovementsDto, Object]),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "exportStockMovements", null);
 __decorate([
     (0, common_1.Post)('adjustments'),
     (0, roles_decorator_1.Roles)('admin', 'super_admin', 'inventory_clerk'),

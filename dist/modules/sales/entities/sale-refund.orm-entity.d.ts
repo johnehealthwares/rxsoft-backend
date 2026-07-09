@@ -1,5 +1,4 @@
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
-import { SaleOrmEntity } from './sale.orm-entity';
+import type { SaleOrmEntity } from './sale.orm-entity';
 import { SaleRefundLineOrmEntity } from './sale-refund-line.orm-entity';
 export declare class SaleRefundOrmEntity {
     id: string;
@@ -10,7 +9,7 @@ export declare class SaleRefundOrmEntity {
     totalAmount: number;
     refundDate: Date;
     reason: string | null;
-    refundedByUser: UserOrmEntity;
+    refundedByUserId: string;
     lines: SaleRefundLineOrmEntity[];
     createdAt: Date;
     updatedAt: Date;

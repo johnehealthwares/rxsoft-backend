@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserOrmEntity } from '../identity/entities/user.orm-entity';
 import { AccountReceivableOrmEntity, PaymentMethodOrmEntity } from '../sales/entities';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { ReceivablesController } from './controllers/receivables.controller';
 import { ReceivableTransactionOrmEntity } from './entities';
+import { UsersProxyModule } from '../users-proxy/users-proxy.module';
+import { AccountingModule } from '../accounting/accounting.module';
 import { InMemoryReceivablesRepository } from './repositories/in-memory-receivables.repository';
 import { TypeormReceivablesRepository } from './repositories/typeorm-receivables.repository';
 import { ApplyReceivableAdjustmentUseCase } from './services/apply-receivable-adjustment.use-case';
@@ -21,7 +22,7 @@ const receivablesConfigService = new ConfigService();
 const useInMemoryRepos = receivablesConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
 const receivablesPersistenceImports = useInMemoryRepos
   ? []
-  : [TypeOrmModule.forFeature([AccountReceivableOrmEntity, ReceivableTransactionOrmEntity, PaymentMethodOrmEntity, UserOrmEntity])];
+  : [TypeOrmModule.forFeature([AccountReceivableOrmEntity, ReceivableTransactionOrmEntity, PaymentMethodOrmEntity])];
 const receivablesRepositoryProviders = useInMemoryRepos
   ? [
       InMemoryReceivablesRepository,
@@ -39,7 +40,7 @@ const receivablesRepositoryProviders = useInMemoryRepos
     ];
 
 @Module({
-  imports: [JwtModule.register({}), ...receivablesPersistenceImports],
+  imports: [JwtModule.register({}), UsersProxyModule, AccountingModule, ...receivablesPersistenceImports],
   controllers: [ReceivablesController],
   providers: [
     ListReceivablesUseCase,

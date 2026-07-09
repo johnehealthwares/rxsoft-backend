@@ -3,7 +3,6 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm/dist/interfaces/typeorm-options.interface';
 import { MongooseModule } from '@nestjs/mongoose';
-import { IdentityModule } from './modules/identity/identity.module';
 import { HealthController } from './modules/health/controllers/health.controller';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
@@ -28,6 +27,7 @@ import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { WebsiteModule } from './modules/website/website.module';
 import { ApmModule } from './modules/apm/apm.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { UsersProxyModule } from './modules/users-proxy/users-proxy.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -97,9 +97,8 @@ const infrastructureImports = useInMemoryRepos
     ];
 
 const applicationModules = useInMemoryRepos
-  ? [IdentityModule, CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule]
+  ? [CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule]
   : [
-      IdentityModule,
       CatalogModule,
       CategoriesModule,
       CustomersModule,
@@ -119,6 +118,7 @@ const applicationModules = useInMemoryRepos
       UserPosConfigModule,
       OrganisationConfigModule,
       WarehousesModule,
+      UsersProxyModule,
     ];
 
 @Module({

@@ -344,6 +344,7 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
       return {
         receiptId: savedGr.id,
         receiptNumber: savedGr.receiptNumber,
+        poStatus: po.status,
         lines: savedGrLines.map((l) => ({
           itemId: l.itemId,
           receiptLineId: l.id,
@@ -476,7 +477,7 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
       );
     }
 
-    qb.orderBy('receipt.created_at', 'DESC').skip(query.offset).take(query.limit);
+    qb.orderBy('receipt.createdAt', 'DESC').skip(query.offset).take(query.limit);
     const [items, total] = await qb.getManyAndCount();
     return { items, total };
   }

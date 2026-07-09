@@ -1,4 +1,4 @@
-import { StockLocationOrmEntity } from './stock-location.orm-entity';
+import type { StockLocationOrmEntity } from './stock-location.orm-entity';
 export declare class WarehouseOrmEntity {
     id: string;
     organizationId: string;

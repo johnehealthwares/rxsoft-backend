@@ -72,6 +72,39 @@ let AccountingController = class AccountingController {
     async removeJournalEntryLine(entryId, lineId, currentUser) {
         await this.accountingService.removeJournalEntryLine(entryId, lineId, currentUser.organizationId);
     }
+    async listGlAccounts(query, currentUser) {
+        const result = await this.accountingService.listGlAccounts(query, currentUser.organizationId);
+        return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
+    }
+    async getGlAccount(accountId, currentUser) {
+        return this.accountingService.getGlAccount(accountId, currentUser.organizationId);
+    }
+    async createGlAccount(payload, currentUser) {
+        return this.accountingService.createGlAccount(payload, currentUser.organizationId);
+    }
+    async updateGlAccount(accountId, payload, currentUser) {
+        return this.accountingService.updateGlAccount(accountId, payload, currentUser.organizationId);
+    }
+    async removeGlAccount(accountId, currentUser) {
+        await this.accountingService.removeGlAccount(accountId, currentUser.organizationId);
+    }
+    async postJournalEntry(entryId, currentUser) {
+        return this.accountingService.postJournalEntry(entryId, currentUser.organizationId);
+    }
+    async reverseJournalEntry(entryId, currentUser) {
+        return this.accountingService.reverseJournalEntry(entryId, currentUser.organizationId, currentUser.sub);
+    }
+    async getTrialBalance(asOfDate, currentUser) {
+        return this.accountingService.getTrialBalance(currentUser.organizationId, asOfDate ?? new Date().toISOString().slice(0, 10));
+    }
+    async getBalanceSheet(asOfDate, currentUser) {
+        return this.accountingService.getBalanceSheet(currentUser.organizationId, asOfDate ?? new Date().toISOString().slice(0, 10));
+    }
+    async getIncomeStatement(fromDate, toDate, currentUser) {
+        const to = toDate ?? new Date().toISOString().slice(0, 10);
+        const from = fromDate ?? new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
+        return this.accountingService.getIncomeStatement(currentUser.organizationId, from, to);
+    }
 };
 exports.AccountingController = AccountingController;
 __decorate([
@@ -216,6 +249,103 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], AccountingController.prototype, "removeJournalEntryLine", null);
+__decorate([
+    (0, common_1.Get)('gl-accounts'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin', 'auditor'),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [accounting_dto_1.ListGlAccountsDto, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "listGlAccounts", null);
+__decorate([
+    (0, common_1.Get)('gl-accounts/:accountId'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin', 'auditor'),
+    __param(0, (0, common_1.Param)('accountId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "getGlAccount", null);
+__decorate([
+    (0, common_1.Post)('gl-accounts'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin'),
+    (0, audit_action_decorator_1.AuditAction)('accounting.gl_account.create'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [accounting_dto_1.CreateGlAccountDto, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "createGlAccount", null);
+__decorate([
+    (0, common_1.Patch)('gl-accounts/:accountId'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin'),
+    (0, audit_action_decorator_1.AuditAction)('accounting.gl_account.update'),
+    __param(0, (0, common_1.Param)('accountId')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, accounting_dto_1.UpdateGlAccountDto, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "updateGlAccount", null);
+__decorate([
+    (0, common_1.Delete)('gl-accounts/:accountId'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin'),
+    (0, audit_action_decorator_1.AuditAction)('accounting.gl_account.delete'),
+    __param(0, (0, common_1.Param)('accountId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "removeGlAccount", null);
+__decorate([
+    (0, common_1.Post)('journal-entries/:entryId/post'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin'),
+    (0, audit_action_decorator_1.AuditAction)('accounting.journal_entry.post'),
+    __param(0, (0, common_1.Param)('entryId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "postJournalEntry", null);
+__decorate([
+    (0, common_1.Post)('journal-entries/:entryId/reverse'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin'),
+    (0, audit_action_decorator_1.AuditAction)('accounting.journal_entry.reverse'),
+    __param(0, (0, common_1.Param)('entryId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "reverseJournalEntry", null);
+__decorate([
+    (0, common_1.Get)('reports/trial-balance'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin', 'auditor'),
+    __param(0, (0, common_1.Query)('asOfDate')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "getTrialBalance", null);
+__decorate([
+    (0, common_1.Get)('reports/balance-sheet'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin', 'auditor'),
+    __param(0, (0, common_1.Query)('asOfDate')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "getBalanceSheet", null);
+__decorate([
+    (0, common_1.Get)('reports/income-statement'),
+    (0, roles_decorator_1.Roles)('admin', 'super_admin', 'auditor'),
+    __param(0, (0, common_1.Query)('fromDate')),
+    __param(1, (0, common_1.Query)('toDate')),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], AccountingController.prototype, "getIncomeStatement", null);
 exports.AccountingController = AccountingController = __decorate([
     (0, swagger_1.ApiTags)('accounting'),
     (0, swagger_1.ApiBearerAuth)(),

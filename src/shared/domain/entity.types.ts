@@ -3,9 +3,6 @@ import type { ItemCategoryOrmEntity as CatalogItemCategoryOrmEntity } from '../.
 import type { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 // import type { ItemCategoryOrmEntity as CategoriesItemCategoryOrmEntity } from '../../modules/categories/entities/item-category.orm-entity';
 import type { PartyOrmEntity } from '../../modules/customers/entities/party.orm-entity';
-import type { PermissionOrmEntity } from '../../modules/identity/entities/permission.orm-entity';
-import type { RefreshTokenOrmEntity } from '../../modules/identity/entities/refresh-token.orm-entity';
-import type { RoleOrmEntity } from '../../modules/identity/entities/role.orm-entity';
 import type { UserOrmEntity } from '../../modules/identity/entities/user.orm-entity';
 import type { StockAdjustmentOrmEntity } from '../../modules/inventory/entities/stock-adjustment.orm-entity';
 import type { StockBalanceOrmEntity } from '../../modules/inventory/entities/stock-balance.orm-entity';
@@ -46,9 +43,6 @@ export type CatalogItemCategoryEntityType = SerializedEntity<CatalogItemCategory
 export type ItemEntityType = SerializedEntity<ItemOrmEntity>;
 // export type CategoriesItemCategoryEntityType = SerializedEntity<CategoriesItemCategoryOrmEntity>;
 export type PartyEntityType = SerializedEntity<PartyOrmEntity>;
-export type PermissionEntityType = SerializedEntity<PermissionOrmEntity>;
-export type RefreshTokenEntityType = SerializedEntity<RefreshTokenOrmEntity>;
-export type RoleEntityType = SerializedEntity<RoleOrmEntity>;
 export type UserEntityType = SerializedEntity<UserOrmEntity>;
 export type StockAdjustmentEntityType = SerializedEntity<StockAdjustmentOrmEntity>;
 export type StockBalanceEntityType = SerializedEntity<StockBalanceOrmEntity>;

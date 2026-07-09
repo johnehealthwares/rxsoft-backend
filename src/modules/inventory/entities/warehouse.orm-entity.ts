@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { StockLocationOrmEntity } from './stock-location.orm-entity';
+import type { StockLocationOrmEntity } from './stock-location.orm-entity';
 
 @Entity('warehouses')
 @Unique('uq_warehouses_org_code', ['organizationId', 'code'])
@@ -22,11 +22,8 @@ export class WarehouseOrmEntity {
   @Column({ type: 'text', nullable: true })
   address!: string | null;
 
-  @OneToMany(
-  () => StockLocationOrmEntity,
-  (location) => location.warehouse
-)
-stockLocations!: StockLocationOrmEntity[];
+  @OneToMany('StockLocationOrmEntity', 'warehouse')
+  stockLocations!: StockLocationOrmEntity[];
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;

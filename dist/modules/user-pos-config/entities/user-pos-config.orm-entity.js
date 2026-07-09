@@ -11,13 +11,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserPosConfigOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
 const stock_location_orm_entity_1 = require("../../inventory/entities/stock-location.orm-entity");
 const party_orm_entity_1 = require("../../customers/entities/party.orm-entity");
 const price_list_orm_entity_1 = require("../../pricing/entities/price-list.orm-entity");
 let UserPosConfigOrmEntity = class UserPosConfigOrmEntity {
     id;
-    user;
     userId;
     organizationId;
     stockLocation;
@@ -41,11 +39,6 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], UserPosConfigOrmEntity.prototype, "id", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => user_orm_entity_1.UserOrmEntity, { nullable: false }),
-    (0, typeorm_1.JoinColumn)({ name: 'user_id' }),
-    __metadata("design:type", user_orm_entity_1.UserOrmEntity)
-], UserPosConfigOrmEntity.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'user_id', type: 'uuid' }),
     __metadata("design:type", String)

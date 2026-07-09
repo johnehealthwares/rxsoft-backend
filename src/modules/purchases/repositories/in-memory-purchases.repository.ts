@@ -160,6 +160,7 @@ export class InMemoryPurchasesRepository implements PurchasesRepository {
     return {
       receiptId: '',
       receiptNumber: '',
+      poStatus: 'partially_received',
       lines: [],
     };
   }

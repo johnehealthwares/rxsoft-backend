@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WarehouseOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const stock_location_orm_entity_1 = require("./stock-location.orm-entity");
 let WarehouseOrmEntity = class WarehouseOrmEntity {
     id;
     organizationId;
@@ -50,7 +49,7 @@ __decorate([
     __metadata("design:type", Object)
 ], WarehouseOrmEntity.prototype, "address", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => stock_location_orm_entity_1.StockLocationOrmEntity, (location) => location.warehouse),
+    (0, typeorm_1.OneToMany)('StockLocationOrmEntity', 'warehouse'),
     __metadata("design:type", Array)
 ], WarehouseOrmEntity.prototype, "stockLocations", void 0);
 __decorate([

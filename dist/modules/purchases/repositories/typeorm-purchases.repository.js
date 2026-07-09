@@ -307,6 +307,7 @@ let TypeormPurchasesRepository = class TypeormPurchasesRepository {
             return {
                 receiptId: savedGr.id,
                 receiptNumber: savedGr.receiptNumber,
+                poStatus: po.status,
                 lines: savedGrLines.map((l) => ({
                     itemId: l.itemId,
                     receiptLineId: l.id,
@@ -415,7 +416,7 @@ let TypeormPurchasesRepository = class TypeormPurchasesRepository {
         if (query.search) {
             qb.andWhere('(receipt.receipt_number ILIKE :search OR purchaseOrder.purchase_order_number ILIKE :search)', { search: `%${query.search}%` });
         }
-        qb.orderBy('receipt.created_at', 'DESC').skip(query.offset).take(query.limit);
+        qb.orderBy('receipt.createdAt', 'DESC').skip(query.offset).take(query.limit);
         const [items, total] = await qb.getManyAndCount();
         return { items, total };
     }

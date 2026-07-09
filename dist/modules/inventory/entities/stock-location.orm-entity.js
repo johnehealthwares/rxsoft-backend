@@ -11,8 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StockLocationOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const stock_balance_orm_entity_1 = require("./stock-balance.orm-entity");
-const warehouse_orm_entity_1 = require("./warehouse.orm-entity");
 let StockLocationOrmEntity = class StockLocationOrmEntity {
     id;
     organizationId;
@@ -43,7 +41,7 @@ __decorate([
     __metadata("design:type", Object)
 ], StockLocationOrmEntity.prototype, "warehouseId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => warehouse_orm_entity_1.WarehouseOrmEntity, (warehouse) => warehouse.stockLocations, { nullable: true }),
+    (0, typeorm_1.ManyToOne)('WarehouseOrmEntity', 'stockLocations', { nullable: true }),
     (0, typeorm_1.JoinColumn)({ name: 'warehouse_id' }),
     __metadata("design:type", Object)
 ], StockLocationOrmEntity.prototype, "warehouse", void 0);
@@ -77,7 +75,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], StockLocationOrmEntity.prototype, "isActive", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => stock_balance_orm_entity_1.StockBalanceOrmEntity, (stockBalance) => stockBalance.location),
+    (0, typeorm_1.OneToMany)('StockBalanceOrmEntity', 'location'),
     __metadata("design:type", Array)
 ], StockLocationOrmEntity.prototype, "stockBalances", void 0);
 __decorate([

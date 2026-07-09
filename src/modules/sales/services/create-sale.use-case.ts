@@ -1,15 +1,17 @@
-import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { AppCacheService } from '../../../common/cache/cache.service';
+import { AccountingIntegrationService } from '../../accounting/services/accounting-integration.service';
 import { CreateSaleDto } from '../dto/create-sale.dto';
 import { SALES_REPOSITORY } from './sales.di-tokens';
 import type { SalesRepository } from '../repositories/sales.repository';
-import { validateSequentialCode } from '../../../shared/utils/code-validation';
 import { UomOrmEntity } from '../entities';
 
 @Injectable()
 export class CreateSaleUseCase {
+  private readonly logger = new Logger(CreateSaleUseCase.name);
+
   constructor(
     @Inject(SALES_REPOSITORY)
     private readonly salesRepository: SalesRepository,
@@ -17,6 +19,8 @@ export class CreateSaleUseCase {
     private readonly uomRepository: Repository<UomOrmEntity>,
     @Optional()
     private readonly cacheService?: AppCacheService,
+    @Optional()
+    private readonly accountingIntegration?: AccountingIntegrationService,
   ) {}
 
   async execute(
@@ -41,12 +45,12 @@ export class CreateSaleUseCase {
     const uomIds = [...new Set(payload.lines.map((l) => l.uomId))];
     const uoms = await this.uomRepository.find({
       where: { id: In(uomIds), organizationId },
-      select: ['id', 'factor'],
+      select: ['id', 'factor', 'uomType'],
     });
-    const uomFactorMap = new Map(uoms.map((u) => [u.id, u.factor]));
+    const uomFactorMap = new Map(uoms.map((u) => [u.id, u.uomType === 'smaller' ? 1 / u.factor : u.factor]));
 
     const lines = payload.lines.map((line, index) => {
-      const factor = uomFactorMap.get(line.uomId) ?? 1;
+      const factor = line.uomFactor ?? uomFactorMap.get(line.uomId) ?? 1;
       const lineSubtotal = Number((line.quantity * line.unitPrice * factor).toFixed(2));
       return {
         lineNumber: index + 1,
@@ -110,6 +114,17 @@ export class CreateSaleUseCase {
 
     await this.cacheService?.invalidateByPrefix(`sales:list:${organizationId}:`);
     await this.cacheService?.invalidateByPrefix(`receivables:list:${organizationId}:`);
+
+    if (!isHold && this.accountingIntegration) {
+      this.accountingIntegration
+        .recordSale(
+          organizationId,
+          { id: result.sale.id, saleNumber: payload.saleNumber, totalAmount, paidAmount },
+          lines,
+        )
+        .catch((err: Error) => this.logger.error(`Accounting: failed to record sale ${payload.saleNumber}: ${err.message}`, err.stack));
+    }
+
     return result;
   }
 }

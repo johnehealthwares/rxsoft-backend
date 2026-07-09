@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversionActivityOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const stakeholder_orm_entity_1 = require("./stakeholder.orm-entity");
 let ConversionActivityOrmEntity = class ConversionActivityOrmEntity {
     id;
     stakeholderId;
@@ -34,9 +33,9 @@ __decorate([
     __metadata("design:type", String)
 ], ConversionActivityOrmEntity.prototype, "stakeholderId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => stakeholder_orm_entity_1.StakeholderOrmEntity, (s) => s.activities),
+    (0, typeorm_1.ManyToOne)('StakeholderOrmEntity', 'activities'),
     (0, typeorm_1.JoinColumn)({ name: 'stakeholder_id' }),
-    __metadata("design:type", stakeholder_orm_entity_1.StakeholderOrmEntity)
+    __metadata("design:type", Function)
 ], ConversionActivityOrmEntity.prototype, "stakeholder", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text' }),

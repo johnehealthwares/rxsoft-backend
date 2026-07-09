@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SaleRefundLineOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
 const sale_line_orm_entity_1 = require("./sale-line.orm-entity");
-const sale_refund_orm_entity_1 = require("./sale-refund.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 let SaleRefundLineOrmEntity = class SaleRefundLineOrmEntity {
     id;
@@ -30,9 +29,9 @@ __decorate([
     __metadata("design:type", String)
 ], SaleRefundLineOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => sale_refund_orm_entity_1.SaleRefundOrmEntity, (refund) => refund.lines, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('SaleRefundOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'refund_id' }),
-    __metadata("design:type", sale_refund_orm_entity_1.SaleRefundOrmEntity)
+    __metadata("design:type", Function)
 ], SaleRefundLineOrmEntity.prototype, "refund", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => sale_line_orm_entity_1.SaleLineOrmEntity, { nullable: false }),

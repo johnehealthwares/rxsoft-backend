@@ -19,6 +19,10 @@ export class ListStockMovementsUseCase {
       offset: payload.offset,
       limit: payload.limit,
       movementType: payload.movementType,
+      itemId: payload.itemId,
+      locationId: payload.locationId,
+      fromDate: payload.fromDate,
+      toDate: payload.toDate,
     });
   }
 }

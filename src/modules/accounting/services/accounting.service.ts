@@ -3,17 +3,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import {
+  toGlAccountType,
   toJournalEntryLineType,
   toJournalEntryType,
   toJournalType,
 } from '../../../shared/domain/mappers';
 import {
+  CreateGlAccountDto,
   CreateJournalDto,
   CreateJournalEntryDto,
   CreateJournalEntryLineDto,
+  ListGlAccountsDto,
   ListJournalEntriesDto,
   ListJournalEntryLinesDto,
   ListJournalsDto,
+  UpdateGlAccountDto,
   UpdateJournalDto,
   UpdateJournalEntryDto,
   UpdateJournalEntryLineDto,
@@ -21,6 +25,7 @@ import {
 import { GlAccountOrmEntity, JournalEntryLineOrmEntity, JournalEntryOrmEntity, JournalOrmEntity } from '../entities';
 import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
+export type GlAccountType = ReturnType<typeof toGlAccountType>;
 export type JournalType = ReturnType<typeof toJournalType>;
 export type JournalEntryType = ReturnType<typeof toJournalEntryType>;
 export type JournalEntryLineType = ReturnType<typeof toJournalEntryLineType>;
@@ -127,7 +132,7 @@ export class AccountingService {
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.lines', 'lines')
       .where('entry.organization_id = :organizationId', { organizationId })
-      .orderBy('entry.updated_at', 'DESC')
+      .orderBy('entry.updatedAt', 'DESC')
       .skip(query.offset)
       .take(query.limit);
 
@@ -269,6 +274,296 @@ export class AccountingService {
     await this.getJournalEntry(entryId, organizationId);
     const result = await this.journalEntryLineRepository.delete({ id: lineId, journalEntryId: entryId });
     if (!result.affected) throw new NotFoundException('Journal entry line not found');
+  }
+
+  // ─── GL Account CRUD ───────────────────────────────────────────────
+
+  async listGlAccounts(query: ListGlAccountsDto, organizationId: string): Promise<{ data: GlAccountType[]; total: number }> {
+    const qb = this.glAccountRepository
+      .createQueryBuilder('account')
+      .where('account.organization_id = :organizationId', { organizationId })
+      .orderBy('account.account_code', 'ASC')
+      .skip(query.offset)
+      .take(query.limit);
+
+    if (query.search) {
+      qb.andWhere('(account.account_code ILIKE :search OR account.account_name ILIKE :search)', { search: `%${query.search}%` });
+    }
+
+    if (query.accountType) {
+      qb.andWhere('account.account_type = :accountType', { accountType: query.accountType });
+    }
+
+    const [data, total] = await qb.getManyAndCount();
+    return { data: data.map(toGlAccountType), total };
+  }
+
+  async getGlAccount(id: string, organizationId: string): Promise<GlAccountType> {
+    const account = await this.glAccountRepository.findOne({ where: { id, organizationId } });
+    if (!account) throw new NotFoundException('GL account not found');
+    return toGlAccountType(account);
+  }
+
+  async createGlAccount(payload: CreateGlAccountDto, organizationId: string): Promise<GlAccountType> {
+    const duplicate = await this.glAccountRepository.findOne({ where: { organizationId, accountCode: payload.accountCode } });
+    if (duplicate) throw new BadRequestException('GL account code already exists');
+
+    const entity = this.glAccountRepository.create({
+      organizationId,
+      accountCode: payload.accountCode,
+      accountName: payload.accountName,
+      accountType: payload.accountType,
+      allowsReconciliation: payload.allowsReconciliation ?? false,
+      isActive: payload.isActive ?? true,
+    });
+    const saved = await this.glAccountRepository.save(entity);
+    return toGlAccountType(saved);
+  }
+
+  async updateGlAccount(id: string, payload: UpdateGlAccountDto, organizationId: string): Promise<GlAccountType> {
+    const account = await this.glAccountRepository.findOne({ where: { id, organizationId } });
+    if (!account) throw new NotFoundException('GL account not found');
+
+    if (payload.accountCode && payload.accountCode !== account.accountCode) {
+      const duplicate = await this.glAccountRepository.findOne({ where: { organizationId, accountCode: payload.accountCode } });
+      if (duplicate) throw new BadRequestException('GL account code already exists');
+      account.accountCode = payload.accountCode;
+    }
+
+    if (payload.accountName !== undefined) account.accountName = payload.accountName;
+    if (payload.allowsReconciliation !== undefined) account.allowsReconciliation = payload.allowsReconciliation;
+    if (payload.isActive !== undefined) account.isActive = payload.isActive;
+
+    const saved = await this.glAccountRepository.save(account);
+    return toGlAccountType(saved);
+  }
+
+  async removeGlAccount(id: string, organizationId: string): Promise<void> {
+    const linesCount = await this.journalEntryLineRepository.count({ where: { glAccountId: id } });
+    if (linesCount > 0) {
+      throw new BadRequestException('Cannot delete GL account with existing journal entry lines. Deactivate it instead.');
+    }
+    const result = await this.glAccountRepository.delete({ id, organizationId });
+    if (!result.affected) throw new NotFoundException('GL account not found');
+  }
+
+  // ─── Posting Logic ──────────────────────────────────────────────────
+
+  async postJournalEntry(entryId: string, organizationId: string): Promise<JournalEntryType> {
+    const entry = await this.journalEntryRepository.findOne({
+      where: { id: entryId, organizationId },
+      relations: { lines: true },
+    });
+    if (!entry) throw new NotFoundException('Journal entry not found');
+    if (entry.status !== 'draft') throw new BadRequestException('Only draft journal entries can be posted');
+    if (!entry.lines || entry.lines.length < 2) {
+      throw new BadRequestException('Journal entry must have at least 2 lines to post');
+    }
+
+    const totals = entry.lines.reduce(
+      (acc, line) => {
+        acc.debit += Number(line.debitAmount);
+        acc.credit += Number(line.creditAmount);
+        return acc;
+      },
+      { debit: 0, credit: 0 },
+    );
+
+    if (Math.abs(totals.debit - totals.credit) > 0.01) {
+      throw new BadRequestException(
+        `Journal entry debits (${totals.debit.toFixed(2)}) and credits (${totals.credit.toFixed(2)}) do not balance`,
+      );
+    }
+
+    entry.status = 'posted';
+    entry.postedAt = new Date();
+    const saved = await this.journalEntryRepository.save(entry);
+    return this.getJournalEntry(saved.id, organizationId);
+  }
+
+  async reverseJournalEntry(entryId: string, organizationId: string, userId: string): Promise<JournalEntryType> {
+    const entry = await this.journalEntryRepository.findOne({
+      where: { id: entryId, organizationId },
+      relations: { lines: true, journal: true },
+    });
+    if (!entry) throw new NotFoundException('Journal entry not found');
+    if (entry.status !== 'posted') throw new BadRequestException('Only posted journal entries can be reversed');
+
+    const reversedEntry = this.journalEntryRepository.create({
+      organizationId,
+      journalId: entry.journalId,
+      entryNumber: `REV-${entry.entryNumber}`,
+      entryDate: new Date().toISOString().slice(0, 10),
+      reference: `Reversal of ${entry.entryNumber}`,
+      sourceType: entry.sourceType,
+      sourceId: entry.sourceId,
+      status: 'reversed',
+      createdByUserId: userId ?? null,
+      postedAt: new Date(),
+    });
+    const saved = await this.journalEntryRepository.save(reversedEntry);
+
+    if (entry.lines?.length) {
+      const reversedLines = entry.lines.map((line) =>
+        this.journalEntryLineRepository.create({
+          journalEntryId: saved.id,
+          lineNumber: line.lineNumber,
+          glAccountId: line.glAccountId,
+          partyId: line.partyId,
+          itemId: line.itemId,
+          debitAmount: Number(line.creditAmount),
+          creditAmount: Number(line.debitAmount),
+          description: `Reversal: ${line.description ?? ''}`,
+        }),
+      );
+      await this.journalEntryLineRepository.save(reversedLines);
+    }
+
+    entry.status = 'reversed';
+    await this.journalEntryRepository.save(entry);
+
+    return this.getJournalEntry(saved.id, organizationId);
+  }
+
+  // ─── Reports ──────────────────────────────────────────────────────
+
+  async getTrialBalance(organizationId: string, asOfDate: string) {
+    const rows = await this.journalEntryLineRepository
+      .createQueryBuilder('jel')
+      .select('gl.account_code', 'accountCode')
+      .addSelect('gl.account_name', 'accountName')
+      .addSelect('gl.account_type', 'accountType')
+      .addSelect('COALESCE(SUM(jel.debit_amount), 0)', 'totalDebits')
+      .addSelect('COALESCE(SUM(jel.credit_amount), 0)', 'totalCredits')
+      .innerJoin('gl_accounts', 'gl', 'gl.id = jel.gl_account_id')
+      .innerJoin('journal_entries', 'je', 'je.id = jel.journal_entry_id')
+      .where('gl.organization_id = :orgId', { orgId: organizationId })
+      .andWhere('je.status = :status', { status: 'posted' })
+      .andWhere('je.entry_date <= :asOf', { asOf: asOfDate })
+      .groupBy('gl.id')
+      .addGroupBy('gl.account_code')
+      .addGroupBy('gl.account_name')
+      .addGroupBy('gl.account_type')
+      .orderBy('gl.account_code', 'ASC')
+      .getRawMany();
+
+    const data = rows.map((r: any) => {
+      const debits = Number(r.totalDebits);
+      const credits = Number(r.totalCredits);
+      const type = r.accountType;
+
+      let debitBalance = 0;
+      let creditBalance = 0;
+
+      if (type === 'asset' || type === 'expense') {
+        const bal = debits - credits;
+        if (bal >= 0) debitBalance = bal;
+        else creditBalance = Math.abs(bal);
+      } else {
+        const bal = credits - debits;
+        if (bal >= 0) creditBalance = bal;
+        else debitBalance = Math.abs(bal);
+      }
+
+      return {
+        accountCode: r.accountCode,
+        accountName: r.accountName,
+        accountType: type,
+        debitBalance: Number(debitBalance.toFixed(2)),
+        creditBalance: Number(creditBalance.toFixed(2)),
+      };
+    });
+
+    const totals = data.reduce(
+      (acc, r) => {
+        acc.debitTotal += r.debitBalance;
+        acc.creditTotal += r.creditBalance;
+        return acc;
+      },
+      { debitTotal: 0, creditTotal: 0 },
+    );
+
+    return { asOfDate, data, totals: { debitTotal: Number(totals.debitTotal.toFixed(2)), creditTotal: Number(totals.creditTotal.toFixed(2)) } };
+  }
+
+  async getBalanceSheet(organizationId: string, asOfDate: string) {
+    const tb = await this.getTrialBalance(organizationId, asOfDate);
+    const bsAccounts = tb.data.filter((r: any) => ['asset', 'liability', 'equity'].includes(r.accountType));
+
+    const assets = bsAccounts.filter((r: any) => r.accountType === 'asset');
+    const liabilities = bsAccounts.filter((r: any) => r.accountType === 'liability');
+    const equity = bsAccounts.filter((r: any) => r.accountType === 'equity');
+
+    const assetTotal = assets.reduce((s: number, r: any) => s + r.debitBalance - r.creditBalance, 0);
+    const liabilityTotal = liabilities.reduce((s: number, r: any) => s + r.creditBalance - r.debitBalance, 0);
+    const equityTotal = equity.reduce((s: number, r: any) => s + r.creditBalance - r.debitBalance, 0);
+
+    return {
+      asOfDate,
+      assets: { accounts: assets, total: Number(assetTotal.toFixed(2)) },
+      liabilities: { accounts: liabilities, total: Number(liabilityTotal.toFixed(2)) },
+      equity: { accounts: equity, total: Number(equityTotal.toFixed(2)) },
+      totalLiabilitiesAndEquity: Number((liabilityTotal + equityTotal).toFixed(2)),
+    };
+  }
+
+  async getIncomeStatement(organizationId: string, fromDate: string, toDate: string) {
+    const rows = await this.journalEntryLineRepository
+      .createQueryBuilder('jel')
+      .select('gl.account_code', 'accountCode')
+      .addSelect('gl.account_name', 'accountName')
+      .addSelect('gl.account_type', 'accountType')
+      .addSelect('gl.account_code', 'sortCode')
+      .addSelect('COALESCE(SUM(jel.debit_amount), 0)', 'totalDebits')
+      .addSelect('COALESCE(SUM(jel.credit_amount), 0)', 'totalCredits')
+      .innerJoin('gl_accounts', 'gl', 'gl.id = jel.gl_account_id')
+      .innerJoin('journal_entries', 'je', 'je.id = jel.journal_entry_id')
+      .where('gl.organization_id = :orgId', { orgId: organizationId })
+      .andWhere('je.status = :status', { status: 'posted' })
+      .andWhere('je.entry_date >= :from', { from: fromDate })
+      .andWhere('je.entry_date <= :to', { to: toDate })
+      .andWhere('gl.account_type IN (:...types)', { types: ['income', 'expense'] })
+      .groupBy('gl.id')
+      .addGroupBy('gl.account_code')
+      .addGroupBy('gl.account_name')
+      .addGroupBy('gl.account_type')
+      .addGroupBy('gl.account_code')
+      .orderBy('gl.account_code', 'ASC')
+      .getRawMany();
+
+    const mapped = rows.map((r: any) => {
+      const debits = Number(r.totalDebits);
+      const credits = Number(r.totalCredits);
+      const isIncome = r.accountType === 'income';
+      const balance = isIncome ? credits - debits : debits - credits;
+      return {
+        accountCode: r.accountCode,
+        accountName: r.accountName,
+        accountType: r.accountType,
+        balance: Number(balance.toFixed(2)),
+      };
+    });
+
+    const isCogs = (r: any) => r.accountType === 'expense' && r.accountCode.startsWith('51');
+    const isOperatingExpense = (r: any) => r.accountType === 'expense' && !r.accountCode.startsWith('51');
+
+    const revenue = mapped.filter((r: any) => r.accountType === 'income' && r.balance >= 0);
+    const cogs = mapped.filter(isCogs);
+    const operatingExpenses = mapped.filter(isOperatingExpense);
+
+    const revenueTotal = revenue.reduce((s: number, r: any) => s + r.balance, 0);
+    const cogsTotal = cogs.reduce((s: number, r: any) => s + r.balance, 0);
+    const opExTotal = operatingExpenses.reduce((s: number, r: any) => s + r.balance, 0);
+
+    return {
+      fromDate,
+      toDate,
+      revenue: { accounts: revenue, total: Number(revenueTotal.toFixed(2)) },
+      cogs: { accounts: cogs, total: Number(cogsTotal.toFixed(2)) },
+      grossProfit: Number((revenueTotal - cogsTotal).toFixed(2)),
+      operatingExpenses: { accounts: operatingExpenses, total: Number(opExTotal.toFixed(2)) },
+      netIncome: Number((revenueTotal - cogsTotal - opExTotal).toFixed(2)),
+    };
   }
 
   private async ensureAccount(accountId: string | null | undefined, organizationId: string): Promise<void> {

@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import type { ItemCategoryType } from '../../../shared/domain';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto/categories.dto';
-import { ItemCategoryOrmEntity } from 'src/modules/catalog/entities';
+import { ItemCategoryOrmEntity } from "../../catalog/entities";
 export declare class CategoriesService {
     private readonly categoryRepository;
     constructor(categoryRepository: Repository<ItemCategoryOrmEntity>);

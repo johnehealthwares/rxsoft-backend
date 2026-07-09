@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GoodsReceiptLineOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const goods_receipt_orm_entity_1 = require("./goods-receipt.orm-entity");
 const item_orm_entity_1 = require("../../catalog/entities/item.orm-entity");
 const uom_orm_entity_1 = require("../../sales/entities/uom.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
@@ -35,9 +34,9 @@ __decorate([
     __metadata("design:type", String)
 ], GoodsReceiptLineOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => goods_receipt_orm_entity_1.GoodsReceiptOrmEntity, (gr) => gr.lines, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('GoodsReceiptOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'goods_receipt_id' }),
-    __metadata("design:type", goods_receipt_orm_entity_1.GoodsReceiptOrmEntity)
+    __metadata("design:type", Function)
 ], GoodsReceiptLineOrmEntity.prototype, "goodsReceipt", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => item_orm_entity_1.ItemOrmEntity, { nullable: false }),

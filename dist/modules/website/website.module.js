@@ -12,8 +12,8 @@ const jwt_1 = require("@nestjs/jwt");
 const typeorm_1 = require("@nestjs/typeorm");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
-const identity_module_1 = require("../identity/identity.module");
 const services_module_1 = require("../../services/services.module");
+const users_proxy_module_1 = require("../users-proxy/users-proxy.module");
 const item_orm_entity_1 = require("../../modules/catalog/entities/item.orm-entity");
 const item_category_orm_entity_1 = require("../../modules/catalog/entities/item-category.orm-entity");
 const entities_1 = require("../../modules/sales/entities");
@@ -31,8 +31,8 @@ exports.WebsiteModule = WebsiteModule;
 exports.WebsiteModule = WebsiteModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            identity_module_1.IdentityModule,
             services_module_1.ServicesModule,
+            users_proxy_module_1.UsersProxyModule,
             jwt_1.JwtModule.register({}),
             typeorm_1.TypeOrmModule.forFeature([
                 item_orm_entity_1.ItemOrmEntity,

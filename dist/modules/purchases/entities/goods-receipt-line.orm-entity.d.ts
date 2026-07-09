@@ -1,4 +1,4 @@
-import { GoodsReceiptOrmEntity } from './goods-receipt.orm-entity';
+import type { GoodsReceiptOrmEntity } from './goods-receipt.orm-entity';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 export declare class GoodsReceiptLineOrmEntity {

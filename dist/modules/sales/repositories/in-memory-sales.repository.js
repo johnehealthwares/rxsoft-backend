@@ -11,6 +11,10 @@ const common_1 = require("@nestjs/common");
 const node_crypto_1 = require("node:crypto");
 const sale_entity_1 = require("../domains/sale.entity");
 let InMemorySalesRepository = class InMemorySalesRepository {
+    async findById(organizationId, saleId) {
+        const sale = this.sales.find((s) => s.organizationId === organizationId && s.id === saleId);
+        return sale ?? null;
+    }
     async findLastCreated(organizationId) {
         const sale = this.sales.find((s) => s.organizationId === organizationId);
         return sale ? { saleNumber: sale.saleNumber } : null;

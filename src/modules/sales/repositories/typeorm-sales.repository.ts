@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
+import { UsersProxyService } from '../../users-proxy/users-proxy.service';
 import {
   StockAdjustmentOrmEntity,
   StockBalanceOrmEntity,
@@ -54,6 +54,37 @@ function toDomain(entity: SaleOrmEntity & { storeLocationName?: string }): Sale 
 
 @Injectable()
 export class TypeormSalesRepository implements SalesRepository {
+  async findById(organizationId: string, saleId: string): Promise<Sale | null> {
+    const entity = await this.saleRepository.findOne({
+      where: { id: saleId, organizationId },
+      relations: [
+        'customer',
+        'lines',
+        'lines.item',
+        'lines.item.category',
+        'lines.item.baseUom',
+        'lines.item.saleUom',
+        'lines.uom',
+        'payments',
+        'payments.paymentMethod',
+      ],
+    });
+    if (!entity) return null;
+
+    // Attach store location name for the toDomain mapping
+    if (entity.storeId) {
+      const location = await this.dataSource
+        .createQueryBuilder()
+        .select('sl.name', 'name')
+        .from(StockLocationOrmEntity, 'sl')
+        .where('sl.id::text = :id', { id: entity.storeId })
+        .getRawOne<{ name: string }>();
+      (entity as any).storeLocationName = location?.name ?? null;
+    }
+
+    return toDomain(entity);
+  }
+
   async findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null> {
     const entity = await this.saleRepository.findOne({
       where: { organizationId },
@@ -71,6 +102,7 @@ export class TypeormSalesRepository implements SalesRepository {
     private readonly uomRepository: Repository<UomOrmEntity>,
     private readonly dataSource: DataSource,
     private readonly uomConverter: UomConverterService,
+    private readonly usersProxy: UsersProxyService,
   ) {}
 
   async list(query: SalesListQuery): Promise<{ items: Sale[]; total: number }> {
@@ -200,6 +232,21 @@ export class TypeormSalesRepository implements SalesRepository {
   }
 
   async createWithSettlement(payload: CreateSaleRepositoryPayload): Promise<CreateSaleResult> {
+    // Validate user references via identity service before starting transaction.
+    await this.usersProxy.findById(payload.organizationId, payload.soldByUserId);
+    const receiverIds = [
+      ...new Set(
+        payload.payments
+          .map((payment) => payment.receivedByUserId)
+          .filter((receivedByUserId): receivedByUserId is string => Boolean(receivedByUserId)),
+      ),
+    ];
+    if (receiverIds.length) {
+      await Promise.all(
+        receiverIds.map((id) => this.usersProxy.findById(payload.organizationId, id)),
+      );
+    }
+
     return this.dataSource.transaction(async (manager) => {
       const saleRepo = manager.getRepository(SaleOrmEntity);
       const saleLineRepo = manager.getRepository(SaleLineOrmEntity);
@@ -210,15 +257,6 @@ export class TypeormSalesRepository implements SalesRepository {
       const lotRepo = manager.getRepository(StockLotOrmEntity);
       const uomRepo = manager.getRepository(UomOrmEntity);
       const paymentMethodRepo = manager.getRepository(PaymentMethodOrmEntity);
-      const userRepo = manager.getRepository(UserOrmEntity);
-
-      // Validate every foreign reference in org scope before writing anything.
-      const soldByUser = await userRepo.findOne({
-        where: { id: payload.soldByUserId, organizationId: payload.organizationId },
-      });
-      if (!soldByUser) {
-        throw new Error('Sold-by user is not valid for this organization');
-      }
 
       const itemIds = [...new Set(payload.lines.map((line) => line.itemId))];
       const items: ItemOrmEntity[] = [];
@@ -279,26 +317,6 @@ export class TypeormSalesRepository implements SalesRepository {
         }
       }
 
-      const receiverIds = [
-        ...new Set(
-          payload.payments
-            .map((payment) => payment.receivedByUserId)
-            .filter((receivedByUserId): receivedByUserId is string => Boolean(receivedByUserId)),
-        ),
-      ];
-      if (receiverIds.length) {
-        const receivers = await userRepo.find({
-          where: {
-            id: In(receiverIds),
-            organizationId: payload.organizationId,
-          },
-          select: ['id'],
-        });
-        if (receivers.length !== receiverIds.length) {
-          throw new Error('One or more receiver user references are invalid');
-        }
-      }
-
       const saleEntity = saleRepo.create({
         organizationId: payload.organizationId,
         saleNumber: payload.saleNumber,
@@ -346,7 +364,7 @@ export class TypeormSalesRepository implements SalesRepository {
             amount: payment.amount,
             paymentReference: payment.paymentReference,
             paidAt: payment.paidAt,
-            receivedByUser: payment.receivedByUserId ? { id: payment.receivedByUserId } : null,
+            receivedByUserId: payment.receivedByUserId ?? null,
           }),
         );
         await salePaymentRepo.save(paymentEntities);
@@ -377,7 +395,7 @@ export class TypeormSalesRepository implements SalesRepository {
             transactionDate: payload.saleDate,
             paymentMethod: null,
             referenceNumber: savedSale.saleNumber,
-            receivedByUser: null,
+            receivedByUserId: null,
           }),
         );
         receivableId = savedReceivable.id;
@@ -494,6 +512,8 @@ export class TypeormSalesRepository implements SalesRepository {
   }
 
   async createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult> {
+    await this.usersProxy.findById(payload.organizationId, payload.refundedByUserId);
+
     return this.dataSource.transaction(async (manager) => {
       const saleRepo = manager.getRepository(SaleOrmEntity);
       const saleLineRepo = manager.getRepository(SaleLineOrmEntity);
@@ -504,14 +524,6 @@ export class TypeormSalesRepository implements SalesRepository {
       const storeStockLocationRepo = manager.getRepository(StoreStockLocationOrmEntity);
       const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
       const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
-      const userRepo = manager.getRepository(UserOrmEntity);
-
-      const actor = await userRepo.findOne({
-        where: { id: payload.refundedByUserId, organizationId: payload.organizationId },
-      });
-      if (!actor) {
-        throw new NotFoundException('Refund user not found');
-      }
 
       const sale = await saleRepo.findOne({
         where: { id: payload.saleId, organizationId: payload.organizationId },
@@ -577,7 +589,7 @@ export class TypeormSalesRepository implements SalesRepository {
         totalAmount: 0,
         refundDate: payload.refundDate,
         reason: payload.reason,
-        refundedByUser: actor,
+        refundedByUserId: payload.refundedByUserId,
       });
       const savedRefund = await refundRepo.save(refund);
 
@@ -646,7 +658,7 @@ export class TypeormSalesRepository implements SalesRepository {
             stockBalance: savedBalance,
             reason: `sale_refund:${savedRefund.refundNumber}`,
             deltaQuantity: line.quantity,
-            performedByUserId: actor.id,
+            performedByUserId: payload.refundedByUserId,
             performedAt: payload.refundDate,
           }),
         );
@@ -684,7 +696,7 @@ export class TypeormSalesRepository implements SalesRepository {
               transactionDate: payload.refundDate,
               paymentMethod: null,
               referenceNumber: savedRefund.refundNumber,
-              receivedByUser: actor,
+              receivedByUserId: payload.refundedByUserId,
               note: `Auto credit from refund ${savedRefund.refundNumber}`,
             }),
           );

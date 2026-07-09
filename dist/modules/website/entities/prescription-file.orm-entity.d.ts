@@ -1,4 +1,4 @@
-import { PrescriptionOrmEntity } from './prescription.orm-entity';
+import type { PrescriptionOrmEntity } from './prescription.orm-entity';
 export declare class PrescriptionFileOrmEntity {
     id: string;
     prescription: PrescriptionOrmEntity;

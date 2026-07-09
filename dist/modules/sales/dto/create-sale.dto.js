@@ -19,6 +19,7 @@ class CreateSaleLineDto {
     lotId;
     quantity;
     unitPrice;
+    uomFactor;
 }
 __decorate([
     (0, swagger_1.ApiProperty)(),
@@ -50,6 +51,13 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], CreateSaleLineDto.prototype, "unitPrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, nullable: true }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Object)
+], CreateSaleLineDto.prototype, "uomFactor", void 0);
 class CreateSalePaymentDto {
     paymentMethodId;
     amount;

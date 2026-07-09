@@ -11,17 +11,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var CollectReceivablePaymentUseCase_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CollectReceivablePaymentUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const cache_service_1 = require("../../../common/cache/cache.service");
+const accounting_integration_service_1 = require("../../accounting/services/accounting-integration.service");
 const receivables_di_tokens_1 = require("./receivables.di-tokens");
-let CollectReceivablePaymentUseCase = class CollectReceivablePaymentUseCase {
+let CollectReceivablePaymentUseCase = CollectReceivablePaymentUseCase_1 = class CollectReceivablePaymentUseCase {
     receivablesRepository;
     cacheService;
-    constructor(receivablesRepository, cacheService) {
+    accountingIntegration;
+    logger = new common_1.Logger(CollectReceivablePaymentUseCase_1.name);
+    constructor(receivablesRepository, cacheService, accountingIntegration) {
         this.receivablesRepository = receivablesRepository;
         this.cacheService = cacheService;
+        this.accountingIntegration = accountingIntegration;
     }
     async execute(receivableId, payload, organizationId, receivedByUserId) {
         if (payload.amount <= 0) {
@@ -39,14 +44,21 @@ let CollectReceivablePaymentUseCase = class CollectReceivablePaymentUseCase {
         });
         await this.cacheService?.invalidateByPrefix(`receivables:list:${organizationId}:`);
         await this.cacheService?.invalidateByPrefix(`receivables:tx:${organizationId}:${receivableId}:`);
+        if (this.accountingIntegration) {
+            this.accountingIntegration
+                .recordPaymentCollection(organizationId, { id: receivableId, receivableNumber: result.receivable.receivableNumber }, { id: result.transactionId, amount: payload.amount })
+                .catch((err) => this.logger.error(`Accounting: failed to record payment: ${err.message}`, err.stack));
+        }
         return result;
     }
 };
 exports.CollectReceivablePaymentUseCase = CollectReceivablePaymentUseCase;
-exports.CollectReceivablePaymentUseCase = CollectReceivablePaymentUseCase = __decorate([
+exports.CollectReceivablePaymentUseCase = CollectReceivablePaymentUseCase = CollectReceivablePaymentUseCase_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(receivables_di_tokens_1.RECEIVABLES_REPOSITORY)),
     __param(1, (0, common_1.Optional)()),
-    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService])
+    __param(2, (0, common_1.Optional)()),
+    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService,
+        accounting_integration_service_1.AccountingIntegrationService])
 ], CollectReceivablePaymentUseCase);
 //# sourceMappingURL=collect-receivable-payment.use-case.js.map

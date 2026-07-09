@@ -8,16 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var DatabaseSeeedService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseSeeedService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const typeorm_1 = require("typeorm");
-const run_1 = require("./seeds/run");
 let DatabaseSeeedService = DatabaseSeeedService_1 = class DatabaseSeeedService {
     configService;
     dataSource;
@@ -27,41 +23,15 @@ let DatabaseSeeedService = DatabaseSeeedService_1 = class DatabaseSeeedService {
         this.dataSource = dataSource;
     }
     async runSeedsOnStartup() {
-        const useInMemoryRepos = this.configService.get('USE_IN_MEMORY_REPOS', 'false') === 'true';
         const shouldSeed = this.configService.get('SEED_ON_START', 'false') === 'true';
-        if (!shouldSeed) {
+        if (!shouldSeed)
             return;
-        }
-        if (useInMemoryRepos) {
-            this.logger.warn('SEED_ON_START=true but USE_IN_MEMORY_REPOS=true. Seeding requires TypeORM; set USE_IN_MEMORY_REPOS=false.');
-            return;
-        }
-        if (!this.dataSource) {
-            this.logger.error('SEED_ON_START=true but DataSource was not injected. Ensure TypeOrmModule.forRoot(...) is enabled.');
-            return;
-        }
-        await this.runSeeds();
-    }
-    async runSeeds() {
-        if (!this.dataSource) {
-            this.logger.warn('DataSource not available, skipping seeds');
-            return;
-        }
-        try {
-            this.logger.log('Starting database seeds on app startup...');
-            await (0, run_1.runSeeds)(this.dataSource);
-            this.logger.log('Database seeds completed successfully!');
-        }
-        catch (error) {
-            this.logger.error('Error running seeds:', error);
-            throw error;
-        }
+        this.logger.log('No seeds configured for rxsoft-backend (identity data seeded by rxsoft-identity)');
     }
 };
 exports.DatabaseSeeedService = DatabaseSeeedService;
 exports.DatabaseSeeedService = DatabaseSeeedService = DatabaseSeeedService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, common_1.Optional)()),
     __metadata("design:paramtypes", [config_1.ConfigService,
         typeorm_1.DataSource])
 ], DatabaseSeeedService);

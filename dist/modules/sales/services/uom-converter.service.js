@@ -17,6 +17,9 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const uom_orm_entity_1 = require("../entities/uom.orm-entity");
+function getEffectiveFactor(uom) {
+    return uom.uomType === 'smaller' ? 1 / uom.factor : uom.factor;
+}
 let UomConverterService = class UomConverterService {
     uomRepo;
     constructor(uomRepo) {
@@ -32,8 +35,10 @@ let UomConverterService = class UomConverterService {
         if (fromUom.categoryId !== toUom.categoryId) {
             throw new common_1.BadRequestException(`UOM "${fromUom.name}" (category: ${fromUom.categoryId}) and "${toUom.name}" (category: ${toUom.categoryId}) are not in the same category`);
         }
-        const inReference = quantity * fromUom.factor;
-        return Number((inReference / toUom.factor).toFixed(4));
+        const fromEffective = getEffectiveFactor(fromUom);
+        const toEffective = getEffectiveFactor(toUom);
+        const inReference = quantity * fromEffective;
+        return Number((inReference / toEffective).toFixed(4));
     }
     async convertToBaseUom(quantity, uomId, baseUomId) {
         return this.convert(quantity, uomId, baseUomId);

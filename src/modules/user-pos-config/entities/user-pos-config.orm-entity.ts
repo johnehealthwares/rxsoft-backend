@@ -1,5 +1,4 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId, Unique, UpdateDateColumn } from 'typeorm';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { StockLocationOrmEntity } from '../../inventory/entities/stock-location.orm-entity';
 import { PartyOrmEntity } from '../../customers/entities/party.orm-entity';
 import { PriceListOrmEntity } from '../../pricing/entities/price-list.orm-entity';
@@ -9,10 +8,6 @@ import { PriceListOrmEntity } from '../../pricing/entities/price-list.orm-entity
 export class UserPosConfigOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @ManyToOne(() => UserOrmEntity, { nullable: false })
-  @JoinColumn({ name: 'user_id' })
-  user!: UserOrmEntity;
 
   @Column({ name: 'user_id', type: 'uuid' })
   userId!: string;

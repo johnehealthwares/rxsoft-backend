@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { GoodsReceiptOrmEntity } from './goods-receipt.orm-entity';
+import type { GoodsReceiptOrmEntity } from './goods-receipt.orm-entity';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
@@ -9,7 +9,7 @@ export class GoodsReceiptLineOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => GoodsReceiptOrmEntity, (gr) => gr.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne('GoodsReceiptOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'goods_receipt_id' })
   goodsReceipt!: GoodsReceiptOrmEntity;
 

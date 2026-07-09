@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { OrganisationConfigService } from '../../organisation-config/services/organisation-config.service';
+import { StockLocationOrmEntity } from '../../inventory/entities/stock-location.orm-entity';
 import { UpdateUserPosConfigDto, UserPosConfigType } from '../dto/user-pos-config.dto';
 import { UserPosConfigOrmEntity } from '../entities/user-pos-config.orm-entity';
 
@@ -39,6 +40,8 @@ export class UserPosConfigService {
   constructor(
     @InjectRepository(UserPosConfigOrmEntity)
     private readonly repo: Repository<UserPosConfigOrmEntity>,
+    @InjectEntityManager()
+    private readonly entityManager: EntityManager,
     private readonly orgConfigService: OrganisationConfigService,
   ) {}
 
@@ -49,15 +52,31 @@ export class UserPosConfigService {
     });
     if (!entity) {
       const orgConfig = await this.orgConfigService.getOrCreate(organizationId);
+
+      // Try to auto-assign a default stock location for the organization
+      const defaultLocation = await this.entityManager
+        .getRepository(StockLocationOrmEntity)
+        .findOne({
+          where: { organizationId, isActive: true },
+          order: { createdAt: 'ASC' },
+        });
+
       entity = this.repo.create({
         userId,
         organizationId,
+        stockLocationId: defaultLocation?.id ?? null,
         allowA4Print: orgConfig.defaultAllowA4Print,
         allowPos: orgConfig.defaultAllowPos,
       });
       entity = await this.repo.save(entity);
+
+      // Reload with relations after save
+      entity = await this.repo.findOne({
+        where: { id: entity.id },
+        relations: ['stockLocation', 'defaultCustomer', 'defaultPriceList'],
+      })!;
     }
-    return toType(entity);
+    return toType(entity!);
   }
 
   async update(
@@ -93,6 +112,12 @@ export class UserPosConfigService {
     if (payload.autoSelectCustomer !== undefined) entity.autoSelectCustomer = payload.autoSelectCustomer;
     if (payload.autoSelectPriceList !== undefined) entity.autoSelectPriceList = payload.autoSelectPriceList;
     const saved = await this.repo.save(entity);
-    return toType(saved);
+
+    // Reload with relations after save to reflect updated joins
+    const reloaded = await this.repo.findOne({
+      where: { id: saved.id },
+      relations: ['stockLocation', 'defaultCustomer', 'defaultPriceList'],
+    });
+    return toType(reloaded!);
   }
 }

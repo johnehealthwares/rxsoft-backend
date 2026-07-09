@@ -22,6 +22,7 @@ import {
   WarehouseOrmEntity,
 } from './entities';
 import { ListStockMovementsUseCase } from './services/list-stock-movements.use-case';
+import { AccountingModule } from '../accounting/accounting.module';
 
 const inventoryConfigService = new ConfigService();
 const useInMemoryRepos = inventoryConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -60,7 +61,7 @@ const inventoryControllers = useInMemoryRepos
 const inventoryExtraProviders = useInMemoryRepos ? [] : [StockLocationsService];
 
 @Module({
-  imports: [JwtModule.register({}), ...inventoryPersistenceImports],
+  imports: [JwtModule.register({}), AccountingModule, ...inventoryPersistenceImports],
   controllers: inventoryControllers,
   providers: [
     ListStockBalancesUseCase,

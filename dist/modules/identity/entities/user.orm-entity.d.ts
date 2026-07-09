@@ -1,5 +1,3 @@
-import { RefreshTokenOrmEntity } from './refresh-token.orm-entity';
-import { RoleOrmEntity } from './role.orm-entity';
 export declare class UserOrmEntity {
     id: string;
     organizationId: string;
@@ -7,8 +5,7 @@ export declare class UserOrmEntity {
     passwordHash: string;
     isActive: boolean;
     phone?: string;
-    roles: RoleOrmEntity[];
-    refreshTokens: RefreshTokenOrmEntity[];
+    email?: string;
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date | null;

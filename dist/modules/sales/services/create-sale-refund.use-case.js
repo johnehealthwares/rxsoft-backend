@@ -11,17 +11,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var CreateSaleRefundUseCase_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateSaleRefundUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const cache_service_1 = require("../../../common/cache/cache.service");
+const accounting_integration_service_1 = require("../../accounting/services/accounting-integration.service");
 const sales_di_tokens_1 = require("./sales.di-tokens");
-let CreateSaleRefundUseCase = class CreateSaleRefundUseCase {
+let CreateSaleRefundUseCase = CreateSaleRefundUseCase_1 = class CreateSaleRefundUseCase {
     salesRepository;
     cacheService;
-    constructor(salesRepository, cacheService) {
+    accountingIntegration;
+    logger = new common_1.Logger(CreateSaleRefundUseCase_1.name);
+    constructor(salesRepository, cacheService, accountingIntegration) {
         this.salesRepository = salesRepository;
         this.cacheService = cacheService;
+        this.accountingIntegration = accountingIntegration;
     }
     async execute(saleId, payload, organizationId, userId) {
         if (!payload.lines.length) {
@@ -40,14 +45,26 @@ let CreateSaleRefundUseCase = class CreateSaleRefundUseCase {
             })),
         });
         await this.cacheService?.invalidateByPrefix(`sales:list:${organizationId}:`);
+        if (this.accountingIntegration) {
+            this.accountingIntegration
+                .recordSaleRefund(organizationId, {
+                id: result.id,
+                saleId,
+                totalAmount: result.totalAmount,
+                refundNumber: result.refundNumber,
+            })
+                .catch((err) => this.logger.error(`Accounting: failed to record refund: ${err.message}`, err.stack));
+        }
         return result;
     }
 };
 exports.CreateSaleRefundUseCase = CreateSaleRefundUseCase;
-exports.CreateSaleRefundUseCase = CreateSaleRefundUseCase = __decorate([
+exports.CreateSaleRefundUseCase = CreateSaleRefundUseCase = CreateSaleRefundUseCase_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(sales_di_tokens_1.SALES_REPOSITORY)),
     __param(1, (0, common_1.Optional)()),
-    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService])
+    __param(2, (0, common_1.Optional)()),
+    __metadata("design:paramtypes", [Object, cache_service_1.AppCacheService,
+        accounting_integration_service_1.AccountingIntegrationService])
 ], CreateSaleRefundUseCase);
 //# sourceMappingURL=create-sale-refund.use-case.js.map

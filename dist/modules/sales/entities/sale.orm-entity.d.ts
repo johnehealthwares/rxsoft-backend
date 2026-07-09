@@ -1,7 +1,6 @@
 import { SaleLineOrmEntity } from './sale-line.orm-entity';
 import { SalePaymentOrmEntity } from './sale-payment.orm-entity';
 import { SaleRefundOrmEntity } from './sale-refund.orm-entity';
-import { UserOrmEntity } from '../../identity/entities/user.orm-entity';
 import { PartyOrmEntity } from '../../customers/entities/party.orm-entity';
 export declare class SaleOrmEntity {
     id: string;
@@ -21,7 +20,6 @@ export declare class SaleOrmEntity {
     paidAmount: number;
     changeAmount: number;
     saleDate: Date;
-    soldBy: UserOrmEntity;
     soldByUserId: string;
     createdBy: string;
     lines: SaleLineOrmEntity[];

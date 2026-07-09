@@ -3,6 +3,63 @@ import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDateString, IsIn, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 
+export class ListGlAccountsDto extends ListQueryDto {
+  @ApiPropertyOptional({ enum: ['asset', 'liability', 'equity', 'income', 'expense'] })
+  @IsOptional()
+  @IsIn(['asset', 'liability', 'equity', 'income', 'expense'])
+  accountType?: 'asset' | 'liability' | 'equity' | 'income' | 'expense';
+}
+
+export class CreateGlAccountDto {
+  @ApiProperty()
+  @IsString()
+  accountCode!: string;
+
+  @ApiProperty()
+  @IsString()
+  accountName!: string;
+
+  @ApiProperty({ enum: ['asset', 'liability', 'equity', 'income', 'expense'] })
+  @IsIn(['asset', 'liability', 'equity', 'income', 'expense'])
+  accountType!: 'asset' | 'liability' | 'equity' | 'income' | 'expense';
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  allowsReconciliation?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  overrideCodeValidation?: boolean;
+}
+
+export class UpdateGlAccountDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  accountCode?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  accountName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  allowsReconciliation?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+}
+
 export class ListJournalsDto extends ListQueryDto {}
 export class ListJournalEntriesDto extends ListQueryDto {}
 export class ListJournalEntryLinesDto extends ListQueryDto {}

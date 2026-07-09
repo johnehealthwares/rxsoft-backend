@@ -1,5 +1,5 @@
 import { ItemCategoryOrmEntity } from './item-category.orm-entity';
-import { UomOrmEntity } from '../../sales/entities';
+import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 export declare class ItemOrmEntity {
     id: string;
     organizationId: string;

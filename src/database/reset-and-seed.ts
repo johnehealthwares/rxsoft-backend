@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'pg';
 import { DataSource } from 'typeorm';
-import { runSeeds } from './seeds/run';
 
 type SupportedDbType = 'postgres' | 'sqlite' | 'sqljs';
 
@@ -70,7 +69,6 @@ async function resetPostgresDatabase(
   await dataSource.initialize();
   try {
     await runSqlFile(dataSource, sqlFilePath);
-    await runSeeds(dataSource);
   } finally {
     await dataSource.destroy();
   }
@@ -93,7 +91,6 @@ async function resetSqliteDatabase(
   await dataSource.initialize();
   try {
     await runSqlFile(dataSource, sqlFilePath);
-    await runSeeds(dataSource);
   } finally {
     await dataSource.destroy();
   }

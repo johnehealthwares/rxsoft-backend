@@ -47,6 +47,7 @@ let UomsService = class UomsService {
             .createQueryBuilder('uom')
             .leftJoinAndSelect('uom.category', 'category')
             .where('uom.organization_id = :organizationId', { organizationId });
+        console.log(query.search);
         if (query.search) {
             try {
                 const filters = JSON.parse(query.search);

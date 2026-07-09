@@ -2,20 +2,15 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuthResponseDto } from '../../identity/dto/auth-response.dto';
-import { LoginDto } from '../../identity/dto/login.dto';
-import { CreateUserUseCase } from '../../identity/services/create-user.use-case';
-import { LoginUseCase } from '../../identity/services/login.use-case';
+import { UsersProxyService } from '../../../modules/users-proxy/users-proxy.service';
 import { RegisterDto } from '../dto/website.dto';
 import { PartyOrmEntity } from '../../../modules/customers/entities/party.orm-entity';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 
 @ApiTags('website-auth')
 @Controller('website/auth')
 export class WebsiteAuthController {
   constructor(
-    private readonly createUserUseCase: CreateUserUseCase,
-    private readonly loginUseCase: LoginUseCase,
+    private readonly usersProxy: UsersProxyService,
     @InjectRepository(PartyOrmEntity)
     private readonly partyRepo: Repository<PartyOrmEntity>,
   ) {}
@@ -23,37 +18,39 @@ export class WebsiteAuthController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new website user' })
-  @ApiResponse({ status: 201, type: AuthResponseDto })
-  async register(@Body() dto: RegisterDto): Promise<AuthResponseDto> {
-    const createdUser = await this.createUserUseCase.execute({
+  @ApiResponse({ status: 201 })
+  async register(@Body() dto: RegisterDto) {
+    const authResult = await this.usersProxy.register({
       username: dto.username,
       password: dto.password,
       phone: dto.phone,
-      roleCodes: ['website_user'],
-    }, DEFAULT_ORGANIZATION_ID);
+      email: dto.email,
+    });
 
-    const existingParty = await this.partyRepo.findOne({ where: { userId: createdUser.id } });
+    const currentUser = await this.usersProxy.me(authResult.accessToken);
+
+    const existingParty = await this.partyRepo.findOne({ where: { userId: currentUser.sub } });
     if (!existingParty) {
       await this.partyRepo.save(
         this.partyRepo.create({
-          organizationId: DEFAULT_ORGANIZATION_ID,
+          organizationId: currentUser.organizationId ?? 'df3b4afd-9955-4617-9a82-264cc73dd8b2',
           partyType: 'customer',
           name: dto.username,
           phone: dto.phone ?? null,
           email: dto.email ?? null,
-          userId: createdUser.id,
+          userId: currentUser.sub,
         }),
       );
     }
 
-    return this.loginUseCase.execute({ username: dto.username, password: dto.password });
+    return authResult;
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login for website users' })
-  @ApiResponse({ status: 200, type: AuthResponseDto })
-  async login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
-    return this.loginUseCase.execute(dto);
+  @ApiResponse({ status: 200 })
+  async login(@Body() body: { username: string; password: string }) {
+    return this.usersProxy.login(body.username, body.password);
   }
 }

@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeliveryOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const order_orm_entity_1 = require("./order.orm-entity");
 let DeliveryOrmEntity = class DeliveryOrmEntity {
     id;
     order;
@@ -33,9 +32,9 @@ __decorate([
     __metadata("design:type", String)
 ], DeliveryOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.OneToOne)(() => order_orm_entity_1.OrderOrmEntity, (order) => order.delivery, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.OneToOne)('OrderOrmEntity', 'delivery', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'order_id' }),
-    __metadata("design:type", order_orm_entity_1.OrderOrmEntity)
+    __metadata("design:type", Function)
 ], DeliveryOrmEntity.prototype, "order", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text' }),

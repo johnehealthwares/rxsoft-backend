@@ -1,12 +1,12 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PrescriptionOrmEntity } from './prescription.orm-entity';
+import type { PrescriptionOrmEntity } from './prescription.orm-entity';
 
 @Entity('prescription_files')
 export class PrescriptionFileOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => PrescriptionOrmEntity, (p) => p.files, { onDelete: 'CASCADE' })
+  @ManyToOne('PrescriptionOrmEntity', 'files', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'prescription_id' })
   prescription!: PrescriptionOrmEntity;
 

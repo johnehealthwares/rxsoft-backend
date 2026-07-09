@@ -13,6 +13,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const accounting_controller_1 = require("./controllers/accounting.controller");
 const entities_1 = require("./entities");
 const accounting_service_1 = require("./services/accounting.service");
+const accounting_integration_service_1 = require("./services/accounting-integration.service");
 let AccountingModule = class AccountingModule {
 };
 exports.AccountingModule = AccountingModule;
@@ -23,7 +24,8 @@ exports.AccountingModule = AccountingModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([entities_1.GlAccountOrmEntity, entities_1.JournalOrmEntity, entities_1.JournalEntryOrmEntity, entities_1.JournalEntryLineOrmEntity]),
         ],
         controllers: [accounting_controller_1.AccountingController],
-        providers: [accounting_service_1.AccountingService],
+        providers: [accounting_service_1.AccountingService, accounting_integration_service_1.AccountingIntegrationService],
+        exports: [accounting_integration_service_1.AccountingIntegrationService],
     })
 ], AccountingModule);
 //# sourceMappingURL=accounting.module.js.map

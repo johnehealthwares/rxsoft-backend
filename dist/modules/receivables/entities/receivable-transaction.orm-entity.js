@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReceivableTransactionOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
 const payment_method_orm_entity_1 = require("../../sales/entities/payment-method.orm-entity");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
 const account_receivable_orm_entity_1 = require("../../sales/entities/account-receivable.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 let ReceivableTransactionOrmEntity = class ReceivableTransactionOrmEntity {
@@ -23,7 +22,7 @@ let ReceivableTransactionOrmEntity = class ReceivableTransactionOrmEntity {
     transactionDate;
     paymentMethod;
     referenceNumber;
-    receivedByUser;
+    receivedByUserId;
     note;
     createdAt;
     updatedAt;
@@ -60,10 +59,9 @@ __decorate([
     __metadata("design:type", Object)
 ], ReceivableTransactionOrmEntity.prototype, "referenceNumber", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_orm_entity_1.UserOrmEntity, { nullable: true }),
-    (0, typeorm_1.JoinColumn)({ name: 'received_by_user_id' }),
+    (0, typeorm_1.Column)({ name: 'received_by_user_id', type: 'text', nullable: true }),
     __metadata("design:type", Object)
-], ReceivableTransactionOrmEntity.prototype, "receivedByUser", void 0);
+], ReceivableTransactionOrmEntity.prototype, "receivedByUserId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", Object)

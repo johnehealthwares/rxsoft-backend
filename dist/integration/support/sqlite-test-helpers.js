@@ -1,7 +1,4 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.describeIfDbReady = void 0;
 exports.createIntegrationTestContext = createIntegrationTestContext;
@@ -11,12 +8,10 @@ const testing_1 = require("@nestjs/testing");
 const typeorm_1 = require("@nestjs/typeorm");
 const node_crypto_1 = require("node:crypto");
 const node_child_process_1 = require("node:child_process");
-const supertest_1 = __importDefault(require("supertest"));
+const jwt_1 = require("@nestjs/jwt");
 const item_category_orm_entity_1 = require("../../modules/catalog/entities/item-category.orm-entity");
 const item_orm_entity_1 = require("../../modules/catalog/entities/item.orm-entity");
 const party_orm_entity_1 = require("../../modules/customers/entities/party.orm-entity");
-const permission_orm_entity_1 = require("../../modules/identity/entities/permission.orm-entity");
-const role_orm_entity_1 = require("../../modules/identity/entities/role.orm-entity");
 const user_orm_entity_1 = require("../../modules/identity/entities/user.orm-entity");
 const entities_1 = require("../../modules/inventory/entities");
 const entities_2 = require("../../modules/pricing/entities");
@@ -52,9 +47,7 @@ setTimeout(() => process.exit(1), 1500);
 })();
 exports.describeIfDbReady = hasDbTestDeps && hasLoopbackSocketPermission ? describe : describe.skip;
 async function seedBaseData(moduleFixture) {
-    const roleRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(role_orm_entity_1.RoleOrmEntity));
     const userRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(user_orm_entity_1.UserOrmEntity));
-    const permissionRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(permission_orm_entity_1.PermissionOrmEntity));
     const categoryRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(item_category_orm_entity_1.ItemCategoryOrmEntity));
     const itemRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(item_orm_entity_1.ItemOrmEntity));
     const stockLocationRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(entities_1.StockLocationOrmEntity));
@@ -77,49 +70,11 @@ async function seedBaseData(moduleFixture) {
     const stockAdjustmentRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(entities_1.StockAdjustmentOrmEntity));
     const storeStockLocationRepo = moduleFixture.get((0, typeorm_1.getRepositoryToken)(entities_1.StoreStockLocationOrmEntity));
     const organizationId = 'org1';
-    const permissions = await permissionRepo.save([
-        permissionRepo.create({
-            code: 'users:manage',
-            resource: 'users',
-            action: 'manage',
-            description: 'Manage users',
-        }),
-        permissionRepo.create({
-            code: 'sales:manage',
-            resource: 'sales',
-            action: 'manage',
-            description: 'Manage sales',
-        }),
-    ]);
-    const [superAdminRole, adminRole, cashierRole] = await roleRepo.save([
-        roleRepo.create({
-            organizationId,
-            code: 'super_admin',
-            name: 'Super Admin',
-            description: 'System role',
-            permissions,
-        }),
-        roleRepo.create({
-            organizationId,
-            code: 'admin',
-            name: 'Admin',
-            description: 'Admin role',
-            permissions,
-        }),
-        roleRepo.create({
-            organizationId,
-            code: 'cashier',
-            name: 'Cashier',
-            description: 'Cashier role',
-            permissions: [],
-        }),
-    ]);
     const adminUser = await userRepo.save(userRepo.create({
         organizationId,
         username: 'admin',
         passwordHash: (0, node_crypto_1.createHash)('sha256').update('test123').digest('hex'),
         isActive: true,
-        roles: [superAdminRole],
     }));
     const uomCategory = await uomCategoryRepo.save(uomCategoryRepo.create({
         organizationId,
@@ -280,6 +235,7 @@ async function createIntegrationTestContext() {
         forbidNonWhitelisted: true,
     }));
     await app.init();
+    const jwtService = app.get(jwt_1.JwtService);
     const seeded = await seedBaseData(moduleFixture);
     return {
         app,
@@ -288,14 +244,9 @@ async function createIntegrationTestContext() {
         repositories: seeded.repositories,
         httpApp: () => app.getHttpAdapter().getInstance(),
         loginAsAdmin: async () => {
-            const response = await (0, supertest_1.default)(app.getHttpAdapter().getInstance()).post('/auth/login').send({
-                username: 'admin',
-                password: 'test123',
-            });
-            return {
-                accessToken: response.body.accessToken,
-                refreshToken: response.body.refreshToken,
-            };
+            const accessToken = await jwtService.signAsync({ sub: seeded.ids.adminUserId, organizationId: seeded.ids.organizationId, username: 'admin', roles: ['admin'], permissions: [] }, { secret: 'test-access-secret', expiresIn: '15m' });
+            const refreshToken = await jwtService.signAsync({ sub: seeded.ids.adminUserId, organizationId: seeded.ids.organizationId, username: 'admin', roles: ['admin'], permissions: [] }, { secret: 'test-refresh-secret', expiresIn: '7d' });
+            return { accessToken, refreshToken };
         },
     };
 }

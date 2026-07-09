@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { JournalEntryOrmEntity } from './journal-entry.orm-entity';
+import type { JournalEntryOrmEntity } from './journal-entry.orm-entity';
 
 @Entity('journal_entry_lines')
 @Unique('uq_journal_entry_lines_number', ['journalEntryId', 'lineNumber'])
@@ -10,7 +10,7 @@ export class JournalEntryLineOrmEntity {
   @Column({ name: 'journal_entry_id', type: 'uuid' })
   journalEntryId!: string;
 
-  @ManyToOne(() => JournalEntryOrmEntity, (journalEntry) => journalEntry.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne('JournalEntryOrmEntity', 'lines', { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'journal_entry_id' })
   journalEntry!: JournalEntryOrmEntity;
 

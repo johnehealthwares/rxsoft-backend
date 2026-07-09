@@ -11,9 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SalePaymentOrmEntity = void 0;
 const typeorm_1 = require("typeorm");
-const user_orm_entity_1 = require("../../identity/entities/user.orm-entity");
 const payment_method_orm_entity_1 = require("./payment-method.orm-entity");
-const sale_orm_entity_1 = require("./sale.orm-entity");
 const column_transformer_1 = require("../../../shared/utils/column-transformer");
 let SalePaymentOrmEntity = class SalePaymentOrmEntity {
     id;
@@ -22,7 +20,7 @@ let SalePaymentOrmEntity = class SalePaymentOrmEntity {
     amount;
     paymentReference;
     paidAt;
-    receivedByUser;
+    receivedByUserId;
     createdAt;
     updatedAt;
 };
@@ -32,9 +30,9 @@ __decorate([
     __metadata("design:type", String)
 ], SalePaymentOrmEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => sale_orm_entity_1.SaleOrmEntity, (sale) => sale.payments, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)('SaleOrmEntity', 'payments', { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'sale_id' }),
-    __metadata("design:type", sale_orm_entity_1.SaleOrmEntity)
+    __metadata("design:type", Function)
 ], SalePaymentOrmEntity.prototype, "sale", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => payment_method_orm_entity_1.PaymentMethodOrmEntity, { nullable: false }),
@@ -54,10 +52,9 @@ __decorate([
     __metadata("design:type", Date)
 ], SalePaymentOrmEntity.prototype, "paidAt", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_orm_entity_1.UserOrmEntity, { nullable: true }),
-    (0, typeorm_1.JoinColumn)({ name: 'received_by_user_id' }),
+    (0, typeorm_1.Column)({ name: 'received_by_user_id', type: 'text', nullable: true }),
     __metadata("design:type", Object)
-], SalePaymentOrmEntity.prototype, "receivedByUser", void 0);
+], SalePaymentOrmEntity.prototype, "receivedByUserId", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)

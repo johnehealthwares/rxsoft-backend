@@ -163,6 +163,7 @@ let InMemoryPurchasesRepository = class InMemoryPurchasesRepository {
         return {
             receiptId: '',
             receiptNumber: '',
+            poStatus: 'partially_received',
             lines: [],
         };
     }

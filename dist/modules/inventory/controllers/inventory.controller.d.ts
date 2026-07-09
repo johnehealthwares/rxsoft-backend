@@ -25,6 +25,7 @@ export declare class InventoryController {
     constructor(listStockBalancesUseCase: ListStockBalancesUseCase, listStockMovementsUseCase: ListStockMovementsUseCase, createStockAdjustmentUseCase: CreateStockAdjustmentUseCase, inventoryService: InventoryService);
     listStockBalances(query: ListStockBalancesDto, currentUser: RequestUser): Promise<InventoryListResponse<StockBalanceResponseDto>>;
     listStockMovements(query: ListStockMovementsDto, currentUser: RequestUser): Promise<InventoryListResponse<Awaited<ReturnType<ListStockMovementsUseCase['execute']>>['items'][number]>>;
+    exportStockMovements(query: ListStockMovementsDto, currentUser: RequestUser): Promise<string>;
     createAdjustment(payload: CreateStockAdjustmentDto, currentUser: RequestUser): Promise<StockBalanceResponseDto>;
     adjustQuantity(payload: AdjustStockByReferenceDto, currentUser: RequestUser): Promise<StockBalanceResponseDto>;
     transferStock(payload: CreateStockTransferDto, currentUser: RequestUser): Promise<{
