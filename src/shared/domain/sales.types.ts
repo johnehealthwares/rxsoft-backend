@@ -52,7 +52,7 @@ export type SaleType = {
   id: string;
   organizationId: string;
   saleNumber: string;
-  saleChannel: 'pos' | 'invoice' | 'mobile';
+  saleChannel: 'pos' | 'invoice' | 'mobile' | 'website';
   storeId: string;
   customerId: string | null;
   status: 'draft' | 'posted' | 'voided' | 'refunded';

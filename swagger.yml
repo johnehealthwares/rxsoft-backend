@@ -7449,6 +7449,7 @@ components:
             - pos
             - invoice
             - mobile
+            - website
         customer:
           $ref: '#/components/schemas/SaleDetailCustomerDto'
         status:

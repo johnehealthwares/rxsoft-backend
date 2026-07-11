@@ -8,7 +8,7 @@ export class SaleResponseDto {
   saleNumber!: string;
 
   @ApiProperty({ enum: ['pos', 'invoice', 'mobile'] })
-  saleChannel!: 'pos' | 'invoice' | 'mobile';
+  saleChannel!: 'pos' | 'invoice' | 'mobile' | 'website';
 
   @ApiProperty()
   storeId!: string;

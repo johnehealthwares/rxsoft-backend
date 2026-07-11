@@ -19,7 +19,7 @@ export class SaleOrmEntity {
   saleNumber!: string;
 
   @Column({ name: 'sale_channel', type: 'text' })
-  saleChannel!: 'pos' | 'invoice' | 'mobile';
+  saleChannel!: 'pos' | 'invoice' | 'mobile' | 'website';
 
   @Column({ name: 'store_id', type: 'text' })
   storeId!: string;

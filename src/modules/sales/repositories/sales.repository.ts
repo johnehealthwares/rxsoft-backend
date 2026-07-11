@@ -24,7 +24,7 @@ export type SalesMetrics = {
 export type CreateSaleRepositoryPayload = {
   organizationId: string;
   saleNumber: string;
-  saleChannel: 'pos' | 'invoice' | 'mobile';
+  saleChannel: 'pos' | 'invoice' | 'mobile' | 'website';
   storeId: string;
   customerId: string | null;
   stockLocationId: string | null;

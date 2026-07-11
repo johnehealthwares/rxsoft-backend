@@ -54,7 +54,7 @@ class SaleDetailPaymentDto {
 export class SaleDetailResponseDto {
   @ApiProperty() id!: string;
   @ApiProperty() saleNumber!: string;
-  @ApiProperty({ enum: ['pos', 'invoice', 'mobile'] }) saleChannel!: string;
+  @ApiProperty({ enum: ['pos', 'invoice', 'mobile', 'website'] }) saleChannel!: string;
   @ApiPropertyOptional({ type: SaleDetailCustomerDto }) customer?: SaleDetailCustomerDto | null;
   @ApiProperty({ enum: ['draft', 'posted', 'voided', 'refunded'] }) status!: string;
   @ApiProperty() totalAmount!: number;

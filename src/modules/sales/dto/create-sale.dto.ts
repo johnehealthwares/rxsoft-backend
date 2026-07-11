@@ -60,7 +60,7 @@ export class CreateSaleDto {
 
   @ApiProperty({ enum: ['pos', 'invoice', 'mobile'], default: 'pos' })
   @IsIn(['pos', 'invoice', 'mobile'])
-  saleChannel: 'pos' | 'invoice' | 'mobile' = 'pos';
+  saleChannel: 'pos' | 'invoice' | 'mobile' | 'website' = 'pos';
 
   @ApiProperty()
   @IsString()

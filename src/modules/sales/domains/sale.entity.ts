@@ -3,7 +3,7 @@ export class Sale {
     public readonly id: string,
     public readonly organizationId: string,
     public readonly saleNumber: string,
-    public readonly saleChannel: 'pos' | 'invoice' | 'mobile',
+    public readonly saleChannel: 'pos' | 'invoice' | 'mobile' | 'website',
     public readonly storeId: string,
     public readonly storeName: string | null,
     public readonly status: 'draft' | 'posted' | 'voided' | 'refunded',
