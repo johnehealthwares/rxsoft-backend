@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { mongooseFeatureModels } from './schemas';
 import { EhealthwaresController } from './controllers/ehealthwares.controller';
 import { EhealthwaresService } from './services/ehealthwares.service';
+import { EhealthwaresSeedService } from './seed/ehealthwares.seed';
 
 @Module({})
 export class EhealthwaresModule {
@@ -16,7 +17,7 @@ export class EhealthwaresModule {
           MongooseModule.forFeature(mongooseFeatureModels),
         ],
         controllers: [EhealthwaresController],
-        providers: [EhealthwaresService],
+        providers: [EhealthwaresService, EhealthwaresSeedService],
       };
     }
 
