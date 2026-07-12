@@ -26,6 +26,7 @@ import { OrganisationConfigModule } from './modules/organisation-config/organisa
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { WebsiteModule } from './modules/website/website.module';
 import { ApmModule } from './modules/apm/apm.module';
+import { EhealthwaresModule } from './modules/ehealthwares/ehealthwares.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { UsersProxyModule } from './modules/users-proxy/users-proxy.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -114,6 +115,7 @@ const applicationModules = useInMemoryRepos
       AdminAuditModule,
       WebsiteModule,
       ApmModule.forRoot(),
+      EhealthwaresModule.forRoot(),
       UploadModule,
       UserPosConfigModule,
       OrganisationConfigModule,
