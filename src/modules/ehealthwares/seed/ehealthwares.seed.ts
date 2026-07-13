@@ -32,12 +32,6 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   async seed() {
-    const count = await this.sectionModel.countDocuments().exec();
-    if (count > 0) {
-      this.logger.log('eHealthwares data already seeded, skipping');
-      return;
-    }
-
     this.logger.log('Seeding eHealthwares website data...');
 
     const steps: any[] = [
@@ -58,6 +52,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedSections() {
+    if (await this.sectionModel.countDocuments().exec()) { this.logger.log('Sections already seeded, skipping'); return; }
     const sections = [
       {
         key: 'hero',
@@ -97,6 +92,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedProducts() {
+    if (await this.productModel.countDocuments().exec()) { this.logger.log('Products already seeded, skipping'); return; }
     const products = [
       {
         slug: 'rxsoft-pharmacy',
@@ -203,6 +199,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedServices() {
+    if (await this.serviceModel.countDocuments().exec()) { this.logger.log('Services already seeded, skipping'); return; }
     const services = [
       {
         slug: 'digital-transformation',
@@ -246,6 +243,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedTestimonials() {
+    if (await this.testimonialModel.countDocuments().exec()) { this.logger.log('Testimonials already seeded, skipping'); return; }
     const testimonials = [
       {
         name: 'Dr. Adebayo Ogunlesi',
@@ -277,6 +275,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedPartners() {
+    if (await this.partnerModel.countDocuments().exec()) { this.logger.log('Partners already seeded, skipping'); return; }
     const partners = [
       {
         name: 'HealthStack EMR',
@@ -290,6 +289,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedTeam() {
+    if (await this.teamModel.countDocuments().exec()) { this.logger.log('Team already seeded, skipping'); return; }
     const team = [
       { name: 'John Doe', role: 'Chief Executive Officer', bio: 'Visionary leader with 20+ years in healthcare technology.', displayOrder: 0 },
       { name: 'Jane Smith', role: 'Chief Technology Officer', bio: 'Expert in healthcare systems architecture and interoperability.', displayOrder: 1 },
@@ -300,6 +300,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedSettings() {
+    if (await this.settingModel.countDocuments().exec()) { this.logger.log('Settings already seeded, skipping'); return; }
     const settings = [
       { key: 'brand_name', value: 'eHealthwares' },
       { key: 'brand_tagline', value: 'Building Connected Healthcare Technology Ecosystems' },
@@ -313,6 +314,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedHeroSlides() {
+    if (await this.heroSlideModel.countDocuments().exec()) { this.logger.log('HeroSlides already seeded, skipping'); return; }
     const slides = [
       {
         title: 'Building Connected Healthcare Technology Ecosystems',
@@ -360,6 +362,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedCategories() {
+    if (await this.categoryModel.countDocuments().exec()) { this.logger.log('Categories already seeded, skipping'); return; }
     const categories = [
       {
         name: 'Pharmacy Management',
@@ -403,6 +406,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedArticles() {
+    if (await this.articleModel.countDocuments().exec()) { this.logger.log('Articles already seeded, skipping'); return; }
     const articles = [
       {
         title: 'The Future of Pharmacy Management: Digital Transformation in 2026',
@@ -460,6 +464,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedInvestorData() {
+    if (await this.investorModel.countDocuments().exec()) { this.logger.log('InvestorData already seeded, skipping'); return; }
     const data = [
       {
         label: 'Markets Served',
@@ -502,6 +507,7 @@ export class EhealthwaresSeedService implements OnModuleInit {
   }
 
   private async seedCareers() {
+    if (await this.careerModel.countDocuments().exec()) { this.logger.log('Careers already seeded, skipping'); return; }
     const careers = [
       {
         title: 'Senior Software Engineer — Healthcare',
