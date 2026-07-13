@@ -34,15 +34,19 @@ export class EhealthwaresSeedService implements OnModuleInit {
 
     this.logger.log('Seeding eHealthwares website data...');
 
-    await this.seedSections();
-    await this.seedProducts();
-    await this.seedServices();
-    await this.seedTestimonials();
-    await this.seedPartners();
-    await this.seedTeam();
-    await this.seedSettings();
+    const steps: any[] = [
+      this.seedSections, this.seedProducts, this.seedServices,
+      this.seedTestimonials, this.seedPartners, this.seedTeam, this.seedSettings,
+    ];
+    for (const step of steps) {
+      try {
+        await step.call(this);
+      } catch (err: any) {
+        this.logger.error(`Seed step failed: ${err && err.message ? err.message : err}`);
+      }
+    }
 
-    this.logger.log('eHealthwares website data seeded successfully!');
+    this.logger.log('eHealthwares website data seeding attempted (some steps may have been skipped).');
   }
 
   private async seedSections() {

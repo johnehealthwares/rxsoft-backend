@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -130,8 +131,9 @@ const applicationModules = useInMemoryRepos
     }),
     ...infrastructureImports,
      ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'), // or 'public'
-    }),
+       rootPath: join(__dirname, '..', 'public'),
+       exclude: ['/api/*rest'],
+     }),
     CacheModule,
     AuditModule,
     ...applicationModules,

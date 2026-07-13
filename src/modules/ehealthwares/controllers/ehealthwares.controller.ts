@@ -67,4 +67,34 @@ export class EhealthwaresController {
   getSettings() {
     return this.ehealthwaresService.getSettings();
   }
+
+  @Get('hero-slides')
+  @ApiOperation({ summary: 'Get hero carousel slides' })
+  getHeroSlides() {
+    return this.ehealthwaresService.getHeroSlides();
+  }
+
+  @Get('categories')
+  @ApiOperation({ summary: 'Get product categories' })
+  getCategories() {
+    return this.ehealthwaresService.getCategories();
+  }
+
+  @Get('articles')
+  @ApiOperation({ summary: 'Get latest articles/topics' })
+  getArticles() {
+    return this.ehealthwaresService.getArticles();
+  }
+
+  @Get('investors')
+  @ApiOperation({ summary: 'Get investor data' })
+  getInvestors() {
+    return this.ehealthwaresService.getInvestorData();
+  }
+
+  @Get('careers')
+  @ApiOperation({ summary: 'Get career positions' })
+  getCareers() {
+    return this.ehealthwaresService.getCareers();
+  }
 }

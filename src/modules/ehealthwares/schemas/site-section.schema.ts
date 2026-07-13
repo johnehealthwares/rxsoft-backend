@@ -10,8 +10,8 @@ export class SiteSection {
   @Prop({ type: String, required: true, unique: true })
   key!: string;
 
-  @Prop({ type: String, required: true })
-  title!: string;
+  @Prop({ type: String, default: null })
+  title!: string | null;
 
   @Prop({ type: String, default: null })
   subtitle!: string | null;
