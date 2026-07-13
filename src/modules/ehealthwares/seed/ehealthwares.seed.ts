@@ -193,6 +193,25 @@ export class EhealthwaresSeedService implements OnModuleInit {
         metaTitle: 'Healthcare AI & Automation | eHealthwares',
         metaDescription: 'AI-powered healthcare automation solutions for patient engagement, workflow optimization, and clinical intelligence.',
       },
+      {
+        slug: 'telemedicine',
+        name: 'Telemedicine Solutions',
+        tagline: 'Virtual care platform connecting patients and providers',
+        description: '<p>Our telemedicine platform enables healthcare providers to deliver virtual consultations, remote patient monitoring, and digital health services with secure video conferencing, integrated scheduling, and EHR connectivity.</p>',
+        features: [
+          'Secure video consultations',
+          'Remote patient monitoring',
+          'Integrated scheduling and reminders',
+          'EHR and practice management integration',
+          'Patient portal and messaging',
+          'Multi-provider support',
+        ],
+        iconName: 'Video',
+        displayOrder: 5,
+        isActive: true,
+        metaTitle: 'Telemedicine Solutions | eHealthwares',
+        metaDescription: 'Virtual care platform for telemedicine, remote patient monitoring, and digital health services.',
+      },
     ];
     await this.productModel.insertMany(products);
     this.logger.log('Seeded products');
