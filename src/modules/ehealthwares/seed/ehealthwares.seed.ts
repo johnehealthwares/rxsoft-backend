@@ -4,7 +4,8 @@ import { Model } from 'mongoose';
 import {
   SiteSectionDocument, ProductDocument, ServiceDocument,
   TestimonialDocument, PartnerDocument, TeamMemberDocument,
-  SiteSettingDocument,
+  SiteSettingDocument, HeroSlideDocument, CategoryDocument,
+  ArticleDocument, InvestorDataDocument, CareerDocument,
 } from '../schemas';
 
 @Injectable()
@@ -19,6 +20,11 @@ export class EhealthwaresSeedService implements OnModuleInit {
     @InjectModel('Partner') private readonly partnerModel: Model<PartnerDocument>,
     @InjectModel('TeamMember') private readonly teamModel: Model<TeamMemberDocument>,
     @InjectModel('SiteSetting') private readonly settingModel: Model<SiteSettingDocument>,
+    @InjectModel('HeroSlide') private readonly heroSlideModel: Model<HeroSlideDocument>,
+    @InjectModel('Category') private readonly categoryModel: Model<CategoryDocument>,
+    @InjectModel('Article') private readonly articleModel: Model<ArticleDocument>,
+    @InjectModel('InvestorData') private readonly investorModel: Model<InvestorDataDocument>,
+    @InjectModel('Career') private readonly careerModel: Model<CareerDocument>,
   ) {}
 
   async onModuleInit() {
@@ -37,6 +43,8 @@ export class EhealthwaresSeedService implements OnModuleInit {
     const steps: any[] = [
       this.seedSections, this.seedProducts, this.seedServices,
       this.seedTestimonials, this.seedPartners, this.seedTeam, this.seedSettings,
+      this.seedHeroSlides, this.seedCategories, this.seedArticles,
+      this.seedInvestorData, this.seedCareers,
     ];
     for (const step of steps) {
       try {
@@ -302,5 +310,231 @@ export class EhealthwaresSeedService implements OnModuleInit {
     ];
     await this.settingModel.insertMany(settings);
     this.logger.log('Seeded site settings');
+  }
+
+  private async seedHeroSlides() {
+    const slides = [
+      {
+        title: 'Building Connected Healthcare Technology Ecosystems',
+        subtitle: 'eHealthwares helps healthcare organizations transform operations through enterprise software solutions, healthcare interoperability, and intelligent automation.',
+        mediaUrl: '/assets/pexels-shvetsa-4225925.jpg',
+        mediaType: 'image',
+        ctaText: 'Explore Products',
+        ctaLink: '/products/rxsoft-pharmacy',
+        displayOrder: 0,
+        isActive: true,
+      },
+      {
+        title: 'Enterprise Software for Modern Healthcare',
+        subtitle: 'RxSoft Pharmacy, Laboratory Information System, and Radiology Information System — purpose-built for healthcare organizations.',
+        mediaUrl: '/assets/pexels-mart-production-7089011.jpg',
+        mediaType: 'image',
+        ctaText: 'View Solutions',
+        ctaLink: '/products/rxsoft-pharmacy',
+        displayOrder: 1,
+        isActive: true,
+      },
+      {
+        title: 'Seamless Healthcare Interoperability',
+        subtitle: 'Connect your systems with HL7, FHIR, and DICOM standards. Break down data silos across your healthcare organization.',
+        mediaUrl: '/assets/pexels-tima-miroshnichenko-6234976.jpg',
+        mediaType: 'image',
+        ctaText: 'Learn More',
+        ctaLink: '/products/healthcare-interoperability',
+        displayOrder: 2,
+        isActive: true,
+      },
+      {
+        title: 'Innovating Healthcare Through Technology',
+        subtitle: 'AI-powered automation, patient engagement platforms, and intelligent workflow solutions for the future of care.',
+        mediaUrl: '/assets/8375668-uhd_2160_4096_25fps.mp4',
+        mediaType: 'video',
+        ctaText: 'Contact Sales',
+        ctaLink: '/contact',
+        displayOrder: 3,
+        isActive: true,
+      },
+    ];
+    await this.heroSlideModel.insertMany(slides);
+    this.logger.log('Seeded hero slides');
+  }
+
+  private async seedCategories() {
+    const categories = [
+      {
+        name: 'Pharmacy Management',
+        slug: 'pharmacy',
+        description: 'End-to-end pharmacy management platform for prescription processing, inventory, and dispensing.',
+        iconUrl: null,
+        imageUrl: '/assets/pexels-shvetsa-4225925.jpg',
+        displayOrder: 0,
+        isActive: true,
+      },
+      {
+        name: 'Laboratory Systems',
+        slug: 'laboratory',
+        description: 'Comprehensive lab information systems for workflow automation and result management.',
+        iconUrl: null,
+        imageUrl: '/assets/pexels-mart-production-7089011.jpg',
+        displayOrder: 1,
+        isActive: true,
+      },
+      {
+        name: 'Radiology & Imaging',
+        slug: 'radiology',
+        description: 'Advanced radiology information systems with PACS connectivity and DICOM support.',
+        iconUrl: null,
+        imageUrl: '/assets/pexels-tima-miroshnichenko-6234976.jpg',
+        displayOrder: 2,
+        isActive: true,
+      },
+      {
+        name: 'Interoperability',
+        slug: 'interoperability',
+        description: 'Seamless data exchange across healthcare systems with HL7, FHIR, and custom integrations.',
+        iconUrl: null,
+        imageUrl: '/assets/pexels-daliladalprat-5875565.jpg',
+        displayOrder: 3,
+        isActive: true,
+      },
+    ];
+    await this.categoryModel.insertMany(categories);
+    this.logger.log('Seeded categories');
+  }
+
+  private async seedArticles() {
+    const articles = [
+      {
+        title: 'The Future of Pharmacy Management: Digital Transformation in 2026',
+        slug: 'future-of-pharmacy-management-2026',
+        excerpt: 'Explore how digital transformation is reshaping pharmacy operations, from automated dispensing to AI-powered inventory management.',
+        body: '<p>Pharmacy management is undergoing a digital revolution...</p>',
+        imageUrl: '/assets/pexels-cottonbro-7579832.jpg',
+        category: 'Pharmacy',
+        publishedAt: new Date('2026-06-15'),
+        isActive: true,
+      },
+      {
+        title: 'HL7 vs FHIR: Choosing the Right Interoperability Standard',
+        slug: 'hl7-vs-fhir-interoperability-standards',
+        excerpt: 'A comprehensive comparison of HL7 and FHIR standards to help healthcare organizations choose the right integration approach.',
+        body: '<p>Healthcare interoperability standards continue to evolve...</p>',
+        imageUrl: '/assets/pexels-pavel-danilyuk-8442154.jpg',
+        category: 'Interoperability',
+        publishedAt: new Date('2026-05-20'),
+        isActive: true,
+      },
+      {
+        title: 'How LIS Integration Improves Laboratory Efficiency by 40%',
+        slug: 'lis-integration-laboratory-efficiency',
+        excerpt: 'Discover how modern Laboratory Information Systems with seamless integration capabilities are transforming lab operations.',
+        body: '<p>Laboratory efficiency is critical for patient care...</p>',
+        imageUrl: '/assets/pexels-karola-g-7195191.jpg',
+        category: 'Laboratory',
+        publishedAt: new Date('2026-04-10'),
+        isActive: true,
+      },
+      {
+        title: 'AI in Healthcare: Beyond the Hype — Real Use Cases in 2026',
+        slug: 'ai-healthcare-real-use-cases-2026',
+        excerpt: 'From conversational assistants to clinical intelligence, explore the practical AI applications transforming healthcare today.',
+        body: '<p>Artificial intelligence in healthcare has moved beyond experimentation...</p>',
+        imageUrl: '/assets/pexels-tima-miroshnichenko-6234978.jpg',
+        category: 'AI & Automation',
+        publishedAt: new Date('2026-03-05'),
+        isActive: true,
+      },
+      {
+        title: 'Building a Digital Health Strategy: A Framework for Providers',
+        slug: 'digital-health-strategy-framework',
+        excerpt: 'A practical framework for healthcare providers developing their digital health strategy and technology roadmap.',
+        body: '<p>Developing a digital health strategy requires careful planning...</p>',
+        imageUrl: '/assets/pexels-ivan-s-4989164.jpg',
+        category: 'Strategy',
+        publishedAt: new Date('2026-02-18'),
+        isActive: true,
+      },
+    ];
+    await this.articleModel.insertMany(articles);
+    this.logger.log('Seeded articles');
+  }
+
+  private async seedInvestorData() {
+    const data = [
+      {
+        label: 'Markets Served',
+        value: '12+',
+        description: 'Countries across Africa with active deployments',
+        displayOrder: 0,
+        isActive: true,
+      },
+      {
+        label: 'Facilities Empowered',
+        value: '500+',
+        description: 'Healthcare organizations using our platforms',
+        displayOrder: 1,
+        isActive: true,
+      },
+      {
+        label: 'Annual Platform Uptime',
+        value: '99.97%',
+        description: 'Enterprise-grade reliability and availability',
+        displayOrder: 2,
+        isActive: true,
+      },
+      {
+        label: 'Integrations Delivered',
+        value: '200+',
+        description: 'HL7, FHIR, DICOM, and custom system connections',
+        displayOrder: 3,
+        isActive: true,
+      },
+      {
+        label: 'Year-over-Year Growth',
+        value: '85%',
+        description: 'Sustained revenue growth for the past 3 fiscal years',
+        displayOrder: 4,
+        isActive: true,
+      },
+    ];
+    await this.investorModel.insertMany(data);
+    this.logger.log('Seeded investor data');
+  }
+
+  private async seedCareers() {
+    const careers = [
+      {
+        title: 'Senior Software Engineer — Healthcare',
+        slug: 'senior-software-engineer',
+        location: 'Lagos, Nigeria (Hybrid)',
+        type: 'full-time',
+        department: 'Engineering',
+        description: 'Build and maintain healthcare technology platforms including pharmacy, laboratory, and radiology systems. Work with NestJS, React, PostgreSQL, and MongoDB.',
+        imageUrl: '/assets/pexels-gustavo-fring-7446984.jpg',
+        isActive: true,
+      },
+      {
+        title: 'Healthcare Integration Specialist',
+        slug: 'healthcare-integration-specialist',
+        location: 'Remote (Africa)',
+        type: 'remote',
+        department: 'Professional Services',
+        description: 'Lead HL7, FHIR, and DICOM integration projects for healthcare organizations. Design and implement data exchange workflows.',
+        imageUrl: '/assets/pexels-mart-production-7089614.jpg',
+        isActive: true,
+      },
+      {
+        title: 'Product Manager — Interoperability Platform',
+        slug: 'product-manager-interoperability',
+        location: 'Lagos, Nigeria',
+        type: 'full-time',
+        department: 'Product',
+        description: 'Define and execute the product roadmap for our healthcare interoperability platform. Work with engineering, sales, and customer teams.',
+        imageUrl: '/assets/pexels-gustavo-fring-7446994.jpg',
+        isActive: true,
+      },
+    ];
+    await this.careerModel.insertMany(careers);
+    this.logger.log('Seeded careers');
   }
 }
