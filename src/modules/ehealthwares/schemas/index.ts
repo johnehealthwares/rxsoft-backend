@@ -6,6 +6,11 @@ import { Testimonial, TestimonialSchema } from './testimonial.schema';
 import { Partner, PartnerSchema } from './partner.schema';
 import { TeamMember, TeamMemberSchema } from './team-member.schema';
 import { ContactSubmission, ContactSubmissionSchema } from './contact-submission.schema';
+import { Article, ArticleSchema } from './article.schema';
+import { HeroSlide, HeroSlideSchema } from './heroslide.schema';
+import { Category, CategorySchema } from './category.schema';
+import { InvestorData, InvestorDataSchema } from './investor.schema';
+import { Career, CareerSchema } from './career.schema';
 
 export {
   SiteSection, SiteSectionSchema,
@@ -16,6 +21,11 @@ export {
   TeamMember, TeamMemberSchema,
   ContactSubmission, ContactSubmissionSchema,
   SiteSetting, SiteSettingSchema,
+  Article, ArticleSchema,
+  HeroSlide, HeroSlideSchema,
+  Category, CategorySchema,
+  InvestorData, InvestorDataSchema,
+  Career, CareerSchema,
 };
 
 export type { SiteSectionDocument } from './site-section.schema';
@@ -26,6 +36,11 @@ export type { PartnerDocument } from './partner.schema';
 export type { TeamMemberDocument } from './team-member.schema';
 export type { ContactSubmissionDocument } from './contact-submission.schema';
 export type { SiteSettingDocument } from './site-setting.schema';
+export type { ArticleDocument } from './article.schema';
+export type { HeroSlideDocument } from './heroslide.schema';
+export type { CategoryDocument } from './category.schema';
+export type { InvestorDataDocument } from './investor.schema';
+export type { CareerDocument } from './career.schema';
 
 export const mongooseFeatureModels = [
   { name: 'SiteSection', schema: SiteSectionSchema },
@@ -36,4 +51,9 @@ export const mongooseFeatureModels = [
   { name: 'TeamMember', schema: TeamMemberSchema },
   { name: 'ContactSubmission', schema: ContactSubmissionSchema },
   { name: 'SiteSetting', schema: SiteSettingSchema },
+  { name: 'Article', schema: ArticleSchema },
+  { name: 'HeroSlide', schema: HeroSlideSchema },
+  { name: 'Category', schema: CategorySchema },
+  { name: 'InvestorData', schema: InvestorDataSchema },
+  { name: 'Career', schema: CareerSchema },
 ];
