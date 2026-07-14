@@ -6302,6 +6302,158 @@ paths:
       security: *ref_83
       summary: Update GOTV record
       tags: *ref_84
+  /api/ehealthwares/sections:
+    get:
+      operationId: EhealthwaresController_getSections
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get all active site sections
+      tags: &ref_85
+        - ehealthwares
+  /api/ehealthwares/products:
+    get:
+      operationId: EhealthwaresController_getProducts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get all active products
+      tags: *ref_85
+  /api/ehealthwares/products/{slug}:
+    get:
+      operationId: EhealthwaresController_getProductBySlug
+      parameters:
+        - name: slug
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Get product by slug
+      tags: *ref_85
+  /api/ehealthwares/services:
+    get:
+      operationId: EhealthwaresController_getServices
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get all active services
+      tags: *ref_85
+  /api/ehealthwares/services/{slug}:
+    get:
+      operationId: EhealthwaresController_getServiceBySlug
+      parameters:
+        - name: slug
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Get service by slug
+      tags: *ref_85
+  /api/ehealthwares/testimonials:
+    get:
+      operationId: EhealthwaresController_getTestimonials
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get active testimonials
+      tags: *ref_85
+  /api/ehealthwares/partners:
+    get:
+      operationId: EhealthwaresController_getPartners
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get partners
+      tags: *ref_85
+  /api/ehealthwares/team:
+    get:
+      operationId: EhealthwaresController_getTeam
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get team members
+      tags: *ref_85
+  /api/ehealthwares/contact:
+    post:
+      operationId: EhealthwaresController_submitContact
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContactDto'
+      responses:
+        '201':
+          description: ''
+      summary: Submit contact form
+      tags: *ref_85
+  /api/ehealthwares/settings:
+    get:
+      operationId: EhealthwaresController_getSettings
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get site settings as key-value map
+      tags: *ref_85
+  /api/ehealthwares/hero-slides:
+    get:
+      operationId: EhealthwaresController_getHeroSlides
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get hero carousel slides
+      tags: *ref_85
+  /api/ehealthwares/categories:
+    get:
+      operationId: EhealthwaresController_getCategories
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get product categories
+      tags: *ref_85
+  /api/ehealthwares/articles:
+    get:
+      operationId: EhealthwaresController_getArticles
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get latest articles/topics
+      tags: *ref_85
+  /api/ehealthwares/investors:
+    get:
+      operationId: EhealthwaresController_getInvestors
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get investor data
+      tags: *ref_85
+  /api/ehealthwares/careers:
+    get:
+      operationId: EhealthwaresController_getCareers
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: Get career positions
+      tags: *ref_85
   /api/upload/image:
     post:
       operationId: UploadController_uploadImage
@@ -6309,7 +6461,7 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_85
+      tags: &ref_86
         - Upload
     delete:
       operationId: UploadController_deleteImage
@@ -6317,7 +6469,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_85
+      tags: *ref_86
   /api/warehouses:
     get:
       operationId: WarehousesController_list
@@ -6373,10 +6525,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_86
+      security: &ref_87
         - bearer: []
       summary: List warehouses with pagination
-      tags: &ref_87
+      tags: &ref_88
         - warehouses
     post:
       operationId: WarehousesController_create
@@ -6390,9 +6542,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_86
+      security: *ref_87
       summary: Create a warehouse
-      tags: *ref_87
+      tags: *ref_88
   /api/warehouses/{warehouseId}:
     get:
       operationId: WarehousesController_get
@@ -6405,9 +6557,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_86
+      security: *ref_87
       summary: Get warehouse by ID
-      tags: *ref_87
+      tags: *ref_88
     put:
       operationId: WarehousesController_update
       parameters:
@@ -6425,9 +6577,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_86
+      security: *ref_87
       summary: Update a warehouse
-      tags: *ref_87
+      tags: *ref_88
     delete:
       operationId: WarehousesController_remove
       parameters:
@@ -6439,9 +6591,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_86
+      security: *ref_87
       summary: Delete a warehouse
-      tags: *ref_87
+      tags: *ref_88
 info:
   title: RxSoft Backend API
   description: Phase 3 identity module and API contracts
@@ -7897,7 +8049,7 @@ components:
           type: string
         status:
           type: string
-          enum: &ref_88
+          enum: &ref_89
             - draft
             - approved
             - partially_received
@@ -7943,7 +8095,7 @@ components:
           type: string
         status:
           type: string
-          enum: *ref_88
+          enum: *ref_89
         note:
           type: string
         invoiceNumber:
