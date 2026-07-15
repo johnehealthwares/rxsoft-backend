@@ -6594,6 +6594,21 @@ paths:
       security: *ref_87
       summary: Delete a warehouse
       tags: *ref_88
+  /api/seeds/run:
+    post:
+      operationId: SeedsController_run
+      parameters:
+        - name: key
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      summary: Run all database seeds (requires key query param)
+      tags:
+        - seeds
 info:
   title: RxSoft Backend API
   description: Phase 3 identity module and API contracts

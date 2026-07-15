@@ -24,6 +24,7 @@ import { ManufacturersModule } from './modules/manufacturers/manufacturers.modul
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { UserPosConfigModule } from './modules/user-pos-config/user-pos-config.module';
 import { OrganisationConfigModule } from './modules/organisation-config/organisation-config.module';
+import { SeedsModule } from './modules/seeds/seeds.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { WebsiteModule } from './modules/website/website.module';
 import { ApmModule } from './modules/apm/apm.module';
@@ -99,7 +100,7 @@ const infrastructureImports = useInMemoryRepos
     ];
 
 const applicationModules = useInMemoryRepos
-  ? [CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule]
+  ? [CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule, SeedsModule]
   : [
       CatalogModule,
       CategoriesModule,
@@ -122,6 +123,7 @@ const applicationModules = useInMemoryRepos
       OrganisationConfigModule,
       WarehousesModule,
       UsersProxyModule,
+      SeedsModule,
     ];
 
 @Module({

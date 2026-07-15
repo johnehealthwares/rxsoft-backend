@@ -41,20 +41,8 @@ const journals = [
   { code: 'BANK', name: 'Bank Journal', type: 'bank' },
 ];
 
-async function seed() {
-  const ds = new DataSource({
-    type: 'postgres',
-    host: process.env.DB_HOST ?? 'localhost',
-    port: Number(process.env.DB_PORT ?? 5432),
-    username: process.env.DB_USER ?? 'postgres',
-    password: process.env.DB_PASSWORD ?? 'postgres',
-    database: process.env.DB_NAME ?? 'rxsoft',
-  });
-
-  await ds.initialize();
-  console.log('Connected to database');
-
-  const queryRunner = ds.createQueryRunner();
+export async function seedAccounting(dataSource: DataSource): Promise<void> {
+  const queryRunner = dataSource.createQueryRunner();
 
   try {
     await queryRunner.startTransaction();
@@ -83,12 +71,26 @@ async function seed() {
     console.log('Accounting seed data inserted successfully');
   } catch (err) {
     await queryRunner.rollbackTransaction();
-    console.error('Seed failed:', err);
-    process.exit(1);
+    throw err;
   } finally {
     await queryRunner.release();
-    await ds.destroy();
   }
+}
+
+async function seed() {
+  const ds = new DataSource({
+    type: 'postgres',
+    host: process.env.DB_HOST ?? 'localhost',
+    port: Number(process.env.DB_PORT ?? 5432),
+    username: process.env.DB_USER ?? 'postgres',
+    password: process.env.DB_PASSWORD ?? 'postgres',
+    database: process.env.DB_NAME ?? 'rxsoft',
+  });
+
+  await ds.initialize();
+  console.log('Connected to database');
+  await seedAccounting(ds);
+  await ds.destroy();
 }
 
 seed();
