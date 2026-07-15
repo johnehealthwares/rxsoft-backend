@@ -1,98 +1,133 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# RxSoft Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Main backend service for the RxSoft healthcare platform. Handles catalog, inventory, sales, purchases, customers, pricing, accounting, APM campaigns, eHealthwares integration, LIS proxy, reporting, and image uploads. Triple-database architecture: PostgreSQL + MongoDB + in-memory SQL.js.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Part of the [RxSoft monorepo](https://github.com/anomalyco/rxsoft).
 
-## Description
+## Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+| Aspect | Technology |
+|---|---|
+| Runtime | Node.js |
+| Framework | NestJS 11 |
+| Databases | PostgreSQL (TypeORM) + MongoDB (Mongoose 9) + SQL.js in-memory |
+| ORM/ODM | TypeORM 0.3 + Mongoose 9 |
+| Validation | class-validator + class-transformer |
+| API Docs | Swagger at `/api/docs` |
+| Auth | JWT (shared secret with rxsoft-identity) |
+| File Upload | Cloudinary (multer) |
+| PM | yarn |
 
-## Project setup
+## Quick Start
 
 ```bash
-$ yarn install
+# Start PostgreSQL
+docker compose up -d
+
+# Install & dev
+yarn install
+yarn start:dev
 ```
 
-## Compile and run the project
+The API defaults to **port 8080** (configurable via `PORT`).
 
-```bash
-# development
-$ yarn run start
+## Architecture
 
-# watch mode
-$ yarn run start:dev
+The backend uses a dual-architecture approach:
 
-# production mode
-$ yarn run start:prod
-```
+- **Standard modules** (most domains): Controller → Service → TypeORM Repository pattern
+- **Clean Architecture modules** (some domains): Controller → Use Case → Repository Interface → TypeORM Implementation
 
-## Run tests
+See [BACKEND_SEARCH_ARCHITECTURE.md](https://github.com/anomalyco/rxsoft/blob/main/BACKEND_SEARCH_ARCHITECTURE.md) for the standard list/search patterns.
 
-```bash
-# unit tests
-$ yarn run test
+### Module Map (25 modules)
 
-# e2e tests
-$ yarn run test:e2e
+| Module | Description |
+|---|---|
+| `accounting` | Financial transactions, ledgers |
+| `apm` | APM campaign management (MongoDB-backed) |
+| `audit` | Audit logging |
+| `catalog` | Product/service catalog |
+| `categories` | Product categories |
+| `customers` | Customer management |
+| `ehealthwares` | eHealthwares integration with Redis/in-memory caching |
+| `health` | Health check endpoint |
+| `identity` | User proxy to rxsoft-identity |
+| `inventory` | Stock management |
+| `lis` | LIS proxy (to rxsoft-lis-backend) |
+| `manufacturers` | Manufacturer registry |
+| `organisation-config` | Organization-level configuration |
+| `organizations` | Multi-tenant organization management |
+| `pricing` | Pricing rules and tiers |
+| `purchases` | Purchase orders |
+| `receivables` | Accounts receivable |
+| `reports` | Reporting engine |
+| `sales` | Sales orders and transactions |
+| `seeds` | Database seeding |
+| `upload` | File/image upload via Cloudinary |
+| `user-pos-config` | POS configuration per user |
+| `users-proxy` | User management proxy |
+| `warehouses` | Warehouse management |
+| `website` | Website content management |
 
-# test coverage
-$ yarn run test:cov
-```
+## Commands
 
-## Deployment
+| Command | Description |
+|---|---|
+| `yarn start:dev` | Dev server with watch |
+| `yarn start:prod` | Production start |
+| `yarn build` | Compile TypeScript |
+| `yarn test` | Unit tests |
+| `yarn test:e2e` | End-to-end tests |
+| `yarn seed` | Run database seeds |
+| `yarn db:reset-and-seed` | Drop, recreate, and seed |
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Environment Variables
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | 8080 | Server port |
+| `DB_TYPE` | `postgres` | Primary database type |
+| `DB_HOST` | `localhost` | PostgreSQL host |
+| `DB_PORT` | 5432 | PostgreSQL port |
+| `DB_USER` | `postgres` | Database user |
+| `DB_PASSWORD` | `postgres` | Database password |
+| `DB_NAME` | `rxsoft` | PostgreSQL database name |
+| `DB_SYNCHRONIZE` | `true` | Auto-create tables (dev) |
+| `DB_DROP_SCHEMA` | `true` | Drop schema on start |
+| `USE_IN_MEMORY_REPOS` | `false` | Use SQL.js in-memory instead of PG |
+| `SEED_ON_START` | `true` | Seed on startup |
+| `JWT_ACCESS_SECRET` | `admin-access-secret` | JWT secret |
+| `JWT_REFRESH_SECRET` | `admin-refresh-secret` | JWT refresh secret |
+| `IDENTITY_SERVICE_URL` | `http://localhost:8092` | rxsoft-identity endpoint |
+| `INTERNAL_API_KEY` | `rxsoft-internal-key` | Service-to-service auth |
+| `CLOUDINARY_CLOUD_NAME` | — | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | — | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | — | Cloudinary API secret |
+| `USE_MONGODB` | `true` | Enable MongoDB for APM campaigns |
+| `MONGODB_URI` | — | MongoDB connection string |
+| `EHEALTHWARES_CACHE_ENABLED` | `true` | Cache for eHealthwares responses |
+| `EHEALTHWARES_CACHE_TTL_SECONDS` | `300` | Cache TTL |
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
-```
+## Databases
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+| Database | Tech | Purpose |
+|---|---|---|
+| PostgreSQL | TypeORM | Primary data (catalog, sales, customers, etc.) |
+| MongoDB | Mongoose 9 | APM campaigns (change streams, flexible schema) |
+| SQL.js (in-memory) | sql.js | Optional lightweight storage for testing |
 
-## Resources
+## Patterns
 
-Check out a few resources that may come in handy when working with NestJS:
+- **Multi-tenancy** via organization scoping (JWT `organizationId`)
+- **JWT auth** shared secret with rxsoft-identity
+- **Seeding**: Idempotent upserts via `DatabaseSeedService`, gated by `SEED_ON_START`
+- **Caching**: `AppCacheService` backed by Redis (optional) or in-memory Map
+- **Sort allow-list**: `resolveSortColumn()` utility prevents SQL injection in sort params
+- **DTOs**: `class-validator` with `@Type()` decorators
+- **Two competing DTOs exist**: `ListQueryDto` and `PaginationQueryDto` — consolidation is a known refactoring goal
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## See Also
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- [`../BACKEND_SEARCH_ARCHITECTURE.md`](https://github.com/anomalyco/rxsoft/blob/main/BACKEND_SEARCH_ARCHITECTURE.md) — List/search endpoint standards
+- [`../AGENTS.md`](https://github.com/anomalyco/rxsoft/blob/main/AGENTS.md) — Monorepo overview
