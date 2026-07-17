@@ -85,6 +85,7 @@ async function seed() {
     username: process.env.DB_USER ?? 'postgres',
     password: process.env.DB_PASSWORD ?? 'postgres',
     database: process.env.DB_NAME ?? 'rxsoft',
+    
   });
 
   await ds.initialize();
@@ -93,4 +94,3 @@ async function seed() {
   await ds.destroy();
 }
 
-seed();
