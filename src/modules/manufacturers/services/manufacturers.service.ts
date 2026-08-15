@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import type { ManufacturerType } from '../../../shared/domain';
 import { toManufacturerType } from '../../../shared/domain/mappers';
 import { CreateManufacturerDto, ListManufacturersDto, UpdateManufacturerDto } from '../dto/manufacturers.dto';
@@ -15,7 +14,7 @@ export class ManufacturersService {
     private readonly manufacturerRepository: Repository<ManufacturerOrmEntity>,
   ) {}
 
-  async list(query: ListManufacturersDto, organizationId = DEFAULT_ORGANIZATION_ID): Promise<{ data: ManufacturerType[]; total: number }> {
+  async list(query: ListManufacturersDto, organizationId): Promise<{ data: ManufacturerType[]; total: number }> {
     const qb = this.manufacturerRepository
       .createQueryBuilder('manufacturer')
       .where('manufacturer.organization_id = :organizationId', { organizationId })
@@ -34,7 +33,7 @@ export class ManufacturersService {
     return { data: data.map(toManufacturerType), total };
   }
 
-  async getLastCreated(organizationId = DEFAULT_ORGANIZATION_ID): Promise<{ id: string; code: string; createdAt: string } | null> {
+  async getLastCreated(organizationId): Promise<{ id: string; code: string; createdAt: string } | null> {
     const entity = await this.manufacturerRepository.findOne({
       where: { organizationId, deletedAt: IsNull() },
       order: { createdAt: 'DESC' },
@@ -43,7 +42,7 @@ export class ManufacturersService {
     return { id: entity.id, code: entity.code ?? entity.name, createdAt: entity.createdAt.toISOString() };
   }
 
-  async get(id: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<ManufacturerType> {
+  async get(id: string, organizationId): Promise<ManufacturerType> {
     const manufacturer = await this.manufacturerRepository.findOne({
       where: { id, organizationId, deletedAt: IsNull() },
     });
@@ -51,7 +50,7 @@ export class ManufacturersService {
     return toManufacturerType(manufacturer);
   }
 
-  async create(payload: CreateManufacturerDto, organizationId = DEFAULT_ORGANIZATION_ID): Promise<ManufacturerType> {
+  async create(payload: CreateManufacturerDto, organizationId): Promise<ManufacturerType> {
     if (payload.code) {
       const last = await this.getLastCreated(organizationId);
       const { valid, expectedCode } = validateSequentialCode({
@@ -78,7 +77,7 @@ export class ManufacturersService {
     return toManufacturerType(saved);
   }
 
-  async update(id: string, payload: UpdateManufacturerDto, organizationId = DEFAULT_ORGANIZATION_ID): Promise<ManufacturerType> {
+  async update(id: string, payload: UpdateManufacturerDto, organizationId): Promise<ManufacturerType> {
     const manufacturer = await this.manufacturerRepository.findOne({
       where: { id, organizationId, deletedAt: IsNull() },
     });
@@ -98,7 +97,7 @@ export class ManufacturersService {
     return toManufacturerType(saved);
   }
 
-  async remove(id: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<void> {
+  async remove(id: string, organizationId): Promise<void> {
     const result = await this.manufacturerRepository.softDelete({ id, organizationId });
     if (!result.affected) throw new NotFoundException('Manufacturer not found');
   }

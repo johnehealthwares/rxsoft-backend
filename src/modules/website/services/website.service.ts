@@ -5,6 +5,8 @@ import { ItemOrmEntity } from '../../../modules/catalog/entities/item.orm-entity
 import { ItemCategoryOrmEntity } from '../../../modules/catalog/entities/item-category.orm-entity';
 import { PartyOrmEntity } from '../../../modules/customers/entities/party.orm-entity';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
+import { OrdersService } from '../../orders/orders.service';
+import { PricingService } from '../../pricing/services/pricing.service';
 import {
   HealthConcernOrmEntity,
   PrescriptionOrmEntity,
@@ -18,9 +20,6 @@ import {
   NewsletterSubscriberOrmEntity,
   ProductReviewOrmEntity,
   RewardTransactionOrmEntity,
-  OrderOrmEntity,
-  OrderItemOrmEntity,
-  DeliveryOrmEntity,
 } from '../entities';
 import { ListQueryDto, CreateConsultationDto, CreateContactDto, NewsletterSubscribeDto, CreateReviewDto, SearchQueryDto, CreateOrderDto, CreatePrescriptionDto } from '../dto/website.dto';
 
@@ -57,19 +56,15 @@ export class WebsiteService {
     private readonly reviewRepo: Repository<ProductReviewOrmEntity>,
     @InjectRepository(RewardTransactionOrmEntity)
     private readonly rewardRepo: Repository<RewardTransactionOrmEntity>,
-    @InjectRepository(OrderOrmEntity)
-    private readonly orderRepo: Repository<OrderOrmEntity>,
-    @InjectRepository(OrderItemOrmEntity)
-    private readonly orderItemRepo: Repository<OrderItemOrmEntity>,
-    @InjectRepository(DeliveryOrmEntity)
-    private readonly deliveryRepo: Repository<DeliveryOrmEntity>,
     private readonly genericDrugCache: GenericDrugCacheService,
+    private readonly ordersService: OrdersService,
+    private readonly pricingService: PricingService,
   ) {}
 
   // ── Homepage ──────────────────────────────────────────────────
 
-  async getHomepage() {
-    const featuredProducts = await this.getFeaturedProducts();
+  async getHomepage(organizationId?: string) {
+    const featuredProducts = await this.getFeaturedProducts(organizationId);
     const categories = await this.categoryRepo.find({ where: { deletedAt: IsNull() }, take: 9 });
     const healthConcerns = await this.healthConcernRepo.find({ where: { isActive: true }, order: { displayOrder: 'ASC' } });
     const testimonials = await this.testimonialRepo.find({ where: { isActive: true }, order: { displayOrder: 'ASC' }, take: 6 });
@@ -80,12 +75,16 @@ export class WebsiteService {
 
   // ── Products ───────────────────────────────────────────────────
 
-  async listProducts(query: ListQueryDto) {
+  async listProducts(query: ListQueryDto, organizationId?: string) {
     const qb = this.itemRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.category', 'category')
       .where('item.deletedAt IS NULL')
       .andWhere('item.isActive = :active', { active: true });
+
+    if (organizationId) {
+      qb.andWhere('item.organizationId = :orgId', { orgId: organizationId });
+    }
 
     if (query.search) {
       qb.andWhere('item.name ILIKE :search', { search: `%${query.search}%` });
@@ -105,32 +104,54 @@ export class WebsiteService {
     qb.skip(skip).take(query.limit);
 
     const data = await qb.getMany();
-    return { data, total, page: query.page, limit: query.limit };
+
+    const enriched = organizationId
+      ? await this.enrichWithPrices(data, organizationId)
+      : data;
+
+    return { data: enriched, total, page: query.page, limit: query.limit };
   }
 
-  async getProduct(id: string) {
-    const product = await this.itemRepo
+  async getProduct(id: string, organizationId?: string) {
+    const qb = this.itemRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.category', 'category')
       .where('item.id = :id', { id })
-      .andWhere('item.isActive = :active', { active: true })
-      .getOne();
+      .andWhere('item.isActive = :active', { active: true });
+
+    if (organizationId) {
+      qb.andWhere('item.organizationId = :orgId', { orgId: organizationId });
+    }
+
+    const product = await qb.getOne();
 
     if (!product) throw new NotFoundException('Product not found');
 
     const reviews = await this.reviewRepo.find({ where: { productId: id, isApproved: true }, order: { createdAt: 'DESC' }, take: 10 });
 
-    const related = await this.itemRepo
+    const relatedQb = this.itemRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.category', 'category')
       .where('item.deletedAt IS NULL')
       .andWhere('item.isActive = :active', { active: true })
       .andWhere('item.id != :id', { id })
       .andWhere('category.id = :catId', { catId: product.category?.id })
-      .take(4)
-      .getMany();
+      .take(4);
 
-    return { product, reviews, related };
+    if (organizationId) {
+      relatedQb.andWhere('item.organizationId = :orgId', { orgId: organizationId });
+    }
+
+    const related = await relatedQb.getMany();
+
+    const [enrichedProduct] = organizationId
+      ? await this.enrichWithPrices([product], organizationId)
+      : [product];
+    const enrichedRelated = organizationId
+      ? await this.enrichWithPrices(related, organizationId)
+      : related;
+
+    return { product: enrichedProduct, reviews, related: enrichedRelated };
   }
 
   // ── Categories ─────────────────────────────────────────────────
@@ -139,15 +160,20 @@ export class WebsiteService {
     return this.categoryRepo.find({ where: { deletedAt:  IsNull() }, order: { name: 'ASC' } });
   }
 
-  async getCategoryBySlug(slug: string) {
+  async getCategoryBySlug(slug: string, organizationId?: string) {
     const category = await this.categoryRepo.findOne({ where: { code: slug, deletedAt:  IsNull() } });
     if (!category) throw new NotFoundException('Category not found');
 
-    const products = await this.itemRepo.find({
-      where: { category: { id: category.id }, deletedAt:  IsNull(), isActive: true },
-    });
+    const where: any = { category: { id: category.id }, deletedAt:  IsNull(), isActive: true };
+    if (organizationId) where.organizationId = organizationId;
 
-    return { category, products };
+    const products = await this.itemRepo.find({ where });
+
+    const enriched = organizationId
+      ? await this.enrichWithPrices(products, organizationId)
+      : products;
+
+    return { category, products: enriched };
   }
 
   // ── Health Concerns ────────────────────────────────────────────
@@ -156,15 +182,22 @@ export class WebsiteService {
     return this.healthConcernRepo.find({ where: { isActive: true }, order: { displayOrder: 'ASC' } });
   }
 
-  async getHealthConcernBySlug(slug: string) {
+  async getHealthConcernBySlug(slug: string, organizationId?: string) {
     const concern = await this.healthConcernRepo.findOne({ where: { slug, isActive: true } });
     if (!concern) throw new NotFoundException('Health concern not found');
 
+    const where: any = { deletedAt:  IsNull(), isActive: true };
+    if (organizationId) where.organizationId = organizationId;
+
     const products = await this.itemRepo.find({
-      where: { deletedAt:  IsNull(), isActive: true },
+      where,
       relations: ['category'],
       take: 20,
     });
+
+    const enriched = organizationId
+      ? await this.enrichWithPrices(products, organizationId)
+      : products;
 
     const articles = await this.blogRepo.find({
       where: { isPublished: true },
@@ -172,7 +205,7 @@ export class WebsiteService {
       take: 3,
     });
 
-    return { concern, products, articles };
+    return { concern, products: enriched, articles };
   }
 
   // ── Prescriptions ──────────────────────────────────────────────
@@ -229,89 +262,32 @@ export class WebsiteService {
 
   // ── Cart ───────────────────────────────────────────────────────
 
-  async getCart(productIds: string[]) {
+  async getCart(productIds: string[], organizationId?: string) {
     if (!productIds.length) return [];
-    return this.itemRepo.find({ where: { id: In(productIds), deletedAt:  IsNull(), isActive: true } });
+    const where: any = { id: In(productIds), deletedAt:  IsNull(), isActive: true };
+    if (organizationId) where.organizationId = organizationId;
+
+    const items = await this.itemRepo.find({ where });
+
+    return organizationId ? this.enrichWithPrices(items, organizationId) : items;
   }
 
-  // ── Orders ─────────────────────────────────────────────────────
+  // ── Orders (delegated to OrdersModule) ──────────────────────────
 
   async listOrders(userId?: string) {
-    const where = userId ? { createdBy: userId } : {};
-    return this.orderRepo.find({ where, relations: ['items', 'delivery'], order: { createdAt: 'DESC' } });
+    return this.ordersService.listOrders(userId);
   }
 
   async getOrder(id: string) {
-    const order = await this.orderRepo.findOne({ where: { id }, relations: ['items', 'delivery'] });
-    if (!order) throw new NotFoundException('Order not found');
-    return order;
+    return this.ordersService.getOrder(id);
   }
 
   async trackOrder(orderNumber: string) {
-    const order = await this.orderRepo.findOne({ where: { orderNumber }, relations: ['items', 'delivery'] });
-    if (!order) throw new NotFoundException('Order not found');
-    return order;
+    return this.ordersService.trackOrder(orderNumber);
   }
 
-  async createOrder(payload: CreateOrderDto, userId?: string) {
-    const items = payload.items?.length
-      ? await this.itemRepo.findBy({ id: In(payload.items.map((i) => i.itemId)) })
-      : [];
-    const itemMap = new Map(items.map((i) => [i.id, i]));
-
-    let subtotal = 0;
-    const orderItems: { itemId: string; quantity: number; unitPrice: number }[] = [];
-    for (const line of payload.items ?? []) {
-      const item = itemMap.get(line.itemId);
-      if (!item) continue;
-      const price = line.unitPrice ?? 0;
-      subtotal += price * line.quantity;
-      orderItems.push({ itemId: line.itemId, quantity: line.quantity, unitPrice: price });
-    }
-
-    let customerId = payload.customerId ?? null;
-    if (!customerId && userId) {
-      const party = await this.partyRepo.findOne({ where: { userId } });
-      if (party) customerId = party.id;
-    }
-
-    const order = this.orderRepo.create({
-      orderNumber: `ORD-${Date.now()}`,
-      customerId,
-      paymentMethod: payload.paymentMethod,
-      notes: payload.notes ?? null,
-      orderStatus: 'pending',
-      createdBy: userId ?? null,
-      subtotalAmount: subtotal,
-      totalAmount: subtotal,
-    });
-
-    const savedOrder = await this.orderRepo.save(order);
-
-    if (orderItems.length > 0) {
-      await this.orderItemRepo.save(
-        orderItems.map((oi) =>
-          this.orderItemRepo.create({ order: savedOrder, ...oi }),
-        ),
-      );
-    }
-
-    if (payload.delivery) {
-      const delivery = this.deliveryRepo.create({
-        order: savedOrder,
-        address: payload.delivery.address,
-        city: payload.delivery.city ?? null,
-        state: payload.delivery.state ?? null,
-        phone: payload.delivery.phone ?? null,
-        shippingMethod: payload.delivery.shippingMethod ?? null,
-      });
-      await this.deliveryRepo.save(delivery);
-    }
-
-    return this.orderRepo.findOne({
-      where: { id: savedOrder.id },
-      relations: ['items', 'delivery'],
-    });
+  async createOrder(payload: CreateOrderDto, userId?: string, organizationId?: string) {
+    return this.ordersService.createOrder(payload, userId, organizationId);
   }
 
   // ── Blog ───────────────────────────────────────────────────────
@@ -396,18 +372,23 @@ export class WebsiteService {
 
   // ── Search ─────────────────────────────────────────────────────
 
-  async search(query: SearchQueryDto) {
+  async search(query: SearchQueryDto, organizationId?: string) {
     const results: Record<string, unknown[]> = {};
 
     if (!query.type || query.type === 'medicines') {
-      const medicines = await this.itemRepo.find({
-        where: [
-          { name: ILike(`%${query.q}%`), deletedAt:  IsNull(), isActive: true },
-          { code: ILike(`%${query.q}%`), deletedAt:  IsNull(), isActive: true },
-        ],
-        take: 10,
-      });
-      results.medicines = medicines;
+      const where: any[] = [
+        { name: ILike(`%${query.q}%`), deletedAt:  IsNull(), isActive: true },
+        { code: ILike(`%${query.q}%`), deletedAt:  IsNull(), isActive: true },
+      ];
+      if (organizationId) {
+        where.forEach((w) => (w.organizationId = organizationId));
+      }
+
+      const medicines = await this.itemRepo.find({ where, take: 10 });
+
+      results.medicines = organizationId
+        ? await this.enrichWithPrices(medicines, organizationId)
+        : medicines;
     }
 
     if (!query.type || query.type === 'categories') {
@@ -442,12 +423,29 @@ export class WebsiteService {
 
   // ── Helpers ────────────────────────────────────────────────────
 
-  private async getFeaturedProducts() {
-    return this.itemRepo.find({
-      where: { deletedAt:  IsNull(), isActive: true },
+  private async getFeaturedProducts(organizationId?: string) {
+    const where: any = { deletedAt:  IsNull(), isActive: true };
+    if (organizationId) where.organizationId = organizationId;
+
+    const items = await this.itemRepo.find({
+      where,
       relations: ['category'],
       take: 8,
       order: { createdAt: 'DESC' },
     });
+
+    return organizationId ? this.enrichWithPrices(items, organizationId) : items;
+  }
+
+  private async enrichWithPrices(items: any[], organizationId: string) {
+    if (!items.length) return items;
+    const prices = await this.pricingService.getPricesForItems(
+      items.map((i) => i.id),
+      organizationId,
+    );
+    return items.map((item) => ({
+      ...item,
+      unitPrice: prices.get(item.id) ?? null,
+    }));
   }
 }

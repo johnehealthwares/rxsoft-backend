@@ -39,6 +39,17 @@ export class UsersProxyService {
     return data;
   }
 
+  async listByApiKey(query?: Record<string, string>): Promise<any> {
+    const params = query ?? {};
+    const { data } = await firstValueFrom(
+      this.http.get(`${this.baseUrl}/users`, {
+        headers: { 'x-api-key': this.internalApiKey },
+        params,
+      }),
+    );
+    return data;
+  }
+
   async findOne(token: string, id: string): Promise<any> {
     const key = this.cacheKey('findOne', token, id);
     const cached = await this.cache.get<any>(key);

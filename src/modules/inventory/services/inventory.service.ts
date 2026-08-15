@@ -1,5 +1,4 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import type { StockBalanceType } from '../../../shared/domain';
 import { toStockBalanceType } from '../../../shared/domain/mappers';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
@@ -20,9 +19,9 @@ export class InventoryService {
     private readonly accountingIntegration?: AccountingIntegrationService,
   ) {}
 
-  async list(query: ListQueryDto): Promise<{ data: Array<Record<string, unknown>>; total: number }> {
+  async list(organizationId: string, query: ListQueryDto): Promise<{ data: Array<Record<string, unknown>>; total: number }> {
     const result = await this.inventoryRepository.listStockBalances({
-      organizationId: DEFAULT_ORGANIZATION_ID,
+      organizationId,
       offset: query.offset,
       limit: query.limit,
     });
@@ -42,9 +41,9 @@ export class InventoryService {
     };
   }
 
-  async listAll(): Promise<Array<{ quantity: number }>> {
+  async listAll(organizationId: string): Promise<Array<{ quantity: number }>> {
     const result = await this.inventoryRepository.listStockBalances({
-      organizationId: DEFAULT_ORGANIZATION_ID,
+      organizationId,
       offset: 0,
       limit: 10000,
     });

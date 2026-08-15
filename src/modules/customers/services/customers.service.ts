@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import type { PartyType } from '../../../shared/domain';
 import { toPartyType } from '../../../shared/domain/mappers';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
@@ -15,10 +14,10 @@ export class CustomersService {
     private readonly partyRepository: Repository<PartyOrmEntity>,
   ) {}
 
-  async list(query: ListQueryDto): Promise<{ data: PartyType[]; total: number }> {
+  async list(organizationId: string, query: ListQueryDto): Promise<{ data: PartyType[]; total: number }> {
     const qb = this.partyRepository
       .createQueryBuilder('party')
-      .where('party.organization_id = :organizationId', { organizationId: DEFAULT_ORGANIZATION_ID })
+      .where('party.organization_id = :organizationId', { organizationId })
       .andWhere('party.deleted_at IS NULL')
       .andWhere("party.party_type IN ('customer', 'both')");
 
@@ -42,9 +41,9 @@ export class CustomersService {
     return { data: data.map(toPartyType), total };
   }
 
-  async createCustomer(payload: CreateCustomerDto): Promise<PartyType> {
+  async createCustomer(organizationId: string, payload: CreateCustomerDto): Promise<PartyType> {
     const customer = this.partyRepository.create({
-      organizationId: DEFAULT_ORGANIZATION_ID,
+      organizationId,
       partyType: 'customer',
       code: null,
       name: payload.name,
@@ -58,9 +57,9 @@ export class CustomersService {
     return toPartyType(savedCustomer);
   }
 
-  async updateCustomer(id: string, payload: UpdateCustomerDto): Promise<PartyType> {
+  async updateCustomer(organizationId: string, id: string, payload: UpdateCustomerDto): Promise<PartyType> {
     const customer = await this.partyRepository.findOne({
-      where: { id, organizationId: DEFAULT_ORGANIZATION_ID, deletedAt: IsNull() },
+      where: { id, organizationId, deletedAt: IsNull() },
     });
 
     if (!customer || (customer.partyType !== 'customer' && customer.partyType !== 'both')) {
@@ -84,8 +83,8 @@ export class CustomersService {
     return toPartyType(savedCustomer);
   }
 
-  async archive(id: string): Promise<void> {
-    const result = await this.partyRepository.softDelete({ id, organizationId: DEFAULT_ORGANIZATION_ID });
+  async archive(organizationId: string, id: string): Promise<void> {
+    const result = await this.partyRepository.softDelete({ id, organizationId });
     if (!result.affected) {
       throw new NotFoundException('Customer not found');
     }

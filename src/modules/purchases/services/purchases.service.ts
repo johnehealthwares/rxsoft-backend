@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID, DEFAULT_SYSTEM_USER_ID, DEFAULT_UOM_ID } from '../../../shared/constants/persistence-scope';
+import { DEFAULT_SYSTEM_USER_ID, DEFAULT_UOM_ID } from '../../../shared/constants/persistence-scope';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { WarehouseOrmEntity } from '../../inventory/entities';
@@ -54,7 +54,7 @@ export class PurchasesService {
     private readonly warehouseRepository: Repository<WarehouseOrmEntity>,
   ) {}
 
-  async list(query: ListQueryDto, organizationId = DEFAULT_ORGANIZATION_ID): Promise<{ data: PurchaseSummaryType[]; total: number }> {
+  async list(query: ListQueryDto, organizationId): Promise<{ data: PurchaseSummaryType[]; total: number }> {
     const qb = this.purchaseOrderRepository
       .createQueryBuilder('purchase')
       .leftJoinAndSelect('purchase.lines', 'line')
@@ -205,7 +205,7 @@ export class PurchasesService {
     );
   }
 
-  async getById(purchaseId: string, organizationId = DEFAULT_ORGANIZATION_ID, manager?: EntityManager): Promise<PurchaseSummaryType> {
+  async getById(purchaseId: string, organizationId, manager?: EntityManager): Promise<PurchaseSummaryType> {
     const repo = manager ? manager.getRepository(PurchaseOrderOrmEntity) : this.purchaseOrderRepository;
     const row = await repo.findOne({
       where: { id: purchaseId, organizationId },
@@ -298,7 +298,7 @@ export class PurchasesService {
     });
   }
 
-  async removePurchase(purchaseId: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<void> {
+  async removePurchase(purchaseId: string, organizationId): Promise<void> {
     const result = await this.purchaseOrderRepository.delete({ id: purchaseId, organizationId });
     if (!result.affected) throw new NotFoundException('Purchase order not found');
   }

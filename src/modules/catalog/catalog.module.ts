@@ -27,11 +27,13 @@ import {
   ItemCategoryOrmEntity,
   ItemOrmEntity,
   ClassificationOrmEntity,
+  OrganisationItemOrmEntity,
 } from './entities';
 
 import { UomOrmEntity } from '../sales/entities';
 import { UpdateItemUseCase } from './services/update-item.use-case';
 import { PatchItemUseCase } from './services/patch-item.use-case';
+import { OrganisationItemsService } from './services/organisation-items.service';
 
 const catalogConfigService = new ConfigService();
 const useInMemoryRepos = catalogConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -43,6 +45,7 @@ const catalogPersistenceImports = useInMemoryRepos
         ItemCategoryOrmEntity,
         UomOrmEntity,
         ClassificationOrmEntity,
+        OrganisationItemOrmEntity,
       ]),
       PricingModule,
     ];
@@ -89,6 +92,7 @@ const catalogExtraProviders = useInMemoryRepos ? [] : [GenericProductsService, P
     GetItemUseCase,
     ListItemsUseCase,
     ListItemDependenciesUseCase,
+    OrganisationItemsService,
     ...catalogExtraProviders,
     ...catalogRepositoryProviders,
   ],

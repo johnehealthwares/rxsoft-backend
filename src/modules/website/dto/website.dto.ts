@@ -68,8 +68,11 @@ export class AddToCartDto {
 }
 
 export class CreateOrderItemDto {
-  @ApiProperty() @IsUUID()
-  itemId!: string;
+  @ApiPropertyOptional() @IsUUID() @IsOptional()
+  itemId?: string;
+
+  @ApiPropertyOptional() @IsString() @IsOptional()
+  freetextName?: string;
 
   @ApiProperty() @Type(() => Number) @IsInt() @Min(1)
   quantity!: number;

@@ -1,15 +1,16 @@
-# Graph Report - /Users/john/develop/rxsoft/rxsoft-backend  (2026-07-09)
+# Graph Report - rxsoft-backend  (2026-07-25)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 837 files · ~5,738,315 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 7910 nodes · 22177 edges · 243 communities (215 shown, 28 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 1106 edges (avg confidence: 0.65)
-- Token cost: 11,006 input · 12,668 output
+- 8405 nodes · 22946 edges · 355 communities (274 shown, 81 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 1119 edges (avg confidence: 0.64)
+- Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5153384c`
+- Built from commit: `fda3f19c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -162,6 +163,7 @@
 - Reports Controller
 - Organisation Config Controller
 - Organisation Config Entity
+- Select-BlwOJ1xN.js
 - CSS Class Utilities
 - Zustand Store Hooks
 - Coding Concept Pages
@@ -193,6 +195,7 @@
 - Scheduler Utilities
 - APM Controllers
 - Update Org Config DTO
+- ehealthwares.service.ts
 - Package Metadata
 - Axios Instance
 - In-Memory Cache Store
@@ -246,10 +249,119 @@
 - Health Controller
 - Items Controller
 - Yarn Configuration
+- ApmAdminController
+- apm-canvassing.controller.ts
+- WhatsAppGroupOrmEntity
+- orders.service.spec.ts
+- Refactoring deviations (fix when touching)
+- CreateSaleRefundDto
+- Additional Test Cases To Add (Priority Order)
+- CollectReceivablePaymentDto
+- UomCategoryOrmEntity
+- Backend CRUD Resource — rxsoft-backend
+- AuditController
+- ListReceivableTransactionsDto
+- request-logging.interceptor.ts
+- ReceivableTransactionOrmEntity
+- Backend List Endpoint — rxsoft-backend
+- Google Sheets Import — rxsoft-backend
+- useFloating
+- WriteOffReceivableDto
+- AchievementOrmEntity
+- EventOrmEntity
+- MediaAssetOrmEntity
+- TestimonialOrmEntity
+- Task 6 Report: Backend — Seed Data
+- Auth Guard — rxsoft-backend
+- useBaseQuery
+- Validation Layer
+- ConversionScoreOrmEntity
+- Task 1 Report: Backend — Mongoose Schemas (8 schemas + index)
+- Task 2 Report: Backend — DTOs
+- Seeding — rxsoft-backend
+- Test Schema
+- Functional Requirements
+- GoogleSheetStatusWriter
+- ContactSubmissionOrmEntity
+- DonationOrmEntity
+- AgendaItemDocument
+- CitizenFeedbackDocument
+- supporter.schema.ts
+- item-response.dto.ts
+- childMatcher
+- Implementations
+- Sync Modes
+- dependencies
+- EAV Support
+- Excel Import Integration Test
+- Spreadsheet Writer Abstraction
+- WhatsAppGroupSchema
+- Article
+- Category
+- HeroSlide
+- InvestorData
+- Partner
+- Service
+- TeamMember
+- Testimonial
+- Complete Generic Spreadsheet Import Framework + End-to-End Integration Tests
+- task-1-brief.md
+- task-2-brief.md
+- task-3-brief.md
+- task-3-report.md
+- task-4-brief.md
+- task-4-report.md
+- task-5-brief.md
+- task-5-report.md
+- task-6-brief.md
+- Create Product Use Case
+- Get Product Use Case
+- InMemory Product Repository
+- List Products Use Case
+- Pharmacology Info Entity
+- Product Repository Interface
+- Products Controller
+- Assign Role Use Case
+- Auth Controller
+- Create User Use Case
+- InMemory Refresh Token Repository
+- InMemory Role Repository
+- InMemory User Repository
+- List Users Use Case
+- Login Use Case
+- Password Hasher Port
+- Refresh Token Repository Interface
+- Refresh Token Use Case
+- Role Repository Interface
+- Roles Guard
+- Token Issuer Port
+- User Repository Interface
+- Users Controller
+- InMemory Inventory Repository
+- Inventory Controller
+- Inventory Repository Interface
+- List Stock Balances Use Case
+- Stock Balance Entity
+- Complete Generic Spreadsheet Import Framework Specification
+- EAV (Entity-Attribute-Value)
+- EntityImportService
+- FULL_SYNC Support
+- GoogleSheetImportService
+- GoogleSheetReaderService
+- ImportContext
+- ImportRegistryService
+- ImportReport
+- ImportTarget
+- RowSyncResult
+- SpreadsheetImportService
+- SpreadsheetStatusWriter
+- SyncMode
+- ValidationResult
+- ValidationService
 
 ## God Nodes (most connected - your core abstractions)
-1. `RequestUser` - 176 edges
-2. `CurrentUser` - 165 edges
+1. `RequestUser` - 195 edges
+2. `CurrentUser` - 184 edges
 3. `constructor()` - 119 edges
 4. `useQuery()` - 107 edges
 5. `normalizeParams()` - 98 edges
@@ -274,227 +386,219 @@
 ## Import Cycles
 - None detected.
 
-## Hyperedges (group relationships)
-- **Identity Authentication & Authorization Flow** — phase3_identity_module_summary_login_use_case, phase3_identity_module_summary_refresh_token_use_case, phase3_identity_module_summary_create_user_use_case, phase3_identity_module_summary_assign_role_use_case, phase3_identity_module_summary_list_users_use_case, phase3_identity_module_summary_jwt_auth_guard, phase3_identity_module_summary_roles_guard, phase3_identity_module_summary_user, phase3_identity_module_summary_role, phase3_identity_module_summary_password_hasher_port, phase3_identity_module_summary_token_issuer_port [INFERRED 0.75]
-- **Catalog Product Management Flow** — phase3_catalog_module_summary_create_product_use_case, phase3_catalog_module_summary_get_product_use_case, phase3_catalog_module_summary_list_products_use_case, phase3_catalog_module_summary_product, phase3_catalog_module_summary_generic_product, phase3_catalog_module_summary_pharmacology_info, phase3_catalog_module_summary_product_repository, phase3_catalog_module_summary_products_controller [INFERRED 0.75]
-- **Inventory Stock Adjustment Flow** — phase3_inventory_module_summary_create_stock_adjustment_use_case, phase3_inventory_module_summary_list_stock_balances_use_case, phase3_inventory_module_summary_stock_balance, phase3_inventory_module_summary_stock_adjustment, phase3_inventory_module_summary_inventory_repository, phase3_inventory_module_summary_inventory_controller [INFERRED 0.75]
-- **ImportTarget Implementations** — src_database_import_prompt_ai_md_repository_import_target, src_database_import_prompt_ai_md_query_builder_import_target, src_database_import_prompt_ai_md_api_import_target, src_database_import_prompt_ai_md_database_import_target [EXTRACTED 1.00]
-- **SpreadsheetStatusWriter Implementations** — src_database_import_prompt_ai_md_excel_status_writer, src_database_import_prompt_ai_md_google_sheet_status_writer [EXTRACTED 1.00]
-- **Core Existing Services (to extend)** — src_database_import_prompt_ai_md_spreadsheet_import_service, src_database_import_prompt_ai_md_google_sheet_import_service, src_database_import_prompt_ai_md_google_sheet_reader_service, src_database_import_prompt_ai_md_entity_import_service, src_database_import_prompt_ai_md_attribute_sync_service, src_database_import_prompt_ai_md_import_registry_service, src_database_import_prompt_ai_md_validation_service [EXTRACTED 1.00]
-
-## Communities (243 total, 28 thin omitted)
+## Communities (355 total, 81 thin omitted)
 
 ### Community 0 - "URL Parameter Normalization"
 Cohesion: 0.01
-Nodes (268): RFC-3986, RFC-5322, RFC-9562, active(), applyDerivedStateFromProps(), _array(), _assertThisInitialized(), _base64() (+260 more)
+Nodes (237): RFC-3986, RFC-5322, RFC-9562, deepMerge(), isObject(), MantineThemeProvider(), active(), applyDerivedStateFromProps() (+229 more)
 
 ### Community 1 - "UI Component Library"
-Cohesion: 0.03
-Nodes (161): AccordionChevron(), getInitialsColor(), hashCode(), clsx(), createVarsResolver(), extractStyleProps(), factory(), genericFactory() (+153 more)
+Cohesion: 0.02
+Nodes (189): AccordionChevron(), getInitialsColor(), hashCode(), borderResolver(), _Box(), clsx(), colorResolver(), createVarsResolver() (+181 more)
 
 ### Community 2 - "Website Layout & Auth"
-Cohesion: 0.03
-Nodes (153): UnauthorisedError(), ForbiddenError(), AboutPage(), AppSidebar(), AuthenticatedLayout(), AutoLogout(), filterNavGroupsByModule(), getModuleDashboard() (+145 more)
+Cohesion: 0.04
+Nodes (98): AboutPage(), ArticleCard(), ArticleCardSkeleton(), BlogListPage(), ArticlePage(), ArticleSkeleton(), ShareButton(), CartItemRow() (+90 more)
 
 ### Community 3 - "Route Building Utilities"
-Cohesion: 0.03
-Nodes (142): from(), buildBranch(), buildRouteBranch(), cleanPath(), ClientOnly(), compileDecodeCharMap(), createDynamicNode(), createLRUCache() (+134 more)
+Cohesion: 0.02
+Nodes (149): LayoutProvider(), from(), buildBranch(), buildRouteBranch(), cleanPath(), ClientOnly(), compileDecodeCharMap(), createDynamicNode() (+141 more)
 
 ### Community 4 - "APM Module Entities"
-Cohesion: 0.02
-Nodes (145): ApmModule, Module, AchievementOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn (+137 more)
+Cohesion: 0.06
+Nodes (41): ConversionActivityOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, LgaOrmEntity (+33 more)
 
 ### Community 5 - "React Fiber Work Loop"
-Cohesion: 0.03
-Nodes (144): aborted(), assertIsMounted(), attemptEarlyBailoutIfNoScheduledUpdate(), bailoutHooks(), bailoutOffscreenComponent(), bailoutOnAlreadyFinishedWork(), beginWork(), callComponentWillReceiveProps() (+136 more)
+Cohesion: 0.04
+Nodes (122): assertIsMounted(), attemptEarlyBailoutIfNoScheduledUpdate(), bailoutHooks(), bailoutOffscreenComponent(), bailoutOnAlreadyFinishedWork(), beginWork(), bubbleProperties(), callComponentWillReceiveProps() (+114 more)
 
 ### Community 6 - "Flow Graph Manipulation"
 Cohesion: 0.02
-Nodes (34): applyChanges(), applyNodeChanges(), childFind(), childMatcher(), childrenFilter(), Color(), contextListener(), decompose_default() (+26 more)
+Nodes (32): applyChanges(), applyNodeChanges(), Color(), contextListener(), decompose_default(), easeVarying(), easeVarying_default(), enter_default() (+24 more)
 
 ### Community 7 - "Admin Hooks & Queries"
 Cohesion: 0.07
-Nodes (86): invalidateApmAdmin(), useAgents(), useAgentStats(), useAllVisitStats(), useCanvassingSessions(), useCanvassingStats(), useContentAssets(), useConversionDashboard() (+78 more)
+Nodes (83): invalidateApmAdmin(), useAgents(), useAgentStats(), useAllVisitStats(), useCanvassingSessions(), useCanvassingStats(), useContentAssets(), useConversionDashboard() (+75 more)
 
 ### Community 8 - "NestJS App Configuration"
-Cohesion: 0.05
-Nodes (59): appConfigService, databaseConfig, AuditAction(), Roles(), JwtAuthGuard, Injectable, RolesGuard, Injectable (+51 more)
+Cohesion: 0.06
+Nodes (47): IsObject, AuditAction(), Roles(), JwtAuthGuard, Injectable, RolesGuard, Injectable, UserWithRoles (+39 more)
 
 ### Community 9 - "App Shell Layout"
-Cohesion: 0.04
-Nodes (92): AppShellMediaStyles(), assignAsideVariables(), assignFooterVariables(), assignHeaderVariables(), assignNavbarVariables(), assignPaddingVariables(), getBaseSize(), getPaddingValue() (+84 more)
+Cohesion: 0.15
+Nodes (35): AppShellMediaStyles(), assignAsideVariables(), assignFooterVariables(), assignHeaderVariables(), assignNavbarVariables(), assignPaddingVariables(), getBaseSize(), getPaddingValue() (+27 more)
 
 ### Community 10 - "React Suspense & Resources"
-Cohesion: 0.04
-Nodes (104): accumulateSuspenseyCommitOnFiber(), acquireResource(), add(), addTrappedEventListener(), adoptPreloadPropsForScript(), adoptPreloadPropsForStylesheet(), attachPingListener(), attachSuspenseRetryListeners() (+96 more)
+Cohesion: 0.06
+Nodes (64): accumulateSuspenseyCommitOnFiber(), acquireResource(), addTrappedEventListener(), adoptPreloadPropsForScript(), adoptPreloadPropsForStylesheet(), checkForUnmatchedText(), coerceFormActionProp(), createRoot() (+56 more)
 
 ### Community 11 - "Data Fetching Utilities"
 Cohesion: 0.03
-Nodes (100): LayoutProvider(), allSettled(), batch(), build(), buildAttributeFields(), cancelQueries(), canRun(), catch() (+92 more)
+Nodes (86): interpolateTransform(), allSettled(), attachSuspenseRetryListeners(), build(), buildAttributeFields(), cancelQueries(), canRun(), catch() (+78 more)
 
 ### Community 12 - "Data Page UI Components"
-Cohesion: 0.06
-Nodes (64): ConfirmDialog(), UomEditRoute(), DataPageShell(), DebouncedTextInput(), DialogActions(), formatJson(), getDirtyPayload(), getErrorMessage() (+56 more)
+Cohesion: 0.16
+Nodes (38): ConfirmDialog(), UomEditRoute(), DebouncedTextInput(), DialogActions(), formatJson(), getDirtyPayload(), getErrorMessage(), getObject() (+30 more)
 
 ### Community 13 - "Branch & Consultation Entities"
 Cohesion: 0.03
-Nodes (75): BranchOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, ConsultationChannel (+67 more)
+Nodes (71): BranchOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, ConsultationChannel (+63 more)
 
 ### Community 14 - "Goods Receipt Entities"
 Cohesion: 0.05
-Nodes (50): GoodsReceiptLineOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn (+42 more)
+Nodes (49): GoodsReceiptLineOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn (+41 more)
 
 ### Community 15 - "Auth Token Management"
 Cohesion: 0.03
-Nodes (92): clearTokens(), decodeUserFromAccessToken(), getAccessToken(), getRefreshToken(), persistTokens(), creatorInherit(), ack(), addEventListeners() (+84 more)
+Nodes (89): clearTokens(), decodeUserFromAccessToken(), getAccessToken(), getRefreshToken(), persistTokens(), creatorInherit(), ack(), addEventListeners() (+81 more)
 
 ### Community 16 - "APM Election & GOTV"
-Cohesion: 0.08
-Nodes (34): ApmAgentController, ApmGotvController, ApmIncidentController, ApmResultController, ApiBearerAuth, ApiOperation, ApiTags, Body (+26 more)
+Cohesion: 0.10
+Nodes (14): ApmAgentController, ApmGotvController, ApmIncidentController, ApmResultController, ApiBearerAuth, ApiOperation, ApiTags, Controller (+6 more)
 
 ### Community 17 - "Audit Log Controller"
-Cohesion: 0.04
-Nodes (52): AuditController, ApiBearerAuth, ApiTags, Controller, Get, Query, Roles, UseGuards (+44 more)
+Cohesion: 0.07
+Nodes (36): CustomerListResponse, CustomersController, ApiBearerAuth, ApiTags, Body, Controller, Delete, Get (+28 more)
 
 ### Community 18 - "Sales Controller"
-Cohesion: 0.04
-Nodes (64): SalesController, SalesListResponse, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, AuditAction, Body (+56 more)
+Cohesion: 0.07
+Nodes (26): SalesListResponse, Inject, InjectRepository, CreateSaleRefundResponseDto, ApiProperty, CreateSaleResponseDto, ApiProperty, SaleResponseDto (+18 more)
 
 ### Community 19 - "NestJS HTTP Decorators"
 Cohesion: 0.06
-Nodes (19): ApiBody, ApiConsumes, Req, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller (+11 more)
+Nodes (20): ApiBody, ApiConsumes, Req, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller (+12 more)
 
 ### Community 20 - "React Commit Phase"
-Cohesion: 0.05
-Nodes (81): bubbleProperties(), captureCommitPhaseErrorOnRoot(), checkIfRootIsPrerendering(), claimNextRetryLane(), commitRoot(), commitRootWhenReady(), compare(), completeUnitOfWork() (+73 more)
+Cohesion: 0.14
+Nodes (14): componentDidCatch(), estimateBandwidth(), getDerivedStateFromError(), handleErrorInNextTick(), initializeClassErrorUpdate(), insertStylesheetIntoRoot(), insertSuspendedStylesheets(), isLikelyStaticResource() (+6 more)
 
 ### Community 21 - "Item & Category Entities"
-Cohesion: 0.04
-Nodes (73): ItemOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn (+65 more)
+Cohesion: 0.05
+Nodes (52): StockAdjustmentOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, StockBalanceOrmEntity (+44 more)
 
 ### Community 22 - "Purchases Controller"
-Cohesion: 0.18
-Nodes (16): PurchasesController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete, Get (+8 more)
+Cohesion: 0.08
+Nodes (43): CurrentUser, RequestUser, AccountingController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller (+35 more)
 
 ### Community 23 - "APM Content & Tour"
-Cohesion: 0.06
-Nodes (29): ApmContentController, ApmListeningController, ApmTourController, ApmTruthDeskController, ApiBearerAuth, ApiOperation, ApiTags, Body (+21 more)
+Cohesion: 0.12
+Nodes (16): ApmContentController, ApmListeningController, ApmTourController, ApmTruthDeskController, ApiBearerAuth, ApiOperation, ApiTags, Controller (+8 more)
 
 ### Community 24 - "APM Frontend Pages"
-Cohesion: 0.10
-Nodes (47): AchievementsPage(), AgendaPage(), AgendaSection(), ApmHomepage(), CitizensSpeakForm(), getInfoValue(), JoinMovementForm(), MediaGallery() (+39 more)
+Cohesion: 0.07
+Nodes (66): UnauthorisedError(), ForbiddenError(), AchievementsPage(), AgendaPage(), AgendaSection(), ApmHomepage(), CitizensSpeakForm(), getInfoValue() (+58 more)
 
 ### Community 25 - "Party ORM Entity"
-Cohesion: 0.05
-Nodes (38): RelationId, PartyOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Unique (+30 more)
+Cohesion: 0.12
+Nodes (18): PriceListItemOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique (+10 more)
 
 ### Community 26 - "Time Picker Utilities"
 Cohesion: 0.10
 Nodes (25): AmPmControlsList(), clampTime(), convertTimeTo12HourFormat(), convertTo24HourFormat(), getData(), getFormattedTime(), getParsedTime(), getTimeFromDate() (+17 more)
 
 ### Community 27 - "React Event System"
-Cohesion: 0.04
-Nodes (87): accumulateEnterLeaveListenersForEvent(), accumulateOrCreateContinuousQueuedReplayableEvent(), accumulateTwoPhaseListeners(), attemptContinuousHydration(), attemptExplicitHydrationTarget(), attemptHydrationAtCurrentPriority(), attemptReplayContinuousQueuedEvent(), attemptReplayContinuousQueuedEventInMap() (+79 more)
+Cohesion: 0.03
+Nodes (134): accumulateOrCreateContinuousQueuedReplayableEvent(), attachPingListener(), attemptContinuousHydration(), attemptExplicitHydrationTarget(), attemptHydrationAtCurrentPriority(), attemptReplayContinuousQueuedEvent(), attemptReplayContinuousQueuedEventInMap(), basicStateReducer() (+126 more)
 
 ### Community 28 - "Receivables ORM Entities"
 Cohesion: 0.05
-Nodes (52): PaymentMethodOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn, SaleLineOrmEntity (+44 more)
+Nodes (52): PartyOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn (+44 more)
 
 ### Community 29 - "Create Page Components"
 Cohesion: 0.05
-Nodes (32): GenericCreatePage(), GenericCreatePage(), ItemCreatePage(), DataPageForm(), getModelConfig(), cleanNotifications(), cleanNotificationsQueue(), getDistributedNotifications() (+24 more)
+Nodes (30): GenericCreatePage(), GenericCreatePage(), ItemCreatePage(), DataPageForm(), createFormContext(), getModelConfig(), LisPage(), LisResourcePage() (+22 more)
 
 ### Community 30 - "Stock Locations Controller"
-Cohesion: 0.07
-Nodes (44): StockLocationsController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+36 more)
+Cohesion: 0.09
+Nodes (34): StockLocationsController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+26 more)
 
 ### Community 31 - "Accounting Controller"
-Cohesion: 0.07
-Nodes (52): CurrentUser, RequestUser, AccountingController, GlAccountListResponse, JournalEntryLineListResponse, JournalEntryListResponse, JournalListResponse, ApiBearerAuth (+44 more)
+Cohesion: 0.08
+Nodes (38): GlAccountListResponse, JournalEntryLineListResponse, JournalEntryListResponse, JournalListResponse, CreateGlAccountDto, CreateJournalDto, CreateJournalEntryDto, CreateJournalEntryLineDto (+30 more)
 
 ### Community 32 - "Pricing Controller"
-Cohesion: 0.09
-Nodes (37): PricingController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Delete (+29 more)
+Cohesion: 0.08
+Nodes (42): PriceListItemResponse, PriceListResponse, PriceListSearchResponse, PricingController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction (+34 more)
 
 ### Community 33 - "Generic Products CRUD"
-Cohesion: 0.04
-Nodes (63): GenericProductsController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+55 more)
+Cohesion: 0.09
+Nodes (27): PharmaceuticsController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete, Get (+19 more)
 
 ### Community 34 - "Number Input Utilities"
 Cohesion: 0.07
-Nodes (50): clamp(), SpinInput(), addInputMode(), applyThousandSeparator(), canStep(), canStepBigInt(), caretUnknownFormatBoundary(), charIsNumber() (+42 more)
+Nodes (50): clamp(), getWeekdayNames(), addInputMode(), applyThousandSeparator(), canStep(), canStepBigInt(), caretUnknownFormatBoundary(), charIsNumber() (+42 more)
 
 ### Community 35 - "Accounting Module"
-Cohesion: 0.07
-Nodes (40): AccountingModule, Module, GlAccountOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique (+32 more)
+Cohesion: 0.06
+Nodes (41): GlAccountOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn, JournalEntryLineOrmEntity (+33 more)
 
 ### Community 36 - "Organizations Controller"
 Cohesion: 0.07
-Nodes (41): OrganizationListResponse, OrganizationsController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete (+33 more)
+Nodes (39): OrganizationListResponse, OrganizationsController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete (+31 more)
 
 ### Community 37 - "Categories Controller"
-Cohesion: 0.07
-Nodes (36): CategoriesController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Delete, Get (+28 more)
+Cohesion: 0.09
+Nodes (27): CategoriesController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Delete, Get (+19 more)
 
 ### Community 38 - "Audit Log Entity"
 Cohesion: 0.06
-Nodes (49): AuditLogOrmEntity, Column, PrimaryGeneratedColumn, InjectRepository, AuditLogType, AccountReceivableEntityType, AuditLogEntityType, CatalogItemCategoryEntityType (+41 more)
+Nodes (50): AuditLogOrmEntity, Column, PrimaryGeneratedColumn, InjectRepository, AuditLogType, AccountReceivableEntityType, AuditLogEntityType, CatalogItemCategoryEntityType (+42 more)
 
 ### Community 39 - "APM Admin Dashboard"
-Cohesion: 0.08
-Nodes (18): ApmAdminController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get, Query, Roles (+10 more)
+Cohesion: 0.10
+Nodes (9): ApmController, ApiOperation, ApiTags, Controller, Get, Param, Query, ApmService (+1 more)
 
 ### Community 40 - "APM Election Service"
-Cohesion: 0.05
-Nodes (9): ListQueryDto, IsInt, Max, Min, Type, ApmElectionMongoService, Injectable, ApmMongoService (+1 more)
+Cohesion: 0.07
+Nodes (20): Body, Post, CreateGotvRecordDto, CreateIncidentReportDto, CreatePollingAgentDto, CreateResultEntryDto, ApiProperty, ApiPropertyOptional (+12 more)
 
 ### Community 41 - "Auth Proxy Controller"
-Cohesion: 0.06
-Nodes (27): AuthProxyController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, Headers (+19 more)
+Cohesion: 0.09
+Nodes (16): InjectRepository, RolesProxyController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Delete (+8 more)
 
 ### Community 42 - "Manufacturers Controller"
-Cohesion: 0.07
-Nodes (39): ManufacturersController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete, Get (+31 more)
+Cohesion: 0.06
+Nodes (40): ManufacturersController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete, Get (+32 more)
 
 ### Community 43 - "Backoff & React Effects"
-Cohesion: 0.04
-Nodes (49): Backoff(), catchall(), _check(), clone(), cloneDef(), commitBeforeMutationEffects(), containsNode(), convertBaseSchema() (+41 more)
+Cohesion: 0.05
+Nodes (40): a(), Backoff(), catchall(), _check(), clone(), cloneDef(), convertBaseSchema(), convertSchema() (+32 more)
 
 ### Community 44 - "Receivables API & Cache"
-Cohesion: 0.07
-Nodes (27): ReceivableMutationResponse, ReceivablesListResponse, ReceivableTransactionsListResponse, ReceivableResponseDto, ApiProperty, ReceivableTransactionResponseDto, ApiProperty, ApiPropertyOptional (+19 more)
+Cohesion: 0.22
+Nodes (8): receivablesConfigService, ApplyReceivableAdjustmentUseCase, Injectable, CollectReceivablePaymentUseCase, Injectable, RECEIVABLES_REPOSITORY, Injectable, WriteOffReceivableUseCase
 
 ### Community 45 - "Receivable Entities"
-Cohesion: 0.08
-Nodes (32): AccountReceivable, ReceivableTransaction, ReceivableTransactionOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne (+24 more)
+Cohesion: 0.16
+Nodes (14): AccountReceivable, ReceivableTransaction, InMemoryReceivablesRepository, Injectable, ApplyAdjustmentPayload, CollectPaymentPayload, CollectPaymentResult, ReceivableListQuery (+6 more)
 
 ### Community 46 - "APM Canvassing Module"
 Cohesion: 0.10
-Nodes (18): controllers, ApmCanvassingController, ApmSentimentController, ApmVolunteerAssignmentController, ApiBearerAuth, ApiOperation, ApiTags, Body (+10 more)
+Nodes (17): ApmCanvassingController, ApmSentimentController, ApmVolunteerAssignmentController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller (+9 more)
 
 ### Community 47 - "React Commit Callbacks"
-Cohesion: 0.08
-Nodes (49): callCallback(), captureCommitPhaseError(), clearContainerSparingly(), clearHydrationBoundary(), commitActivityHydrationCallbacks(), commitCachePassiveMountEffect(), commitCallbacks(), commitClassCallbacks() (+41 more)
+Cohesion: 0.07
+Nodes (57): callCallback(), captureCommitPhaseError(), captureCommitPhaseErrorOnRoot(), clearContainerSparingly(), clearHydrationBoundary(), commitActivityHydrationCallbacks(), commitCachePassiveMountEffect(), commitCallbacks() (+49 more)
 
 ### Community 48 - "NestJS Common Decorators"
-Cohesion: 0.08
-Nodes (33): ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, Param, Patch (+25 more)
+Cohesion: 0.09
+Nodes (31): ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, Param, Patch (+23 more)
 
 ### Community 49 - "Warehouse Controller & Entity"
-Cohesion: 0.09
-Nodes (31): ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Delete, Get (+23 more)
+Cohesion: 0.08
+Nodes (32): ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Delete, Get (+24 more)
 
 ### Community 50 - "Purchases DTOs"
-Cohesion: 0.16
-Nodes (17): CreatePurchaseDto, CreatePurchaseLineDto, PurchaseLineDto, ApiProperty, ApiPropertyOptional, IsArray, IsDateString, IsIn (+9 more)
+Cohesion: 0.11
+Nodes (28): Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn, WarehouseOrmEntity (+20 more)
 
 ### Community 51 - "Point of Sale Components"
-Cohesion: 0.09
-Nodes (37): useMantineStyleNonce(), onClose(), calculateTotals(), CartTable(), createSale(), CustomerQuickAddModal(), getHotkeyMatcher(), HeldSalesDrawer() (+29 more)
+Cohesion: 0.08
+Nodes (38): useMantineStyleNonce(), _clearAcks(), onClose(), calculateTotals(), CartTable(), createSale(), CustomerQuickAddModal(), getHotkeyMatcher() (+30 more)
 
 ### Community 52 - "React Query Utilities"
-Cohesion: 0.09
-Nodes (36): createResult(), addConsumeAwareSignal(), ensureQueryFn(), noop(), replaceData(), cancel(), #clearStaleTimeout(), destroy() (+28 more)
+Cohesion: 0.11
+Nodes (25): createResult(), addConsumeAwareSignal(), ensureQueryFn(), cancel(), destroy(), #dispatch(), fetch(), fetchOptimistic() (+17 more)
 
 ### Community 53 - "Integration Test Helpers"
 Cohesion: 0.15
@@ -505,116 +609,108 @@ Cohesion: 0.09
 Nodes (29): PaymentMethodsController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete, Get (+21 more)
 
 ### Community 55 - "Floating UI Utilities"
-Cohesion: 0.11
-Nodes (36): clamp(), computeCoordsFromPlacement(), convertValueToCoords(), evaluate(), expandPaddingObject(), fn(), getAlignment(), getAlignmentAxis() (+28 more)
+Cohesion: 0.15
+Nodes (25): clamp(), computeCoordsFromPlacement(), convertValueToCoords(), evaluate(), fn(), getAlignment(), getAlignmentAxis(), getAlignmentSides() (+17 more)
 
 ### Community 56 - "Auth Pages & Form Utils"
 Cohesion: 0.12
-Nodes (40): ForgotPassword(), AuthLayout(), path(), RxResetPasswordPage(), changeErrorIndices(), clearListState(), fieldResultFromErrors(), filterErrors() (+32 more)
+Nodes (38): AuthLayout(), path(), changeErrorIndices(), clearListState(), fieldResultFromErrors(), filterErrors(), getDataPath(), getIndexFromKeyAfterPath() (+30 more)
 
 ### Community 57 - "React Query Provider"
-Cohesion: 0.08
-Nodes (34): handleErrorInNextTick(), RxWarehousesPage(), Y(), addToEnd(), addToStart(), canFetch(), clearGcTimeout(), clearInterval() (+26 more)
+Cohesion: 0.09
+Nodes (30): Y(), addToEnd(), addToStart(), canFetch(), clearGcTimeout(), clearInterval(), constructor(), createRetryer() (+22 more)
 
 ### Community 58 - "Website Admin & DTOs"
-Cohesion: 0.18
-Nodes (37): ORDER_STATUS_TRANSITIONS, AddToCartDto, CreateArticleDto, CreateConsultationDto, CreateContactDto, CreateDeliveryDto, CreateHealthConcernDto, CreateOrderDto (+29 more)
+Cohesion: 0.20
+Nodes (35): AddToCartDto, CreateArticleDto, CreateConsultationDto, CreateContactDto, CreateDeliveryDto, CreateHealthConcernDto, CreateOrderDto, CreateOrderItemDto (+27 more)
 
 ### Community 59 - "Submission ORM Entities"
 Cohesion: 0.05
-Nodes (34): ContactSubmissionOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, DonationOrmEntity, Column, CreateDateColumn (+26 more)
+Nodes (31): AgendaItemOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, EventRegistrationOrmEntity (+23 more)
 
 ### Community 60 - "Drug Components Controller"
 Cohesion: 0.09
 Nodes (25): DrugComponentsController, ApiBearerAuth, ApiTags, AuditAction, Body, Controller, Delete, Get (+17 more)
 
 ### Community 61 - "Receivables Operations"
-Cohesion: 0.08
-Nodes (32): ReceivablesController, toReceivableResponse(), toTransactionResponse(), ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body (+24 more)
+Cohesion: 0.22
+Nodes (15): ReceivablesController, toReceivableResponse(), toTransactionResponse(), ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body (+7 more)
 
 ### Community 62 - "Audit Module"
-Cohesion: 0.09
-Nodes (22): AUDIT_LOG_REPOSITORY, auditConfigService, AuditModule, Global, Module, AuditLogOrmEntity, Column, CreateDateColumn (+14 more)
+Cohesion: 0.08
+Nodes (24): AUDIT_LOG_REPOSITORY, auditConfigService, AuditModule, Global, Module, AuditLogOrmEntity, Column, CreateDateColumn (+16 more)
 
 ### Community 63 - "Canvassing Mongoose Schemas"
-Cohesion: 0.08
-Nodes (32): CanvassingSessionDocument, CanvassingSessionSchema, CanvassingSessionSchemaFactory, Prop, Schema, ContactSubmissionDocument, ContactSubmissionSchema, ContactSubmissionSchemaFactory (+24 more)
+Cohesion: 0.07
+Nodes (26): ContactSubmissionDocument, ContactSubmissionSchema, ContactSubmissionSchemaFactory, Prop, Schema, EventRegistrationDocument, EventRegistrationSchema, EventRegistrationSchemaFactory (+18 more)
 
 ### Community 64 - "Cache Module"
-Cohesion: 0.08
-Nodes (15): CacheModule, Global, Module, AppCacheService, Injectable, Inject, Optional, Inject (+7 more)
+Cohesion: 0.09
+Nodes (11): ReceivablesRepository, Inject, Optional, Inject, Optional, ListReceivableTransactionsUseCase, Inject, Injectable (+3 more)
 
 ### Community 65 - "Spreadsheet Import Services"
-Cohesion: 0.10
-Nodes (13): xlsx, ExcelStatusWriter, SpreadsheetImportService, Injectable, GoogleSheetImportService, Injectable, GoogleSheetReaderService, Injectable (+5 more)
-
-### Community 66 - "Conversion Dashboard API"
 Cohesion: 0.17
-Nodes (5): ApiOperation, Get, Param, Query, Roles
+Nodes (7): xlsx, SpreadsheetImportService, Injectable, GoogleSheetImportService, Injectable, SchemaEvolverService, Injectable
 
 ### Community 67 - "Blog & Health Entities"
 Cohesion: 0.07
-Nodes (26): BlogArticleOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, HealthConcernOrmEntity (+18 more)
+Nodes (27): InjectRepository, BlogArticleOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn (+19 more)
 
 ### Community 68 - "Node Animation Utilities"
 Cohesion: 0.07
-Nodes (36): AENode(), bindKey(), calcNextPosition(), calculateXYZPosition(), clampNodeExtent(), createNodeInternals(), delay_default(), delayConstant() (+28 more)
-
-### Community 69 - "Canvassing DTOs"
-Cohesion: 0.12
-Nodes (15): CreateCanvassingSessionDto, CreateCanvassingVisitDto, CreateVolunteerAssignmentDto, ApiProperty, ApiPropertyOptional, IsInt, IsNotEmpty, IsOptional (+7 more)
+Nodes (37): AENode(), bindKey(), calcNextPosition(), calculateXYZPosition(), clampNodeExtent(), createNodeInternals(), delay_default(), delayConstant() (+29 more)
 
 ### Community 70 - "In-Memory Item Repository"
-Cohesion: 0.10
-Nodes (11): Item, InMemoryItemRepository, Injectable, GenericProductLookup, ItemCategoryLookup, ItemDependencySearchQuery, ItemListQuery, ItemMetrics (+3 more)
+Cohesion: 0.09
+Nodes (10): ItemCategory, Item, InMemoryItemRepository, Injectable, ItemDependencySearchQuery, ItemListQuery, ItemMetrics, ItemMetricsQuery (+2 more)
 
 ### Community 71 - "APM Public Endpoints"
-Cohesion: 0.21
-Nodes (17): Body, Post, CitizenFeedbackDto, CreateContactDto, DonationDto, EventRegistrationDto, IssueReportDto, JoinMovementDto (+9 more)
+Cohesion: 0.11
+Nodes (20): Body, Post, CitizenFeedbackDto, CreateContactDto, DonationDto, EventRegistrationDto, IssueReportDto, JoinMovementDto (+12 more)
 
 ### Community 72 - "React Hooks Internals"
 Cohesion: 0.09
-Nodes (34): actionStateReducer(), areHookInputsEqual(), basicStateReducer(), createFunctionComponentUpdateQueue(), mountActionState(), mountEffect(), mountEffectImpl(), mountStateImpl() (+26 more)
+Nodes (33): actionStateReducer(), areHookInputsEqual(), createFunctionComponentUpdateQueue(), mountActionState(), mountEffect(), mountEffectImpl(), mountStateImpl(), mountWorkInProgressHook() (+25 more)
 
 ### Community 73 - "Project Dependencies"
 Cohesion: 0.06
 Nodes (33): dependencies, axios, class-transformer, class-validator, cloudinary, cross-fetch, dotenv, exceljs (+25 more)
 
 ### Community 74 - "NestJS Decorators"
-Cohesion: 0.15
-Nodes (17): ApiQuery, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Delete, Get (+9 more)
+Cohesion: 0.14
+Nodes (17): ApiBearerAuth, ApiOperation, ApiQuery, ApiTags, Body, Controller, Delete, Get (+9 more)
 
 ### Community 75 - "Axios Utilities"
 Cohesion: 0.08
 Nodes (14): concat(), dispatchRequest(), formDataToJSON(), isCancel$1(), parsePropPath(), remove(), removeBrackets(), renderKey() (+6 more)
 
 ### Community 76 - "Attribute Sync & Import"
-Cohesion: 0.12
-Nodes (12): AttributeSyncService, Injectable, IMPORT_CONFIG, ImportRegistryService, Injectable, DatabaseImportTarget, EntityCache, ImportEntityConfig (+4 more)
+Cohesion: 0.16
+Nodes (12): IMPORT_CONFIG, ImportRegistryService, Injectable, ExcelStatusWriter, SpreadsheetStatusWriter, EntityCache, ImportContext, ImportEntityConfig (+4 more)
 
 ### Community 77 - "Chat UI & API"
 Cohesion: 0.12
 Nodes (22): Chats(), ChatUiPage(), ConversationListItem(), ConversationThread(), fetchConversationInbox(), fetchConversationMessages(), fetchNextPage(), getConversationSocket() (+14 more)
 
 ### Community 78 - "Catalog Module & Items"
-Cohesion: 0.15
-Nodes (13): catalogConfigService, CatalogModule, Module, ItemDependencyResponse, ItemListResponse, ITEM_REPOSITORY, CreateItemUseCase, Injectable (+5 more)
+Cohesion: 0.10
+Nodes (23): catalogConfigService, ItemDependencyResponse, ItemListResponse, Inject, InjectRepository, PatchItemDto, ApiPropertyOptional, IsBoolean (+15 more)
 
 ### Community 79 - "In-Memory Sales Repository"
 Cohesion: 0.14
 Nodes (13): Sale, InMemorySalesRepository, Injectable, CreateSaleRefundRepositoryPayload, CreateSaleRefundResult, CreateSaleRepositoryPayload, CreateSaleResult, SalesListQuery (+5 more)
 
 ### Community 80 - "User Settings Forms"
-Cohesion: 0.20
-Nodes (22): AccountForm(), SettingsAccount(), AppearanceForm(), SettingsAppearance(), ContentSection(), DisplayForm(), SettingsDisplay(), decrease() (+14 more)
+Cohesion: 0.14
+Nodes (26): AccountForm(), SettingsAccount(), AppearanceForm(), SettingsAppearance(), ContentSection(), DisplayForm(), SettingsDisplay(), object() (+18 more)
 
 ### Community 81 - "APM ORM Entities"
 Cohesion: 0.07
-Nodes (25): CandidateTourOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, ContentAssetOrmEntity, Column (+17 more)
+Nodes (27): ApmModule, Module, CandidateTourOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn (+19 more)
 
 ### Community 82 - "Item Catalog Entities & Mapper"
-Cohesion: 0.12
-Nodes (13): ItemCategory, ForeignProperty, GenericProductResponse, ItemCategoryResponse, PharmaceuticsResponse, ApiProperty, CatalogMapper, findByBarcode() (+5 more)
+Cohesion: 0.05
+Nodes (40): ItemCategoryOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany (+32 more)
 
 ### Community 83 - "Sale Detail DTOs"
 Cohesion: 0.36
@@ -625,136 +721,128 @@ Cohesion: 0.07
 Nodes (28): compilerOptions, allowSyntheticDefaultImports, baseUrl, declaration, emitDecoratorMetadata, esModuleInterop, experimentalDecorators, forceConsistentCasingInFileNames (+20 more)
 
 ### Community 85 - "Mantine Theme Utilities"
-Cohesion: 0.09
-Nodes (24): deepMerge(), isObject(), MantineThemeProvider(), convertCssVariables(), cssVariablesObjectToString(), getColorSchemeCssVariables(), getElement(), getMergedVariables() (+16 more)
+Cohesion: 0.03
+Nodes (44): DataPageShell(), FormProvider(), getRowsFromPayload(), name(), partial(), RxAuditLogsPage(), RxBranchesPage(), RxCategoriesPage() (+36 more)
 
 ### Community 86 - "DOM Positioning Utilities"
-Cohesion: 0.15
-Nodes (30): contains(), createAttribute(), getClippingElementAncestors(), getComputedStyle$1(), getContainingBlock(), getFrameElement(), getNearestOverflowAncestor(), getNodeChildren() (+22 more)
+Cohesion: 0.26
+Nodes (17): getClippingElementAncestors(), getComputedStyle$1(), getContainingBlock(), getFrameElement(), getNearestOverflowAncestor(), getNodeName(), getOffsetParent(), getOverflowAncestors() (+9 more)
 
 ### Community 87 - "Questionnaire & Conversation UI"
-Cohesion: 0.15
-Nodes (24): getRowsFromPayload(), RemoteSelectField(), useApiProvider(), ConversationLoader(), CreateConversationForm(), decorateConversations(), EntryModeTabs(), formatAnswer() (+16 more)
+Cohesion: 0.16
+Nodes (23): RemoteSelectField(), useApiProvider(), ConversationLoader(), CreateConversationForm(), decorateConversations(), EntryModeTabs(), formatAnswer(), getInputKind() (+15 more)
 
 ### Community 88 - "Items Controller"
-Cohesion: 0.20
-Nodes (17): ItemsController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, AuditAction, Body, Controller (+9 more)
+Cohesion: 0.18
+Nodes (18): ItemsController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, AuditAction, Body, Controller (+10 more)
 
 ### Community 89 - "Inventory & Stock Management"
-Cohesion: 0.09
-Nodes (9): StockBalance, InventoryRepository, Inject, Optional, Inject, Optional, Inject, Optional (+1 more)
+Cohesion: 0.04
+Nodes (77): aborted(), accumulateEnterLeaveListenersForEvent(), accumulateTwoPhaseListeners(), batchedUpdates$1(), commitBeforeMutationEffects(), config$10(), constructSelectEvent(), createAndAccumulateChangeEvent() (+69 more)
 
 ### Community 90 - "Dev Dependencies"
 Cohesion: 0.07
 Nodes (27): devDependencies, eslint, eslint-config-prettier, @eslint/eslintrc, @eslint/js, eslint-plugin-prettier, globals, jest (+19 more)
 
 ### Community 91 - "APM Geographic Data"
-Cohesion: 0.15
-Nodes (8): ApmDataController, ApiOperation, ApiTags, Controller, Get, Param, ApmConversionService, Injectable
+Cohesion: 0.16
+Nodes (6): ApmDataController, ApiOperation, ApiTags, Controller, Get, Param
 
 ### Community 92 - "Achievement & Agenda Schemas"
-Cohesion: 0.08
-Nodes (21): AchievementDocument, AchievementSchema, AchievementSchemaFactory, Prop, Schema, AgendaItemDocument, AgendaItemSchema, AgendaItemSchemaFactory (+13 more)
+Cohesion: 0.33
+Nodes (5): AchievementDocument, AchievementSchema, AchievementSchemaFactory, Prop, Schema
 
 ### Community 93 - "Candidate Tour Schemas"
-Cohesion: 0.08
-Nodes (21): CandidateTourDocument, CandidateTourSchema, CandidateTourSchemaFactory, Prop, Schema, ContentAssetDocument, ContentAssetSchema, ContentAssetSchemaFactory (+13 more)
+Cohesion: 0.06
+Nodes (38): CandidateTourDocument, CandidateTourSchema, CandidateTourSchemaFactory, Prop, Schema, ContentAssetDocument, ContentAssetSchema, ContentAssetSchemaFactory (+30 more)
 
 ### Community 94 - "UOM Category Entity"
-Cohesion: 0.09
-Nodes (20): Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn, UomCategoryOrmEntity (+12 more)
+Cohesion: 0.11
+Nodes (15): Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn, UomOrmEntity (+7 more)
 
 ### Community 95 - "Drag Event Utilities"
 Cohesion: 0.10
-Nodes (25): copy(), dispatchConstant(), dispatchEvent(), dispatchFunction(), DragEvent(), end_default(), nodrag_default(), noevent_default$1() (+17 more)
+Nodes (26): copy(), dispatchConstant(), dispatchEvent(), dispatchFunction(), DragEvent(), end_default(), nodrag_default(), noevent_default$1() (+18 more)
 
 ### Community 96 - "Import Target Abstractions"
-Cohesion: 0.09
-Nodes (4): ApiImportTarget, QueryBuilderImportTarget, RepositoryImportTarget, ImportTarget
+Cohesion: 0.06
+Nodes (5): ApiImportTarget, DatabaseImportTarget, QueryBuilderImportTarget, RepositoryImportTarget, ImportTarget
 
 ### Community 97 - "Canvassing Visit Schemas"
 Cohesion: 0.08
-Nodes (21): CanvassingVisitDocument, CanvassingVisitSchema, CanvassingVisitSchemaFactory, Prop, Schema, CitizenFeedbackDocument, CitizenFeedbackSchema, CitizenFeedbackSchemaFactory (+13 more)
+Nodes (21): CanvassingSessionDocument, CanvassingSessionSchema, CanvassingSessionSchemaFactory, Prop, Schema, CanvassingVisitDocument, CanvassingVisitSchema, CanvassingVisitSchemaFactory (+13 more)
 
 ### Community 98 - "Delivery & Order Entities"
-Cohesion: 0.08
-Nodes (25): DeliveryOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn (+17 more)
-
-### Community 99 - "Product & Auth Use Cases"
-Cohesion: 0.11
-Nodes (24): Phase 3 Additional Test Cases, Create Product Use Case, Generic Product Entity, Get Product Use Case, InMemory Product Repository, List Products Use Case, Pharmacology Info Entity, Product Repository Interface (+16 more)
+Cohesion: 0.07
+Nodes (34): ORDER_STATUS_TRANSITIONS, OrdersService, Injectable, InjectRepository, DeliveryOrmEntity, Column, CreateDateColumn, Entity (+26 more)
 
 ### Community 100 - "React Utility Hooks"
-Cohesion: 0.10
-Nodes (24): clearTimeoutIfSet(), createEventEmitter(), deepEqual(), getDelay(), getDocument(), getDPR(), getFloatingFocusElement(), isMouseLikePointerType() (+16 more)
+Cohesion: 0.09
+Nodes (33): clearTimeoutIfSet(), contains(), createAttribute(), createEventEmitter(), expandPaddingObject(), getDelay(), getDocument(), getFloatingFocusElement() (+25 more)
 
 ### Community 101 - "Item DTOs"
-Cohesion: 0.08
-Nodes (19): CreateItemDto, ApiProperty, ApiPropertyOptional, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString (+11 more)
+Cohesion: 0.22
+Nodes (9): CreateItemDto, ApiProperty, ApiPropertyOptional, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString (+1 more)
 
 ### Community 102 - "Inventory Stock Management"
-Cohesion: 0.17
-Nodes (12): StockAdjustment, ItemReference, StockLocationReference, StockLotReference, InventoryMapper, AdjustStockByReferencePayload, CreateStoreStockLocationPayload, StockBalanceQuery (+4 more)
+Cohesion: 0.08
+Nodes (19): StockAdjustment, ItemReference, StockBalance, StockLocationReference, StockLotReference, InventoryMapper, InMemoryInventoryRepository, Injectable (+11 more)
 
 ### Community 103 - "File Upload Controller"
 Cohesion: 0.11
 Nodes (15): Body, Controller, Delete, Inject, Post, Roles, UseGuards, UseInterceptors (+7 more)
 
 ### Community 104 - "Exception Filter & Logging"
-Cohesion: 0.11
-Nodes (15): Catch, AppModule, Module, GlobalExceptionFilter, PG_ERROR_CODES, maskSensitive(), RequestLoggingInterceptor, SafeBody (+7 more)
+Cohesion: 0.04
+Nodes (51): Catch, appConfigService, AppModule, databaseConfig, Module, GlobalExceptionFilter, PG_ERROR_CODES, DatabaseSeeedService (+43 more)
 
 ### Community 105 - "Floating UI Utilities"
-Cohesion: 0.19
-Nodes (24): autoUpdate(), convertOffsetParentRelativeRectToViewportRelativeRect(), detectOverflow(), getBoundingClientRect(), getClientRectFromClippingAncestor(), getClippingRect(), getCssDimensions(), getDocumentElement() (+16 more)
-
-### Community 106 - "Spreadsheet Import Framework"
-Cohesion: 0.11
-Nodes (24): ApiImportTarget, AttributeSyncService, DatabaseImportTarget, Complete Generic Spreadsheet Import Framework Specification, EAV (Entity-Attribute-Value), EntityImportService, ExcelStatusWriter, FULL_SYNC Support (+16 more)
+Cohesion: 0.20
+Nodes (26): convertOffsetParentRelativeRectToViewportRelativeRect(), detectOverflow(), getBoundingClientRect(), getClientRectFromClippingAncestor(), getClippingRect(), getCssDimensions(), getDocumentElement(), getDocumentRect() (+18 more)
 
 ### Community 108 - "Generic Drug Cache Service"
-Cohesion: 0.10
-Nodes (11): Inject, Optional, Inject, Optional, GenericDrugCacheService, Injectable, CachedGenericProduct, GenericProductLookup (+3 more)
+Cohesion: 0.07
+Nodes (14): GenericProductsService, toGenericProductType(), Injectable, Inject, Optional, GenericDrugCacheService, Injectable, CachedGenericProduct (+6 more)
 
 ### Community 109 - "React Flow UI Components"
 Cohesion: 0.12
-Nodes (23): A11yDescriptions(), areEqual(), AriaLiveMessage(), Attribution(), Background(), cc(), ConnectionLineWrapper(), DotPattern() (+15 more)
+Nodes (22): A11yDescriptions(), areEqual(), AriaLiveMessage(), Attribution(), Background(), cc(), ConnectionLineWrapper(), DotPattern() (+14 more)
 
 ### Community 110 - "D3 Interpolation Functions"
-Cohesion: 0.10
-Nodes (23): attrInterpolate(), attrInterpolateNS(), exponential(), gamma(), interpolateTransform(), number_default(), on_default$1(), one() (+15 more)
+Cohesion: 0.17
+Nodes (13): attrInterpolate(), attrInterpolateNS(), number_default(), on_default$1(), one(), parseTypenames(), parseTypenames$1(), string_default() (+5 more)
 
 ### Community 111 - "React Query Mutation"
-Cohesion: 0.15
-Nodes (17): setMutationDefaults(), setQueryDefaults(), hashKey(), shallowEqualObjects(), bindMethods(), constructor(), continue(), #dispatch() (+9 more)
+Cohesion: 0.14
+Nodes (17): setMutationDefaults(), setQueryDefaults(), hashKey(), shouldThrowError(), bindMethods(), constructor(), continue(), #dispatch() (+9 more)
 
 ### Community 112 - "Suppliers CRUD Controller"
-Cohesion: 0.09
-Nodes (18): SuppliersController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+10 more)
+Cohesion: 0.07
+Nodes (21): SuppliersController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+13 more)
 
 ### Community 113 - "Goods Receipt Controller"
-Cohesion: 0.15
-Nodes (17): InflowController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+9 more)
+Cohesion: 0.17
+Nodes (16): InflowController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+8 more)
 
 ### Community 114 - "Citizen Feedback ORM Entities"
-Cohesion: 0.09
-Nodes (18): CitizenFeedbackOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Entity (+10 more)
+Cohesion: 0.07
+Nodes (32): CanvassingSessionOrmEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, CanvassingVisitOrmEntity (+24 more)
 
 ### Community 115 - "Classification & Item Categories"
-Cohesion: 0.10
-Nodes (19): ClassificationOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn (+11 more)
+Cohesion: 0.22
+Nodes (8): ClassificationOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn
 
 ### Community 116 - "Inventory Controller"
-Cohesion: 0.21
-Nodes (15): InventoryController, mapBalance(), ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller (+7 more)
+Cohesion: 0.10
+Nodes (29): InventoryController, mapBalance(), ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller (+21 more)
 
 ### Community 117 - "Entity Import Service"
-Cohesion: 0.17
-Nodes (5): Injectable, EntityImportService, ValidationError, Injectable, ValidationService
+Cohesion: 0.13
+Nodes (7): AttributeSyncService, Injectable, Injectable, EntityImportService, ValidationError, Injectable, ValidationService
 
 ### Community 120 - "Goods Receipt DTOs"
-Cohesion: 0.18
-Nodes (14): GoodsReceiptLineResponseDto, GoodsReceiptResponseDto, ReceiveGoodsDto, ReceiveGoodsLineDto, ApiProperty, ApiPropertyOptional, IsArray, IsDateString (+6 more)
+Cohesion: 0.10
+Nodes (21): Inject, GoodsReceiptLineResponseDto, GoodsReceiptResponseDto, ReceiveGoodsDto, ReceiveGoodsLineDto, ApiProperty, ApiPropertyOptional, IsArray (+13 more)
 
 ### Community 121 - "NestJS Common Decorators"
 Cohesion: 0.18
@@ -762,19 +850,19 @@ Nodes (15): ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, Param, 
 
 ### Community 122 - "General Utility Functions"
 Cohesion: 0.13
-Nodes (20): throttle(), array(), arrayAll(), clearNow(), create(), inherit(), nap(), newId() (+12 more)
+Nodes (19): throttle(), array(), arrayAll(), clearNow(), create(), inherit(), nap(), newId() (+11 more)
 
 ### Community 123 - "React Query Helpers"
-Cohesion: 0.16
-Nodes (20): ensureInfiniteQueryData(), ensureQueryData(), fetchInfiniteQuery(), fetchQuery(), ToggleActive(), resolveQueryBoolean(), resolveStaleTime(), timeUntilStale() (+12 more)
+Cohesion: 0.26
+Nodes (13): ToggleActive(), resolveQueryBoolean(), createResult(), getObserversCount(), isActive(), isDisabled(), isFetched(), isStale() (+5 more)
 
 ### Community 124 - "Campaign & Event Schemas"
-Cohesion: 0.10
-Nodes (16): CampaignInfoDocument, CampaignInfoSchema, CampaignInfoSchemaFactory, Prop, Schema, EventRegistrationDocument, EventRegistrationSchema, EventRegistrationSchemaFactory (+8 more)
+Cohesion: 0.33
+Nodes (5): CampaignInfoDocument, CampaignInfoSchema, CampaignInfoSchemaFactory, Prop, Schema
 
 ### Community 125 - "Conversion & Stakeholder Schemas"
-Cohesion: 0.10
-Nodes (16): ConversionScoreDocument, ConversionScoreSchema, ConversionScoreSchemaFactory, Prop, Schema, StakeholderDocument, StakeholderSchema, StakeholderSchemaFactory (+8 more)
+Cohesion: 0.07
+Nodes (29): ConversionScoreDocument, ConversionScoreSchema, ConversionScoreSchemaFactory, Prop, Schema, LgaDocument, LgaSchema, LgaSchemaFactory (+21 more)
 
 ### Community 126 - "Gotv & Incident Schemas"
 Cohesion: 0.10
@@ -785,23 +873,23 @@ Cohesion: 0.20
 Nodes (17): PoLinesTable(), PoSettingsDrawer(), PoSummary(), PoToolbar(), PurchasesPage(), QuickAddSupplierModal(), UnpostPasswordModal(), UomSelect() (+9 more)
 
 ### Community 128 - "Inventory Module & Use Cases"
-Cohesion: 0.22
-Nodes (8): inventoryConfigService, CreateStockAdjustmentUseCase, Injectable, INVENTORY_REPOSITORY, ListStockBalancesUseCase, Injectable, ListStockMovementsUseCase, Injectable
+Cohesion: 0.05
+Nodes (39): AccountingModule, Module, ACCOUNT_CODES, InventoryListResponse, CreateStockAdjustmentDto, ApiProperty, IsNotEmpty, IsNumber (+31 more)
 
 ### Community 129 - "User POS Config"
-Cohesion: 0.16
-Nodes (13): Body, Get, Patch, Roles, ApiPropertyOptional, IsBoolean, IsInt, IsOptional (+5 more)
+Cohesion: 0.10
+Nodes (20): ApiBearerAuth, ApiTags, Body, Controller, Get, Patch, Roles, UseGuards (+12 more)
 
 ### Community 130 - "D3 Drag & Transform"
-Cohesion: 0.11
-Nodes (18): transform, ^.+\\.(t|j)s$, arraylike(), constant_default$3(), cosh(), data_default(), datum(), defaultTransform() (+10 more)
+Cohesion: 0.12
+Nodes (17): transform, ^.+\\.(t|j)s$, arraylike(), constant_default$3(), cosh(), data_default(), datum(), defaultTransform() (+9 more)
 
 ### Community 131 - "React DOM Utilities"
 Cohesion: 0.15
 Nodes (8): createPortal(), createPortal$1(), formatProdErrorMessage(), getCrossOriginStringAs(), preinit(), preinitModule(), preload(), preloadModule()
 
 ### Community 132 - "Conversion DTOs"
-Cohesion: 0.35
+Cohesion: 0.36
 Nodes (15): CreateConversionActivityDto, CreateStakeholderDto, CreateWhatsAppGroupDto, ApiProperty, ApiPropertyOptional, IsInt, IsNotEmpty, IsOptional (+7 more)
 
 ### Community 133 - "NestJS Controller Decorators"
@@ -809,24 +897,24 @@ Cohesion: 0.19
 Nodes (13): ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, Headers, Param (+5 more)
 
 ### Community 134 - "Organisation Config Module"
-Cohesion: 0.12
-Nodes (13): InjectEntityManager, OrganisationConfigModule, Module, ApiBearerAuth, ApiTags, Controller, UseGuards, UserPosConfigController (+5 more)
+Cohesion: 0.15
+Nodes (12): InjectEntityManager, RelationId, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn (+4 more)
 
 ### Community 135 - "React Query Observer"
-Cohesion: 0.19
-Nodes (17): isValidTimeout(), addObserver(), bindMethods(), #clearRefetchInterval(), #computeRefetchInterval(), constructor(), #executeFetch(), getDefaultState() (+9 more)
+Cohesion: 0.13
+Nodes (22): noop(), timeUntilStale(), addObserver(), bindMethods(), #clearRefetchInterval(), #clearStaleTimeout(), #computeRefetchInterval(), constructor() (+14 more)
 
 ### Community 136 - "Entity Import Sync"
-Cohesion: 0.21
-Nodes (3): Injectable, EntityImportService, ImportContext
+Cohesion: 0.20
+Nodes (3): Injectable, EntityImportService, ImportReport
 
 ### Community 137 - "Google Sheet Status Writer"
-Cohesion: 0.21
-Nodes (11): GoogleSheetStatusWriter, importPriceListItems(), importPriceLists(), loadLookupMap(), LookupMaps, mainStandalone(), newLookupMaps(), safeText() (+3 more)
+Cohesion: 0.19
+Nodes (13): GoogleSheetReaderService, Injectable, importPriceListItems(), importPriceLists(), loadLookupMap(), LookupMaps, mainStandalone(), newLookupMaps() (+5 more)
 
 ### Community 138 - "Inventory Repository Implementations"
-Cohesion: 0.18
-Nodes (5): InMemoryInventoryRepository, Injectable, StoreStockLocation, Injectable, TypeormInventoryRepository
+Cohesion: 0.07
+Nodes (43): ArticleDocument, ArticleSchema, Career, CareerDocument, CareerSchema, Prop, Schema, CategoryDocument (+35 more)
 
 ### Community 139 - "Sale DTOs"
 Cohesion: 0.19
@@ -853,28 +941,32 @@ Cohesion: 0.14
 Nodes (11): ListItemDependenciesDto, ApiPropertyOptional, IsInt, IsOptional, IsString, Max, Min, Type (+3 more)
 
 ### Community 145 - "Reports Controller"
-Cohesion: 0.19
-Nodes (9): ReportsController, ApiBearerAuth, ApiTags, Controller, Get, Header, Query, Roles (+1 more)
+Cohesion: 0.10
+Nodes (16): Body, Post, CreateCandidateTourDto, CreateContentAssetDto, CreateListeningMentionDto, CreateRapidResponseDto, ApiProperty, ApiPropertyOptional (+8 more)
 
 ### Community 146 - "Organisation Config Controller"
-Cohesion: 0.18
-Nodes (11): OrganisationConfigController, ApiBearerAuth, ApiTags, Body, Controller, Get, Patch, Roles (+3 more)
+Cohesion: 0.07
+Nodes (30): OrganisationConfigController, ApiBearerAuth, ApiTags, Body, Controller, Get, Patch, Roles (+22 more)
 
 ### Community 147 - "Organisation Config Entity"
-Cohesion: 0.18
-Nodes (10): OrganisationConfigOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn, OrganisationConfigService (+2 more)
+Cohesion: 0.06
+Nodes (32): CampaignInfoOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, GotvRecordOrmEntity, Column (+24 more)
+
+### Community 148 - "Select-BlwOJ1xN.js"
+Cohesion: 0.10
+Nodes (31): CheckboxIcon(), CheckIcon(), CheckoutPage(), formatPrice(), getMockPrice2(), getProductGeneric(), getProductName(), isRxRequired() (+23 more)
 
 ### Community 149 - "CSS Class Utilities"
 Cohesion: 0.15
 Nodes (14): classArray(), classed_default(), classedAdd(), classedFalse(), classedRemove(), classedTrue(), classList(), join_default() (+6 more)
 
 ### Community 150 - "Zustand Store Hooks"
-Cohesion: 0.19
+Cohesion: 0.21
 Nodes (10): useStoreWithEqualityFn(), useDebugValue(), useEffect(), useMemo(), useRef(), useState(), useSyncExternalStore(), checkIfSnapshotChanged() (+2 more)
 
 ### Community 151 - "Coding Concept Pages"
-Cohesion: 0.24
-Nodes (7): CodingConceptMatchPage(), CodingConceptSearchPage(), CodingConceptUploadPage(), ConceptSummaryCard(), MetadataPreview(), readFile(), UploadPanel()
+Cohesion: 0.10
+Nodes (26): GenericProductsController, ApiBearerAuth, ApiOperation, ApiTags, AuditAction, Body, Controller, Get (+18 more)
 
 ### Community 152 - "Redis Client"
 Cohesion: 0.23
@@ -909,8 +1001,8 @@ Cohesion: 0.17
 Nodes (10): CATEGORIES, OdooCategory, OdooPartner, OdooProductTemplate, OdooProductVariant, OdooUom, ParsedBackup, PARTNERS (+2 more)
 
 ### Community 160 - "Stock Movement List DTO"
-Cohesion: 0.17
-Nodes (10): ListStockMovementsDto, ApiPropertyOptional, IsDateString, IsIn, IsInt, IsOptional, IsUUID, Max (+2 more)
+Cohesion: 0.13
+Nodes (22): AppSidebar(), AuthenticatedLayout(), AutoLogout(), filterNavGroupsByModule(), getModuleDashboard(), isRouteAllowedForModule(), NavUser(), SignOutDialog() (+14 more)
 
 ### Community 161 - "Permissions Guard"
 Cohesion: 0.22
@@ -921,8 +1013,8 @@ Cohesion: 0.29
 Nodes (5): AppController, Controller, Get, AppService, Injectable
 
 ### Community 163 - "Stock Balance List DTO"
-Cohesion: 0.18
-Nodes (8): ListStockBalancesDto, ApiPropertyOptional, IsInt, IsOptional, IsString, Max, Min, Type
+Cohesion: 0.11
+Nodes (23): SalesController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, AuditAction, Body, Controller (+15 more)
 
 ### Community 164 - "Create UOM DTO"
 Cohesion: 0.18
@@ -942,7 +1034,7 @@ Nodes (10): clamp(), clampa(), clamph(), clampi(), clampt(), formatHsl(), hex(),
 
 ### Community 168 - "Get Item Use Case"
 Cohesion: 0.20
-Nodes (6): Inject, InjectRepository, GetItemUseCase, Inject, Injectable, Optional
+Nodes (25): addUnlinkedScrollListener(), clamp(), composeEventHandlers(), getScrollPositionFromPointer(), getThumbOffsetFromScroll(), getThumbRatio(), getThumbSize(), isScrollingWithinScrollbarBounds() (+17 more)
 
 ### Community 169 - "UOM Service"
 Cohesion: 0.27
@@ -969,8 +1061,8 @@ Cohesion: 0.22
 Nodes (7): PaginationQueryDto, ApiPropertyOptional, IsInt, IsOptional, Max, Min, Type
 
 ### Community 175 - "Receive Goods Use Case"
-Cohesion: 0.07
-Nodes (20): NotEquals, ReceiveGoodsUseCase, Inject, Injectable, Optional, ApplyReceivableAdjustmentDto, ApiProperty, ApiPropertyOptional (+12 more)
+Cohesion: 0.18
+Nodes (8): NotEquals, ApplyReceivableAdjustmentDto, ApiProperty, ApiPropertyOptional, IsNumber, IsOptional, IsString, MaxLength
 
 ### Community 176 - "Axios Cancel Token"
 Cohesion: 0.29
@@ -981,12 +1073,16 @@ Cohesion: 0.57
 Nodes (8): advanceTimers(), handleTimeout(), peek(), performWorkUntilDeadline(), requestHostTimeout(), shouldYieldToHost(), unstable_now(), unstable_scheduleCallback()
 
 ### Community 178 - "APM Controllers"
-Cohesion: 0.16
-Nodes (10): ApmConversionController, ApmStakeholderController, ApmWhatsAppController, ApiBearerAuth, ApiTags, Body, Controller, Post (+2 more)
+Cohesion: 0.18
+Nodes (15): ApmConversionController, ApmStakeholderController, ApmWhatsAppController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller (+7 more)
 
 ### Community 179 - "Update Org Config DTO"
-Cohesion: 0.25
-Nodes (7): ApiPropertyOptional, IsBoolean, IsInt, IsOptional, IsString, Min, UpdateOrganisationConfigDto
+Cohesion: 0.12
+Nodes (14): OrderAdminController, ApiBearerAuth, ApiOperation, ApiQuery, ApiTags, Body, Controller, Get (+6 more)
+
+### Community 180 - "ehealthwares.service.ts"
+Cohesion: 0.11
+Nodes (17): Body, Post, CreateContactDto, GetBySlugDto, ListQueryDto, ApiProperty, ApiPropertyOptional, IsEmail (+9 more)
 
 ### Community 181 - "Package Metadata"
 Cohesion: 0.29
@@ -996,21 +1092,21 @@ Nodes (6): author, description, license, name, private, version
 Cohesion: 0.43
 Nodes (7): assertOptions(), bind(), createInstance(), generateHTTPMethod(), merge(), mergeConfig$1(), request()
 
+### Community 183 - "In-Memory Cache Store"
+Cohesion: 0.07
+Nodes (17): CacheModule, Global, Module, AppCacheService, Injectable, CacheEntry, InMemoryCacheStore, Inject (+9 more)
+
 ### Community 184 - "DB Reset & Seed"
 Cohesion: 0.52
 Nodes (6): getConfig(), main(), resetPostgresDatabase(), resetSqliteDatabase(), runSqlFile(), SupportedDbType
 
 ### Community 185 - "Health Check"
-Cohesion: 0.29
-Nodes (5): HealthController, ApiOperation, ApiTags, Controller, Get
+Cohesion: 0.16
+Nodes (4): ListQueryDto, Max, ApmMongoService, Injectable
 
 ### Community 186 - "Nest CLI Config"
 Cohesion: 0.33
 Nodes (5): collection, compilerOptions, deleteOutDir, $schema, sourceRoot
-
-### Community 187 - "Inventory Use Cases"
-Cohesion: 0.40
-Nodes (6): Create Stock Adjustment Use Case, InMemory Inventory Repository, Inventory Controller, Inventory Repository Interface, List Stock Balances Use Case, Stock Balance Entity
 
 ### Community 188 - "Bezier Edge Path"
 Cohesion: 0.33
@@ -1037,24 +1133,20 @@ Cohesion: 0.33
 Nodes (5): NewsArticleDocument, NewsArticleSchema, NewsArticleSchemaFactory, Prop, Schema
 
 ### Community 194 - "Polling Unit Schema"
-Cohesion: 0.33
-Nodes (5): PollingUnitDocument, PollingUnitSchema, PollingUnitSchemaFactory, Prop, Schema
+Cohesion: 0.24
+Nodes (6): EhealthwaresController, ApiOperation, ApiTags, Controller, Get, Param
 
 ### Community 195 - "Result Entry Schema"
 Cohesion: 0.33
 Nodes (5): ResultEntryDocument, ResultEntrySchema, ResultEntrySchemaFactory, Prop, Schema
 
-### Community 196 - "Testimonial Schema"
-Cohesion: 0.33
-Nodes (5): TestimonialDocument, TestimonialSchema, TestimonialSchemaFactory, Prop, Schema
-
 ### Community 197 - "Ward Schema"
-Cohesion: 0.33
-Nodes (5): Prop, Schema, WardDocument, WardSchema, WardSchemaFactory
+Cohesion: 0.11
+Nodes (4): EhealthwaresModule, Module, EhealthwaresSeedService, Injectable
 
 ### Community 198 - "Stock Adjustment DTO"
-Cohesion: 0.33
-Nodes (5): CreateStockAdjustmentDto, ApiProperty, IsNotEmpty, IsNumber, IsString
+Cohesion: 0.11
+Nodes (13): ListReceivablesDto, ApiPropertyOptional, IsIn, IsInt, IsOptional, IsString, Max, Min (+5 more)
 
 ### Community 199 - "Generic ORM Entity"
 Cohesion: 0.40
@@ -1065,8 +1157,8 @@ Cohesion: 0.40
 Nodes (5): createEdgeTypes(), createNodeTypes(), isMatchingKey(), cleanEnum(), k()
 
 ### Community 201 - "UOM Details Page"
-Cohesion: 0.50
-Nodes (4): JsonDetailCard(), RxUomDetailsPage(), titleFromPath(), UomDetailsRoute()
+Cohesion: 0.04
+Nodes (78): exactPathTest(), removeTrailingSlash(), subscribe(), useHydrated(), ForgotPassword(), baseGet(), CatchBoundary(), CatchNotFound() (+70 more)
 
 ### Community 202 - "Appointment Entity"
 Cohesion: 0.40
@@ -1089,36 +1181,280 @@ Cohesion: 0.40
 Nodes (4): CurrentStock, Column, Entity, PrimaryGeneratedColumn
 
 ### Community 207 - "Seed Location & Warehouse"
-Cohesion: 0.70
-Nodes (4): getColumns(), quoteIdentifier(), seedWarehouseAndStockLocation(), tableExists()
+Cohesion: 0.10
+Nodes (19): getColumns(), quoteIdentifier(), seedWarehouseAndStockLocation(), tableExists(), glAccounts, journals, seed(), seedAccounting() (+11 more)
 
 ### Community 208 - "Stock Balance DTO"
-Cohesion: 0.60
-Nodes (4): StockBalanceItemRefDto, StockBalanceLocationRefDto, StockBalanceLotRefDto, ApiProperty
+Cohesion: 0.11
+Nodes (18): SaleRefundLineOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn (+10 more)
 
 ### Community 209 - "Customer Purchase Entity"
 Cohesion: 0.50
 Nodes (3): CustomerPurchase, Column, Entity
 
+### Community 210 - "Seed Accounting Data"
+Cohesion: 0.14
+Nodes (10): AuthProxyController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, Headers (+2 more)
+
+### Community 211 - "Constructor Injection"
+Cohesion: 0.12
+Nodes (16): Cache Strategy, EAV Synchronization, EAV Test, Existing Codebase, Expected Deliverables, FULL_SYNC Test, Google Sheets Integration Test, Import Context (+8 more)
+
+### Community 214 - "Identity Module Summary"
+Cohesion: 0.12
+Nodes (15): Architectural Notes, Assumptions, Controller Layer, DTOs, Entity Layer, Example Request/Response, Folder Structure, Login request (+7 more)
+
+### Community 221 - "Catalog Module Summary"
+Cohesion: 0.12
+Nodes (15): Architectural Notes, Assumptions, Controller Layer, Create product request, DTOs, Entity Layer, Example Request/Response, Folder Structure (+7 more)
+
+### Community 227 - "Inventory Module Summary"
+Cohesion: 0.12
+Nodes (15): Architectural Notes, Assumptions, Controller Layer, Create adjustment request, Domain Models, DTOs, Example Request/Response, Folder Structure (+7 more)
+
+### Community 229 - "Test Plan Index"
+Cohesion: 0.40
+Nodes (4): Execution Sequence, Minimal E2E Scenarios, Modules Covered, Phase 3 Test Plan Index
+
+### Community 237 - "README Document"
+Cohesion: 0.18
+Nodes (10): Architecture, Commands, Databases, Environment Variables, Module Map (25 modules), Patterns, Quick Start, RxSoft Backend (+2 more)
+
+### Community 239 - "Project Status Overview"
+Cohesion: 0.33
+Nodes (5): Entrypoints, Modules, rxsoft-backend — Status, Status, What it does
+
+### Community 245 - "ApmAdminController"
+Cohesion: 0.32
+Nodes (9): ApmAdminController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get, Query, Roles (+1 more)
+
+### Community 246 - "apm-canvassing.controller.ts"
+Cohesion: 0.38
+Nodes (13): CreateCanvassingSessionDto, CreateCanvassingVisitDto, CreateVolunteerAssignmentDto, ApiProperty, ApiPropertyOptional, IsInt, IsNotEmpty, IsOptional (+5 more)
+
+### Community 247 - "WhatsAppGroupOrmEntity"
+Cohesion: 0.11
+Nodes (15): NewsArticleOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, Column (+7 more)
+
+### Community 248 - "orders.service.spec.ts"
+Cohesion: 0.13
+Nodes (13): deliveryRepo, itemRepo, orderItemRepo, orderRepo, partyRepo, pricingService, saleLineRepo, saleRepo (+5 more)
+
+### Community 249 - "Refactoring deviations (fix when touching)"
+Cohesion: 0.14
+Nodes (13): Auth, Auth (best in repo), DB, Dual database (unique to rxsoft-backend), Key commands, List endpoints, Overview, Refactoring deviations (fix when touching) (+5 more)
+
+### Community 250 - "CreateSaleRefundDto"
+Cohesion: 0.18
+Nodes (12): CreateSaleRefundDto, CreateSaleRefundLineDto, ApiProperty, ApiPropertyOptional, ArrayMinSize, IsNumber, IsOptional, IsString (+4 more)
+
+### Community 251 - "Additional Test Cases To Add (Priority Order)"
+Cohesion: 0.18
+Nodes (10): Additional Test Cases To Add (Priority Order), Catalog Module, Cross-Module E2E, Identity Module, P0, P0, P0, P1 (+2 more)
+
+### Community 252 - "CollectReceivablePaymentDto"
+Cohesion: 0.18
+Nodes (8): CollectReceivablePaymentDto, ApiProperty, ApiPropertyOptional, IsNotEmpty, IsNumber, IsOptional, IsString, Min
+
+### Community 253 - "UomCategoryOrmEntity"
+Cohesion: 0.18
+Nodes (10): Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn, UomCategoryOrmEntity (+2 more)
+
+### Community 254 - "Backend CRUD Resource — rxsoft-backend"
+Cohesion: 0.20
+Nodes (9): Backend CRUD Resource — rxsoft-backend, Inputs, Pattern A (Clean Architecture) — for core domains (catalog, sales, inventory, purchases, receivables), Pattern B (Simple Service) — for simple modules (categories, manufacturers, pricing), Purpose, Refactoring, When not to invoke, When to invoke (+1 more)
+
+### Community 255 - "AuditController"
+Cohesion: 0.20
+Nodes (8): AuditController, ApiBearerAuth, ApiTags, Controller, Get, Query, Roles, UseGuards
+
+### Community 256 - "ListReceivableTransactionsDto"
+Cohesion: 0.20
+Nodes (8): ListReceivableTransactionsDto, ApiPropertyOptional, IsIn, IsInt, IsOptional, Max, Min, Type
+
+### Community 257 - "request-logging.interceptor.ts"
+Cohesion: 0.31
+Nodes (7): maskSensitive(), RequestLoggingInterceptor, SafeBody, SafeHeaders, safeJson(), truncate(), Injectable
+
+### Community 258 - "ReceivableTransactionOrmEntity"
+Cohesion: 0.22
+Nodes (8): ReceivableTransactionOrmEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn
+
+### Community 259 - "Backend List Endpoint — rxsoft-backend"
+Cohesion: 0.25
+Nodes (7): Backend List Endpoint — rxsoft-backend, Inputs, Purpose, Refactoring consistency, When not to invoke, When to invoke, Workflow
+
+### Community 260 - "Google Sheets Import — rxsoft-backend"
+Cohesion: 0.25
+Nodes (7): Google Sheets Import — rxsoft-backend, Inputs, Purpose, Refactoring, When not to invoke, When to invoke, Workflow
+
+### Community 261 - "useFloating"
+Cohesion: 0.29
+Nodes (8): deepEqual(), getClientRects(), getDPR(), roundByDPR(), useFloating(), useFloating$1(), useLatestRef(), useFloatingTooltip()
+
+### Community 262 - "WriteOffReceivableDto"
+Cohesion: 0.25
+Nodes (5): ApiPropertyOptional, IsOptional, IsString, MaxLength, WriteOffReceivableDto
+
+### Community 263 - "AchievementOrmEntity"
+Cohesion: 0.25
+Nodes (7): AchievementOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn
+
+### Community 264 - "EventOrmEntity"
+Cohesion: 0.25
+Nodes (7): EventOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn
+
+### Community 265 - "MediaAssetOrmEntity"
+Cohesion: 0.25
+Nodes (7): MediaAssetOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn
+
+### Community 266 - "TestimonialOrmEntity"
+Cohesion: 0.25
+Nodes (7): TestimonialOrmEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn
+
+### Community 267 - "Task 6 Report: Backend — Seed Data"
+Cohesion: 0.25
+Nodes (7): Commit, Concerns, Deliverables, Details, Status: ✅ Complete, Task 6 Report: Backend — Seed Data, TypeScript Check
+
+### Community 268 - "Auth Guard — rxsoft-backend"
+Cohesion: 0.29
+Nodes (6): Auth Guard — rxsoft-backend, Inputs, Purpose, Refactoring, When to invoke, Workflow
+
+### Community 269 - "useBaseQuery"
+Cohesion: 0.33
+Nodes (7): shallowEqualObjects(), getCurrentResult(), getOptimisticResult(), shouldAssignObserverCurrentProperties(), trackProp(), trackResult(), useBaseQuery()
+
+### Community 270 - "Validation Layer"
+Cohesion: 0.29
+Nodes (7): Duplicate Code, Duplicate UUID, Invalid Relations, Missing Code, Missing EAV Attributes, Unknown Columns, Validation Layer
+
+### Community 271 - "ConversionScoreOrmEntity"
+Cohesion: 0.29
+Nodes (6): ConversionScoreOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn
+
+### Community 272 - "Task 1 Report: Backend — Mongoose Schemas (8 schemas + index)"
+Cohesion: 0.29
+Nodes (6): Concerns, Files created, Self-review findings, Task 1 Report: Backend — Mongoose Schemas (8 schemas + index), TypeScript compilation results, What was implemented
+
+### Community 273 - "Task 2 Report: Backend — DTOs"
+Cohesion: 0.29
+Nodes (6): Commits, Issues/Concerns, Self-review, Task 2 Report: Backend — DTOs, TypeScript compilation, What was implemented
+
+### Community 274 - "Seeding — rxsoft-backend"
+Cohesion: 0.33
+Nodes (5): Purpose, Refactoring, Seeding — rxsoft-backend, When to invoke, Workflow
+
+### Community 275 - "Test Schema"
+Cohesion: 0.33
+Nodes (6): Attribute, AttributeValue, Item, Test Schema, Uom, UomCategory
+
+### Community 276 - "Functional Requirements"
+Cohesion: 0.33
+Nodes (6): Functional Requirements, Relation Resolution, Sheet → Entity Mapping, Sheet Order, Synchronization Rules, UUID Writeback
+
+### Community 278 - "ContactSubmissionOrmEntity"
+Cohesion: 0.33
+Nodes (5): ContactSubmissionOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn
+
+### Community 279 - "DonationOrmEntity"
+Cohesion: 0.33
+Nodes (5): DonationOrmEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn
+
+### Community 280 - "AgendaItemDocument"
+Cohesion: 0.33
+Nodes (5): AgendaItemDocument, AgendaItemSchema, AgendaItemSchemaFactory, Prop, Schema
+
+### Community 281 - "CitizenFeedbackDocument"
+Cohesion: 0.33
+Nodes (5): CitizenFeedbackDocument, CitizenFeedbackSchema, CitizenFeedbackSchemaFactory, Prop, Schema
+
+### Community 282 - "supporter.schema.ts"
+Cohesion: 0.33
+Nodes (5): SupporterDocument, SupporterSchema, SupporterSchemaFactory, Prop, Schema
+
+### Community 283 - "item-response.dto.ts"
+Cohesion: 0.53
+Nodes (5): ForeignProperty, GenericProductResponse, ItemCategoryResponse, PharmaceuticsResponse, ApiProperty
+
+### Community 284 - "childMatcher"
+Cohesion: 0.40
+Nodes (5): childFind(), childMatcher(), childrenFilter(), selectChild_default(), selectChildren_default()
+
+### Community 285 - "Implementations"
+Cohesion: 0.40
+Nodes (5): ApiImportTarget, DatabaseImportTarget, Implementations, QueryBuilderImportTarget, RepositoryImportTarget
+
+### Community 286 - "Sync Modes"
+Cohesion: 0.40
+Nodes (5): FULL_SYNC, INSERT_ONLY, Sync Modes, UPDATE_ONLY, UPSERT
+
+### Community 288 - "EAV Support"
+Cohesion: 0.67
+Nodes (3): Attribute, AttributeValue, EAV Support
+
+### Community 289 - "Excel Import Integration Test"
+Cohesion: 0.67
+Nodes (3): Excel Import Integration Test, uom, uom_category
+
+### Community 290 - "Spreadsheet Writer Abstraction"
+Cohesion: 0.67
+Nodes (3): ExcelStatusWriter, GoogleSheetStatusWriter, Spreadsheet Writer Abstraction
+
+### Community 291 - "WhatsAppGroupSchema"
+Cohesion: 0.67
+Nodes (3): Prop, Schema, WhatsAppGroupSchema
+
+### Community 292 - "Article"
+Cohesion: 0.67
+Nodes (3): Article, Prop, Schema
+
+### Community 293 - "Category"
+Cohesion: 0.67
+Nodes (3): Category, Prop, Schema
+
+### Community 294 - "HeroSlide"
+Cohesion: 0.67
+Nodes (3): HeroSlide, Prop, Schema
+
+### Community 295 - "InvestorData"
+Cohesion: 0.67
+Nodes (3): InvestorData, Prop, Schema
+
+### Community 296 - "Partner"
+Cohesion: 0.67
+Nodes (3): Partner, Prop, Schema
+
+### Community 297 - "Service"
+Cohesion: 0.67
+Nodes (3): Service, Prop, Schema
+
+### Community 298 - "TeamMember"
+Cohesion: 0.67
+Nodes (3): TeamMember, Prop, Schema
+
+### Community 299 - "Testimonial"
+Cohesion: 0.67
+Nodes (3): Testimonial, Prop, Schema
+
 ## Knowledge Gaps
-- **267 isolated node(s):** `$schema`, `collection`, `sourceRoot`, `deleteOutDir`, `name` (+262 more)
+- **473 isolated node(s):** `@opencode-ai/plugin`, `$schema`, `collection`, `sourceRoot`, `deleteOutDir` (+468 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **28 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **81 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `GenericDrugCacheService` connect `Generic Drug Cache Service` to `Generic Products CRUD`, `Item DTOs`, `Get Item Use Case`, `Data Page UI Components`, `Branch & Consultation Entities`, `Catalog Module & Items`, `Item Dependencies Use Case`, `Website Admin & DTOs`?**
-  _High betweenness centrality (0.235) - this node is a cross-community bridge._
+- **Why does `GenericDrugCacheService` connect `Generic Drug Cache Service` to `Data Page UI Components`, `Branch & Consultation Entities`, `Catalog Module & Items`, `Item Dependencies Use Case`, `In-Memory Cache Store`, `Website Admin & DTOs`?**
+  _High betweenness centrality (0.201) - this node is a cross-community bridge._
 - **Why does `applyChanges()` connect `Flow Graph Manipulation` to `Pricing Controller`?**
-  _High betweenness centrality (0.196) - this node is a cross-community bridge._
-- **Why does `Pagination()` connect `Data Page UI Components` to `URL Parameter Normalization`, `Website Layout & Auth`, `Admin Hooks & Queries`?**
-  _High betweenness centrality (0.121) - this node is a cross-community bridge._
+  _High betweenness centrality (0.199) - this node is a cross-community bridge._
+- **Why does `RequestUser` connect `Purchases Controller` to `Inventory Module & Use Cases`, `User POS Config`, `NestJS Controller Decorators`, `NestJS App Configuration`, `Audit Log Controller`, `Organisation Config Controller`, `Sales Controller`, `Coding Concept Pages`, `Stock Locations Controller`, `Accounting Controller`, `Pricing Controller`, `Generic Products CRUD`, `Stock Balance List DTO`, `Categories Controller`, `Manufacturers Controller`, `NestJS Common Decorators`, `Warehouse Controller & Entity`, `Purchases DTOs`, `Update Org Config DTO`, `Payment Methods Controller`, `Website Admin & DTOs`, `Drug Components Controller`, `Receivables Operations`, `Audit Module`, `Catalog Module & Items`, `Items Controller`, `Suppliers CRUD Controller`, `Goods Receipt Controller`, `Inventory Controller`, `NestJS Common Decorators`, `AuditController`?**
+  _High betweenness centrality (0.123) - this node is a cross-community bridge._
 - **Are the 10 inferred relationships involving `constructor()` (e.g. with `from()` and `fn()`) actually correct?**
   _`constructor()` has 10 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `$schema`, `collection`, `sourceRoot` to the rest of the system?**
-  _271 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `@opencode-ai/plugin`, `$schema`, `collection` to the rest of the system?**
+  _477 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `URL Parameter Normalization` be split into smaller, more focused modules?**
-  _Cohesion score 0.005321523224996513 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0058991683991683995 - nodes in this community are weakly interconnected._
 - **Should `UI Component Library` be split into smaller, more focused modules?**
-  _Cohesion score 0.03133790119004688 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.024212412282884586 - nodes in this community are weakly interconnected._

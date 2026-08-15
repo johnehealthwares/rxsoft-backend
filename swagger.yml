@@ -352,6 +352,60 @@ paths:
       security: *ref_0
       summary: List available UOMs for an item (same category as base UOM)
       tags: *ref_1
+  /api/items/organisations/{orgId}/items:
+    get:
+      operationId: ItemsController_listOrganisationItems
+      parameters:
+        - name: orgId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: List items activated for an organisation
+      tags: *ref_1
+  /api/items/organisations/{orgId}/items/{itemId}:
+    put:
+      operationId: ItemsController_activateOrganisationItem
+      parameters:
+        - name: orgId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: itemId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: Activate an item for an organisation
+      tags: *ref_1
+    delete:
+      operationId: ItemsController_deactivateOrganisationItem
+      parameters:
+        - name: orgId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: itemId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: Deactivate an item for an organisation
+      tags: *ref_1
   /api/generic-products:
     get:
       operationId: GenericProductsController_list
@@ -3164,6 +3218,11 @@ paths:
           in: header
           schema:
             type: string
+        - name: x-api-key
+          required: true
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -4377,6 +4436,11 @@ paths:
           in: path
           schema:
             type: string
+        - name: x-organization-id
+          required: true
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -4398,6 +4462,11 @@ paths:
         - name: slug
           required: true
           in: path
+          schema:
+            type: string
+        - name: x-organization-id
+          required: true
+          in: header
           schema:
             type: string
       responses:
@@ -4454,7 +4523,12 @@ paths:
   /api/website/cart:
     post:
       operationId: WebsiteController_addToCart
-      parameters: []
+      parameters:
+        - name: x-organization-id
+          required: true
+          in: header
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -4476,6 +4550,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: x-organization-id
+          required: true
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -4493,7 +4572,12 @@ paths:
   /api/website/orders:
     post:
       operationId: WebsiteController_createOrder
-      parameters: []
+      parameters:
+        - name: x-organization-id
+          required: true
+          in: header
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -4678,6 +4762,11 @@ paths:
         - name: type
           required: false
           in: query
+          schema:
+            type: string
+        - name: x-organization-id
+          required: true
+          in: header
           schema:
             type: string
       responses:
@@ -4965,6 +5054,140 @@ paths:
       security: *ref_53
       summary: Post an order as a draft sale
       tags: *ref_54
+  /api/orders/admin/orders:
+    get:
+      operationId: OrderAdminController_listOrders
+      parameters:
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+      security: &ref_55
+        - bearer: []
+      summary: List all orders
+      tags: &ref_56
+        - orders-admin
+  /api/orders/admin/orders/{id}:
+    get:
+      operationId: OrderAdminController_getOrder
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_55
+      summary: Get order detail
+      tags: *ref_56
+  /api/orders/admin/orders/{id}/status:
+    patch:
+      operationId: OrderAdminController_updateStatus
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_55
+      summary: Update order status
+      tags: *ref_56
+  /api/orders/admin/orders/{id}/post-sale:
+    post:
+      operationId: OrderAdminController_postAsSale
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_55
+      summary: Post order as draft sale
+      tags: *ref_56
+  /api/orders/admin/orders/{orderId}/items/{orderItemId}/reconcile:
+    post:
+      operationId: OrderAdminController_reconcileItem
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: orderItemId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReconcileItemDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_55
+      summary: Reconcile a freetext order item to a real item
+      tags: *ref_56
+  /api/orders/admin/orders/{orderId}/reconcile-all:
+    post:
+      operationId: OrderAdminController_reconcileAll
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReconcileAllDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_55
+      summary: Reconcile all freetext items at once
+      tags: *ref_56
+  /api/orders/admin/complete-sale/{saleId}:
+    post:
+      operationId: OrderAdminController_completeSale
+      parameters:
+        - name: saleId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_55
+      summary: Complete a draft sale
+      tags: *ref_56
   /api/apm/homepage:
     get:
       operationId: ApmController_getHomepage
@@ -4973,7 +5196,7 @@ paths:
         '200':
           description: ''
       summary: Get campaign homepage data
-      tags: &ref_55
+      tags: &ref_57
         - apm
   /api/apm/agenda:
     get:
@@ -4983,7 +5206,7 @@ paths:
         '200':
           description: ''
       summary: List Oyo Next agenda items
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/achievements:
     get:
       operationId: ApmController_listAchievements
@@ -4992,7 +5215,7 @@ paths:
         '200':
           description: ''
       summary: List campaign achievements
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/news:
     get:
       operationId: ApmController_listNews
@@ -5001,7 +5224,7 @@ paths:
         '200':
           description: ''
       summary: List news articles
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/news/{slug}:
     get:
       operationId: ApmController_getNewsBySlug
@@ -5015,7 +5238,7 @@ paths:
         '200':
           description: ''
       summary: Get news article by slug
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/events:
     get:
       operationId: ApmController_listEvents
@@ -5024,7 +5247,7 @@ paths:
         '200':
           description: ''
       summary: List campaign events
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/events/{id}:
     get:
       operationId: ApmController_getEvent
@@ -5038,7 +5261,7 @@ paths:
         '200':
           description: ''
       summary: Get event detail
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/events/{id}/register:
     post:
       operationId: ApmController_registerForEvent
@@ -5058,7 +5281,7 @@ paths:
         '201':
           description: ''
       summary: Register for an event
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/volunteer:
     post:
       operationId: ApmController_registerVolunteer
@@ -5073,7 +5296,7 @@ paths:
         '201':
           description: ''
       summary: Register as a volunteer
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/join:
     post:
       operationId: ApmController_joinMovement
@@ -5088,7 +5311,7 @@ paths:
         '201':
           description: ''
       summary: Join the movement
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/contact:
     post:
       operationId: ApmController_submitContact
@@ -5103,7 +5326,7 @@ paths:
         '201':
           description: ''
       summary: Submit contact form
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/newsletter:
     post:
       operationId: ApmController_subscribeNewsletter
@@ -5118,7 +5341,7 @@ paths:
         '201':
           description: ''
       summary: Subscribe to newsletter
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/citizens-speak:
     post:
       operationId: ApmController_submitFeedback
@@ -5133,7 +5356,7 @@ paths:
         '201':
           description: ''
       summary: Submit citizen feedback
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/report:
     post:
       operationId: ApmController_reportIssue
@@ -5148,7 +5371,7 @@ paths:
         '201':
           description: ''
       summary: Report an issue
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/media:
     get:
       operationId: ApmController_listMedia
@@ -5157,7 +5380,7 @@ paths:
         '200':
           description: ''
       summary: List media assets
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/testimonials:
     get:
       operationId: ApmController_listTestimonials
@@ -5166,7 +5389,7 @@ paths:
         '200':
           description: ''
       summary: List testimonials
-      tags: *ref_55
+      tags: *ref_57
   /api/apm/donate:
     post:
       operationId: ApmController_donate
@@ -5181,7 +5404,7 @@ paths:
         '201':
           description: ''
       summary: Submit a donation
-      tags: *ref_55
+      tags: *ref_57
   /api/apm-admin/volunteers:
     get:
       operationId: ApmAdminController_listVolunteers
@@ -5189,10 +5412,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_56
+      security: &ref_58
         - bearer: []
       summary: List all volunteers
-      tags: &ref_57
+      tags: &ref_59
         - apm-admin
   /api/apm-admin/supporters:
     get:
@@ -5201,9 +5424,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_56
+      security: *ref_58
       summary: List all supporters
-      tags: *ref_57
+      tags: *ref_59
   /api/apm-admin/contacts:
     get:
       operationId: ApmAdminController_listContacts
@@ -5211,9 +5434,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_56
+      security: *ref_58
       summary: List contact submissions
-      tags: *ref_57
+      tags: *ref_59
   /api/apm-admin/event-registrations:
     get:
       operationId: ApmAdminController_listEventRegistrations
@@ -5221,9 +5444,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_56
+      security: *ref_58
       summary: List event registrations
-      tags: *ref_57
+      tags: *ref_59
   /api/apm-admin/feedback:
     get:
       operationId: ApmAdminController_listFeedback
@@ -5231,9 +5454,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_56
+      security: *ref_58
       summary: List citizen feedback
-      tags: *ref_57
+      tags: *ref_59
   /api/apm-admin/issues:
     get:
       operationId: ApmAdminController_listIssues
@@ -5241,9 +5464,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_56
+      security: *ref_58
       summary: List issue reports
-      tags: *ref_57
+      tags: *ref_59
   /api/apm-admin/donations:
     get:
       operationId: ApmAdminController_listDonations
@@ -5251,9 +5474,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_56
+      security: *ref_58
       summary: List donations
-      tags: *ref_57
+      tags: *ref_59
   /api/apm-admin/stats:
     get:
       operationId: ApmAdminController_getStats
@@ -5261,9 +5484,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_56
+      security: *ref_58
       summary: Get campaign stats dashboard
-      tags: *ref_57
+      tags: *ref_59
   /api/apm/conversion/dashboard:
     get:
       operationId: ApmConversionController_getDashboard
@@ -5271,10 +5494,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_58
+      security: &ref_60
         - bearer: []
       summary: Get conversion dashboard summary
-      tags: &ref_59
+      tags: &ref_61
         - apm-conversion
   /api/apm/conversion/lgas:
     get:
@@ -5283,9 +5506,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_58
+      security: *ref_60
       summary: Get LGA conversion dashboard
-      tags: *ref_59
+      tags: *ref_61
   /api/apm/conversion/wards/{lgaId}:
     get:
       operationId: ApmConversionController_getWardConversionDashboard
@@ -5298,9 +5521,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_58
+      security: *ref_60
       summary: Get ward conversion dashboard for LGA
-      tags: *ref_59
+      tags: *ref_61
   /api/apm/conversion/polling-units/{wardId}:
     get:
       operationId: ApmConversionController_getPollingUnitDashboard
@@ -5313,9 +5536,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_58
+      security: *ref_60
       summary: Get polling units for ward
-      tags: *ref_59
+      tags: *ref_61
   /api/apm/conversion/score/{entityType}/{entityId}:
     put:
       operationId: ApmConversionController_updateScore
@@ -5339,9 +5562,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_58
+      security: *ref_60
       summary: Update conversion score for LGA or ward
-      tags: *ref_59
+      tags: *ref_61
   /api/apm/conversion/polling-units/{id}:
     put:
       operationId: ApmConversionController_updatePollingUnit
@@ -5360,9 +5583,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_58
+      security: *ref_60
       summary: Update polling unit details
-      tags: *ref_59
+      tags: *ref_61
   /api/apm/stakeholders:
     get:
       operationId: ApmStakeholderController_listStakeholders
@@ -5370,10 +5593,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_60
+      security: &ref_62
         - bearer: []
       summary: List all stakeholders
-      tags: &ref_61
+      tags: &ref_63
         - apm-stakeholders
     post:
       operationId: ApmStakeholderController_createStakeholder
@@ -5387,9 +5610,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_60
+      security: *ref_62
       summary: Create a stakeholder
-      tags: *ref_61
+      tags: *ref_63
   /api/apm/stakeholders/lga/{lgaId}:
     get:
       operationId: ApmStakeholderController_listStakeholdersByLga
@@ -5402,9 +5625,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_60
+      security: *ref_62
       summary: List stakeholders by LGA
-      tags: *ref_61
+      tags: *ref_63
   /api/apm/stakeholders/{id}:
     get:
       operationId: ApmStakeholderController_getStakeholder
@@ -5417,9 +5640,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_60
+      security: *ref_62
       summary: Get stakeholder details
-      tags: *ref_61
+      tags: *ref_63
     put:
       operationId: ApmStakeholderController_updateStakeholder
       parameters:
@@ -5437,9 +5660,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_60
+      security: *ref_62
       summary: Update a stakeholder
-      tags: *ref_61
+      tags: *ref_63
   /api/apm/stakeholders/{id}/activities:
     post:
       operationId: ApmStakeholderController_createActivity
@@ -5458,9 +5681,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_60
+      security: *ref_62
       summary: Add activity to stakeholder
-      tags: *ref_61
+      tags: *ref_63
     get:
       operationId: ApmStakeholderController_listActivities
       parameters:
@@ -5472,9 +5695,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_60
+      security: *ref_62
       summary: List stakeholder activities
-      tags: *ref_61
+      tags: *ref_63
   /api/apm/whatsapp/groups:
     get:
       operationId: ApmWhatsAppController_listGroups
@@ -5487,10 +5710,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_62
+      security: &ref_64
         - bearer: []
       summary: List WhatsApp groups
-      tags: &ref_63
+      tags: &ref_65
         - apm-whatsapp
     post:
       operationId: ApmWhatsAppController_createGroup
@@ -5504,9 +5727,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_62
+      security: *ref_64
       summary: Create WhatsApp group
-      tags: *ref_63
+      tags: *ref_65
   /api/apm/data/lgas:
     get:
       operationId: ApmDataController_listLgas
@@ -5515,7 +5738,7 @@ paths:
         '200':
           description: ''
       summary: List all LGAs
-      tags: &ref_64
+      tags: &ref_66
         - apm-data
   /api/apm/data/lgas/{id}:
     get:
@@ -5530,7 +5753,7 @@ paths:
         '200':
           description: ''
       summary: Get LGA by ID
-      tags: *ref_64
+      tags: *ref_66
   /api/apm/data/lgas/{lgaId}/wards:
     get:
       operationId: ApmDataController_listWards
@@ -5544,7 +5767,7 @@ paths:
         '200':
           description: ''
       summary: List wards in an LGA
-      tags: *ref_64
+      tags: *ref_66
   /api/apm/data/wards/{id}:
     get:
       operationId: ApmDataController_getWard
@@ -5558,7 +5781,7 @@ paths:
         '200':
           description: ''
       summary: Get ward by ID
-      tags: *ref_64
+      tags: *ref_66
   /api/apm/data/wards/{wardId}/polling-units:
     get:
       operationId: ApmDataController_listPollingUnits
@@ -5572,7 +5795,7 @@ paths:
         '200':
           description: ''
       summary: List polling units in a ward
-      tags: *ref_64
+      tags: *ref_66
   /api/apm/data/polling-units/{id}:
     get:
       operationId: ApmDataController_getPollingUnit
@@ -5586,7 +5809,7 @@ paths:
         '200':
           description: ''
       summary: Get polling unit by ID
-      tags: *ref_64
+      tags: *ref_66
   /api/apm/data/polling-units/search/{query}:
     get:
       operationId: ApmDataController_searchPollingUnits
@@ -5600,7 +5823,7 @@ paths:
         '200':
           description: ''
       summary: Search polling units
-      tags: *ref_64
+      tags: *ref_66
   /api/apm/canvassing/stats:
     get:
       operationId: ApmCanvassingController_getStats
@@ -5608,10 +5831,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_65
+      security: &ref_67
         - bearer: []
       summary: Get canvassing stats
-      tags: &ref_66
+      tags: &ref_68
         - apm-canvassing
   /api/apm/canvassing/sessions:
     get:
@@ -5620,9 +5843,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: List canvassing sessions
-      tags: *ref_66
+      tags: *ref_68
     post:
       operationId: ApmCanvassingController_createSession
       parameters: []
@@ -5635,9 +5858,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: Create canvassing session
-      tags: *ref_66
+      tags: *ref_68
   /api/apm/canvassing/sessions/{id}:
     get:
       operationId: ApmCanvassingController_getSession
@@ -5650,9 +5873,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: Get session detail
-      tags: *ref_66
+      tags: *ref_68
     put:
       operationId: ApmCanvassingController_updateSession
       parameters:
@@ -5670,9 +5893,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: Update canvassing session
-      tags: *ref_66
+      tags: *ref_68
   /api/apm/canvassing/sessions/{id}/visits:
     get:
       operationId: ApmCanvassingController_listVisits
@@ -5685,9 +5908,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: List visits in a session
-      tags: *ref_66
+      tags: *ref_68
     post:
       operationId: ApmCanvassingController_addVisit
       parameters:
@@ -5705,9 +5928,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: Add a visit to a session
-      tags: *ref_66
+      tags: *ref_68
   /api/apm/canvassing/sessions/{id}/visit-stats:
     get:
       operationId: ApmCanvassingController_getVisitStats
@@ -5720,9 +5943,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: Get visit stats for a session
-      tags: *ref_66
+      tags: *ref_68
   /api/apm/canvassing/visits/stats:
     get:
       operationId: ApmCanvassingController_getAllVisitStats
@@ -5730,9 +5953,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_65
+      security: *ref_67
       summary: Get overall visit stats
-      tags: *ref_66
+      tags: *ref_68
   /api/apm/volunteer-assignments:
     get:
       operationId: ApmVolunteerAssignmentController_listAssignments
@@ -5740,10 +5963,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_67
+      security: &ref_69
         - bearer: []
       summary: List volunteer assignments
-      tags: &ref_68
+      tags: &ref_70
         - apm-volunteer-assignments
     post:
       operationId: ApmVolunteerAssignmentController_createAssignment
@@ -5757,9 +5980,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_67
+      security: *ref_69
       summary: Create volunteer assignment
-      tags: *ref_68
+      tags: *ref_70
   /api/apm/volunteer-assignments/ward/{wardId}:
     get:
       operationId: ApmVolunteerAssignmentController_listByWard
@@ -5772,9 +5995,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_67
+      security: *ref_69
       summary: List assignments by ward
-      tags: *ref_68
+      tags: *ref_70
   /api/apm/volunteer-assignments/{id}:
     put:
       operationId: ApmVolunteerAssignmentController_updateAssignment
@@ -5793,9 +6016,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_67
+      security: *ref_69
       summary: Update volunteer assignment
-      tags: *ref_68
+      tags: *ref_70
   /api/apm/volunteer-assignments/stats:
     get:
       operationId: ApmVolunteerAssignmentController_getStats
@@ -5803,9 +6026,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_67
+      security: *ref_69
       summary: Get volunteer stats
-      tags: *ref_68
+      tags: *ref_70
   /api/apm/sentiment:
     get:
       operationId: ApmSentimentController_getSentiment
@@ -5825,10 +6048,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_69
+      security: &ref_71
         - bearer: []
       summary: List candidate tours
-      tags: &ref_70
+      tags: &ref_72
         - apm-tours
     post:
       operationId: ApmTourController_createTour
@@ -5842,9 +6065,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_69
+      security: *ref_71
       summary: Create candidate tour
-      tags: *ref_70
+      tags: *ref_72
   /api/apm/tours/stats:
     get:
       operationId: ApmTourController_getStats
@@ -5852,9 +6075,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_69
+      security: *ref_71
       summary: Tour stats
-      tags: *ref_70
+      tags: *ref_72
   /api/apm/tours/{id}:
     get:
       operationId: ApmTourController_getTour
@@ -5867,9 +6090,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_69
+      security: *ref_71
       summary: Get tour detail
-      tags: *ref_70
+      tags: *ref_72
     put:
       operationId: ApmTourController_updateTour
       parameters:
@@ -5887,9 +6110,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_69
+      security: *ref_71
       summary: Update candidate tour
-      tags: *ref_70
+      tags: *ref_72
   /api/apm/content:
     get:
       operationId: ApmContentController_listContent
@@ -5897,10 +6120,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_71
+      security: &ref_73
         - bearer: []
       summary: List content assets
-      tags: &ref_72
+      tags: &ref_74
         - apm-content
     post:
       operationId: ApmContentController_createContent
@@ -5914,9 +6137,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_71
+      security: *ref_73
       summary: Create content asset
-      tags: *ref_72
+      tags: *ref_74
   /api/apm/listening:
     get:
       operationId: ApmListeningController_listMentions
@@ -5924,10 +6147,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_73
+      security: &ref_75
         - bearer: []
       summary: List mentions
-      tags: &ref_74
+      tags: &ref_76
         - apm-listening
     post:
       operationId: ApmListeningController_createMention
@@ -5941,9 +6164,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_73
+      security: *ref_75
       summary: Create mention
-      tags: *ref_74
+      tags: *ref_76
   /api/apm/listening/stats:
     get:
       operationId: ApmListeningController_getStats
@@ -5951,9 +6174,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_73
+      security: *ref_75
       summary: Listening stats
-      tags: *ref_74
+      tags: *ref_76
   /api/apm/listening/{id}:
     get:
       operationId: ApmListeningController_getMention
@@ -5966,9 +6189,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_73
+      security: *ref_75
       summary: Get mention detail
-      tags: *ref_74
+      tags: *ref_76
   /api/apm/listening/{id}/status:
     put:
       operationId: ApmListeningController_updateMentionStatus
@@ -5981,9 +6204,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_73
+      security: *ref_75
       summary: Update mention status
-      tags: *ref_74
+      tags: *ref_76
   /api/apm/truth-desk/{mentionId}/responses:
     get:
       operationId: ApmTruthDeskController_listResponses
@@ -5996,10 +6219,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_75
+      security: &ref_77
         - bearer: []
       summary: List responses for a mention
-      tags: &ref_76
+      tags: &ref_78
         - apm-truth-desk
   /api/apm/truth-desk:
     post:
@@ -6014,9 +6237,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_75
+      security: *ref_77
       summary: Create rapid response
-      tags: *ref_76
+      tags: *ref_78
   /api/apm/agents:
     get:
       operationId: ApmAgentController_listAgents
@@ -6024,10 +6247,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_77
+      security: &ref_79
         - bearer: []
       summary: List polling agents
-      tags: &ref_78
+      tags: &ref_80
         - apm-agents
     post:
       operationId: ApmAgentController_createAgent
@@ -6041,9 +6264,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_77
+      security: *ref_79
       summary: Create polling agent
-      tags: *ref_78
+      tags: *ref_80
   /api/apm/agents/stats:
     get:
       operationId: ApmAgentController_getStats
@@ -6051,9 +6274,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_77
+      security: *ref_79
       summary: Agent stats
-      tags: *ref_78
+      tags: *ref_80
   /api/apm/agents/{id}:
     get:
       operationId: ApmAgentController_getAgent
@@ -6066,9 +6289,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_77
+      security: *ref_79
       summary: Get agent detail
-      tags: *ref_78
+      tags: *ref_80
     put:
       operationId: ApmAgentController_updateAgent
       parameters:
@@ -6086,9 +6309,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_77
+      security: *ref_79
       summary: Update polling agent
-      tags: *ref_78
+      tags: *ref_80
   /api/apm/results:
     get:
       operationId: ApmResultController_listResults
@@ -6096,10 +6319,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_79
+      security: &ref_81
         - bearer: []
       summary: List result entries
-      tags: &ref_80
+      tags: &ref_82
         - apm-results
     post:
       operationId: ApmResultController_createResult
@@ -6113,9 +6336,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_79
+      security: *ref_81
       summary: Submit result entry
-      tags: *ref_80
+      tags: *ref_82
   /api/apm/results/dashboard:
     get:
       operationId: ApmResultController_getDashboard
@@ -6123,9 +6346,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_79
+      security: *ref_81
       summary: Result collation dashboard
-      tags: *ref_80
+      tags: *ref_82
   /api/apm/results/lga/{lgaId}:
     get:
       operationId: ApmResultController_listByLga
@@ -6138,9 +6361,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_79
+      security: *ref_81
       summary: Results by LGA
-      tags: *ref_80
+      tags: *ref_82
   /api/apm/results/{id}:
     get:
       operationId: ApmResultController_getResult
@@ -6153,9 +6376,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_79
+      security: *ref_81
       summary: Get result detail
-      tags: *ref_80
+      tags: *ref_82
   /api/apm/results/{id}/verify:
     put:
       operationId: ApmResultController_verifyResult
@@ -6168,9 +6391,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_79
+      security: *ref_81
       summary: Verify result entry
-      tags: *ref_80
+      tags: *ref_82
   /api/apm/incidents:
     get:
       operationId: ApmIncidentController_listIncidents
@@ -6178,10 +6401,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_81
+      security: &ref_83
         - bearer: []
       summary: List incident reports
-      tags: &ref_82
+      tags: &ref_84
         - apm-incidents
     post:
       operationId: ApmIncidentController_createIncident
@@ -6195,9 +6418,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_81
+      security: *ref_83
       summary: Report an incident
-      tags: *ref_82
+      tags: *ref_84
   /api/apm/incidents/stats:
     get:
       operationId: ApmIncidentController_getStats
@@ -6205,9 +6428,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_81
+      security: *ref_83
       summary: Incident stats
-      tags: *ref_82
+      tags: *ref_84
   /api/apm/incidents/{id}:
     put:
       operationId: ApmIncidentController_updateIncident
@@ -6226,9 +6449,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_81
+      security: *ref_83
       summary: Update incident
-      tags: *ref_82
+      tags: *ref_84
   /api/apm/gotv:
     get:
       operationId: ApmGotvController_listGotv
@@ -6236,10 +6459,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_83
+      security: &ref_85
         - bearer: []
       summary: List GOTV records
-      tags: &ref_84
+      tags: &ref_86
         - apm-gotv
     post:
       operationId: ApmGotvController_createGotv
@@ -6253,9 +6476,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_83
+      security: *ref_85
       summary: Create GOTV record
-      tags: *ref_84
+      tags: *ref_86
   /api/apm/gotv/stats:
     get:
       operationId: ApmGotvController_getStats
@@ -6263,9 +6486,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_83
+      security: *ref_85
       summary: GOTV stats
-      tags: *ref_84
+      tags: *ref_86
   /api/apm/gotv/pu/{pollingUnitId}:
     get:
       operationId: ApmGotvController_listByPu
@@ -6278,9 +6501,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_83
+      security: *ref_85
       summary: GOTV records by PU
-      tags: *ref_84
+      tags: *ref_86
   /api/apm/gotv/{id}:
     put:
       operationId: ApmGotvController_updateGotv
@@ -6299,9 +6522,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_83
+      security: *ref_85
       summary: Update GOTV record
-      tags: *ref_84
+      tags: *ref_86
   /api/ehealthwares/sections:
     get:
       operationId: EhealthwaresController_getSections
@@ -6310,7 +6533,7 @@ paths:
         '200':
           description: ''
       summary: Get all active site sections
-      tags: &ref_85
+      tags: &ref_87
         - ehealthwares
   /api/ehealthwares/products:
     get:
@@ -6320,7 +6543,7 @@ paths:
         '200':
           description: ''
       summary: Get all active products
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/products/{slug}:
     get:
       operationId: EhealthwaresController_getProductBySlug
@@ -6334,7 +6557,7 @@ paths:
         '200':
           description: ''
       summary: Get product by slug
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/services:
     get:
       operationId: EhealthwaresController_getServices
@@ -6343,7 +6566,7 @@ paths:
         '200':
           description: ''
       summary: Get all active services
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/services/{slug}:
     get:
       operationId: EhealthwaresController_getServiceBySlug
@@ -6357,7 +6580,7 @@ paths:
         '200':
           description: ''
       summary: Get service by slug
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/testimonials:
     get:
       operationId: EhealthwaresController_getTestimonials
@@ -6366,7 +6589,7 @@ paths:
         '200':
           description: ''
       summary: Get active testimonials
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/partners:
     get:
       operationId: EhealthwaresController_getPartners
@@ -6375,7 +6598,7 @@ paths:
         '200':
           description: ''
       summary: Get partners
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/team:
     get:
       operationId: EhealthwaresController_getTeam
@@ -6384,7 +6607,7 @@ paths:
         '200':
           description: ''
       summary: Get team members
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/contact:
     post:
       operationId: EhealthwaresController_submitContact
@@ -6399,7 +6622,7 @@ paths:
         '201':
           description: ''
       summary: Submit contact form
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/settings:
     get:
       operationId: EhealthwaresController_getSettings
@@ -6408,7 +6631,7 @@ paths:
         '200':
           description: ''
       summary: Get site settings as key-value map
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/hero-slides:
     get:
       operationId: EhealthwaresController_getHeroSlides
@@ -6417,7 +6640,7 @@ paths:
         '200':
           description: ''
       summary: Get hero carousel slides
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/categories:
     get:
       operationId: EhealthwaresController_getCategories
@@ -6426,7 +6649,7 @@ paths:
         '200':
           description: ''
       summary: Get product categories
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/articles:
     get:
       operationId: EhealthwaresController_getArticles
@@ -6435,7 +6658,7 @@ paths:
         '200':
           description: ''
       summary: Get latest articles/topics
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/investors:
     get:
       operationId: EhealthwaresController_getInvestors
@@ -6444,7 +6667,7 @@ paths:
         '200':
           description: ''
       summary: Get investor data
-      tags: *ref_85
+      tags: *ref_87
   /api/ehealthwares/careers:
     get:
       operationId: EhealthwaresController_getCareers
@@ -6453,7 +6676,774 @@ paths:
         '200':
           description: ''
       summary: Get career positions
-      tags: *ref_85
+      tags: *ref_87
+  /api/ehealthwares/admin/sections:
+    get:
+      operationId: EhealthwaresAdminController_listSections
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_88
+        - bearer: []
+      summary: List site sections (admin)
+      tags: &ref_89
+        - ehealthwares-admin
+    post:
+      operationId: EhealthwaresAdminController_createSection
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSiteSectionDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a site section
+      tags: *ref_89
+  /api/ehealthwares/admin/sections/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateSection
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSiteSectionDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a site section
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteSection
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Soft delete a site section
+      tags: *ref_89
+  /api/ehealthwares/admin/products:
+    get:
+      operationId: EhealthwaresAdminController_listProducts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List products (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createProduct
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a product
+      tags: *ref_89
+  /api/ehealthwares/admin/products/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateProduct
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a product
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteProduct
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Soft delete a product
+      tags: *ref_89
+  /api/ehealthwares/admin/services:
+    get:
+      operationId: EhealthwaresAdminController_listServices
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List services (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createService
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a service
+      tags: *ref_89
+  /api/ehealthwares/admin/services/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateService
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServiceDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a service
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteService
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Soft delete a service
+      tags: *ref_89
+  /api/ehealthwares/admin/testimonials:
+    get:
+      operationId: EhealthwaresAdminController_listTestimonials
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List testimonials (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createTestimonial
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTestimonialDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a testimonial
+      tags: *ref_89
+  /api/ehealthwares/admin/testimonials/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateTestimonial
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTestimonialDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a testimonial
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteTestimonial
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Soft delete a testimonial
+      tags: *ref_89
+  /api/ehealthwares/admin/partners:
+    get:
+      operationId: EhealthwaresAdminController_listPartners
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List partners (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createPartner
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePartnerDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a partner
+      tags: *ref_89
+  /api/ehealthwares/admin/partners/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updatePartner
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePartnerDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a partner
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deletePartner
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Soft delete a partner
+      tags: *ref_89
+  /api/ehealthwares/admin/team:
+    get:
+      operationId: EhealthwaresAdminController_listTeam
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List team members (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createTeamMember
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamMemberDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a team member
+      tags: *ref_89
+  /api/ehealthwares/admin/team/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateTeamMember
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTeamMemberDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a team member
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteTeamMember
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Soft delete a team member
+      tags: *ref_89
+  /api/ehealthwares/admin/settings:
+    get:
+      operationId: EhealthwaresAdminController_listSettings
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List site settings (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createSetting
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSiteSettingDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a site setting
+      tags: *ref_89
+  /api/ehealthwares/admin/settings/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateSetting
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSiteSettingDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a site setting
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteSetting
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Delete a site setting
+      tags: *ref_89
+  /api/ehealthwares/admin/hero-slides:
+    get:
+      operationId: EhealthwaresAdminController_listHeroSlides
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List hero slides (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createHeroSlide
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHeroSlideDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a hero slide
+      tags: *ref_89
+  /api/ehealthwares/admin/hero-slides/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateHeroSlide
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateHeroSlideDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a hero slide
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteHeroSlide
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Deactivate a hero slide
+      tags: *ref_89
+  /api/ehealthwares/admin/categories:
+    get:
+      operationId: EhealthwaresAdminController_listCategories
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List categories (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createCategory
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a category
+      tags: *ref_89
+  /api/ehealthwares/admin/categories/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateCategory
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a category
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteCategory
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Deactivate a category
+      tags: *ref_89
+  /api/ehealthwares/admin/articles:
+    get:
+      operationId: EhealthwaresAdminController_listArticles
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List articles (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createArticle
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateArticleDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create an article
+      tags: *ref_89
+  /api/ehealthwares/admin/articles/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateArticle
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateArticleDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update an article
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteArticle
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Deactivate an article
+      tags: *ref_89
+  /api/ehealthwares/admin/investors:
+    get:
+      operationId: EhealthwaresAdminController_listInvestors
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List investor data (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createInvestorData
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvestorDataDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create investor data
+      tags: *ref_89
+  /api/ehealthwares/admin/investors/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateInvestorData
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInvestorDataDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update investor data
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteInvestorData
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Deactivate investor data
+      tags: *ref_89
+  /api/ehealthwares/admin/careers:
+    get:
+      operationId: EhealthwaresAdminController_listCareers
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List careers (admin)
+      tags: *ref_89
+    post:
+      operationId: EhealthwaresAdminController_createCareer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCareerDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_88
+      summary: Create a career position
+      tags: *ref_89
+  /api/ehealthwares/admin/careers/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateCareer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCareerDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a career position
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteCareer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Deactivate a career position
+      tags: *ref_89
+  /api/ehealthwares/admin/contact-submissions:
+    get:
+      operationId: EhealthwaresAdminController_listContacts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: List contact submissions (admin)
+      tags: *ref_89
+  /api/ehealthwares/admin/contact-submissions/{id}:
+    patch:
+      operationId: EhealthwaresAdminController_updateContact
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContactSubmissionDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Update a contact submission (e.g. mark read)
+      tags: *ref_89
+    delete:
+      operationId: EhealthwaresAdminController_deleteContact
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_88
+      summary: Delete a contact submission
+      tags: *ref_89
   /api/upload/image:
     post:
       operationId: UploadController_uploadImage
@@ -6461,7 +7451,7 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_86
+      tags: &ref_90
         - Upload
     delete:
       operationId: UploadController_deleteImage
@@ -6469,7 +7459,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_86
+      tags: *ref_90
   /api/warehouses:
     get:
       operationId: WarehousesController_list
@@ -6525,10 +7515,10 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_87
+      security: &ref_91
         - bearer: []
       summary: List warehouses with pagination
-      tags: &ref_88
+      tags: &ref_92
         - warehouses
     post:
       operationId: WarehousesController_create
@@ -6542,9 +7532,9 @@ paths:
       responses:
         '201':
           description: ''
-      security: *ref_87
+      security: *ref_91
       summary: Create a warehouse
-      tags: *ref_88
+      tags: *ref_92
   /api/warehouses/{warehouseId}:
     get:
       operationId: WarehousesController_get
@@ -6557,9 +7547,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_87
+      security: *ref_91
       summary: Get warehouse by ID
-      tags: *ref_88
+      tags: *ref_92
     put:
       operationId: WarehousesController_update
       parameters:
@@ -6577,9 +7567,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_87
+      security: *ref_91
       summary: Update a warehouse
-      tags: *ref_88
+      tags: *ref_92
     delete:
       operationId: WarehousesController_remove
       parameters:
@@ -6591,9 +7581,9 @@ paths:
       responses:
         '200':
           description: ''
-      security: *ref_87
+      security: *ref_91
       summary: Delete a warehouse
-      tags: *ref_88
+      tags: *ref_92
   /api/seeds/run:
     post:
       operationId: SeedsController_run
@@ -7442,27 +8432,40 @@ components:
     CreateCategoryDto:
       type: object
       properties:
-        code:
-          type: string
         name:
           type: string
-        parentId:
+        slug:
           type: string
-        overrideCodeValidation:
+        description:
+          type: string
+        iconUrl:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
           type: boolean
-          default: false
       required:
-        - code
         - name
+        - slug
     UpdateCategoryDto:
       type: object
       properties:
-        code:
-          type: string
         name:
           type: string
-        parentId:
+        slug:
           type: string
+        description:
+          type: string
+        iconUrl:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
     CreateCustomerDto:
       type: object
       properties:
@@ -8064,7 +9067,7 @@ components:
           type: string
         status:
           type: string
-          enum: &ref_89
+          enum: &ref_93
             - draft
             - approved
             - partially_received
@@ -8110,7 +9113,7 @@ components:
           type: string
         status:
           type: string
-          enum: *ref_89
+          enum: *ref_93
         note:
           type: string
         invoiceNumber:
@@ -8301,12 +9304,13 @@ components:
       properties:
         itemId:
           type: string
+        freetextName:
+          type: string
         quantity:
           type: number
         unitPrice:
           type: number
       required:
-        - itemId
         - quantity
     CreateDeliveryDto:
       type: object
@@ -8456,26 +9460,20 @@ components:
           type: string
         excerpt:
           type: string
-        content:
-          type: string
-        category:
-          type: string
-        authorName:
+        body:
           type: string
         imageUrl:
           type: string
-        readingTime:
-          type: number
-        isPublished:
+        category:
+          type: string
+        publishedAt:
+          format: date-time
+          type: string
+        isActive:
           type: boolean
-        metaTitle:
-          type: string
-        metaDescription:
-          type: string
       required:
         - title
         - slug
-        - content
     UpdateArticleDto:
       type: object
       properties:
@@ -8485,22 +9483,17 @@ components:
           type: string
         excerpt:
           type: string
-        content:
-          type: string
-        category:
-          type: string
-        authorName:
+        body:
           type: string
         imageUrl:
           type: string
-        readingTime:
-          type: number
-        isPublished:
+        category:
+          type: string
+        publishedAt:
+          format: date-time
+          type: string
+        isActive:
           type: boolean
-        metaTitle:
-          type: string
-        metaDescription:
-          type: string
     UpdatePrescriptionStatusDto:
       type: object
       properties:
@@ -8534,6 +9527,12 @@ components:
       properties:
         stockLocationId:
           type: string
+    ReconcileItemDto:
+      type: object
+      properties: {}
+    ReconcileAllDto:
+      type: object
+      properties: {}
     EventRegistrationDto:
       type: object
       properties:
@@ -9086,6 +10085,358 @@ components:
           type: string
         notes:
           type: string
+    CreateSiteSectionDto:
+      type: object
+      properties:
+        key:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+      required:
+        - key
+    UpdateSiteSectionDto:
+      type: object
+      properties:
+        key:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+    CreateProductDto:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        features:
+          type: array
+          items:
+            type: string
+        iconName:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+        metaTitle:
+          type: string
+        metaDescription:
+          type: string
+      required:
+        - slug
+        - name
+    UpdateProductDto:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        features:
+          type: array
+          items:
+            type: string
+        iconName:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+        metaTitle:
+          type: string
+        metaDescription:
+          type: string
+    CreateServiceDto:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        iconName:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+      required:
+        - slug
+        - name
+    UpdateServiceDto:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        iconName:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+    CreateTestimonialDto:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        company:
+          type: string
+        text:
+          type: string
+        avatarUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+      required:
+        - name
+        - text
+    UpdateTestimonialDto:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        company:
+          type: string
+        text:
+          type: string
+        avatarUrl:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+    CreatePartnerDto:
+      type: object
+      properties:
+        name:
+          type: string
+        logoUrl:
+          type: string
+        websiteUrl:
+          type: string
+        displayOrder:
+          type: number
+      required:
+        - name
+    UpdatePartnerDto:
+      type: object
+      properties:
+        name:
+          type: string
+        logoUrl:
+          type: string
+        websiteUrl:
+          type: string
+        displayOrder:
+          type: number
+    CreateTeamMemberDto:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        bio:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+      required:
+        - name
+    UpdateTeamMemberDto:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        bio:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: number
+    CreateSiteSettingDto:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: object
+      required:
+        - key
+    UpdateSiteSettingDto:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: object
+    CreateHeroSlideDto:
+      type: object
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        mediaUrl:
+          type: string
+        mediaType:
+          type: string
+        ctaText:
+          type: string
+        ctaLink:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+    UpdateHeroSlideDto:
+      type: object
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        mediaUrl:
+          type: string
+        mediaType:
+          type: string
+        ctaText:
+          type: string
+        ctaLink:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+    CreateInvestorDataDto:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+        description:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+      required:
+        - label
+        - value
+    UpdateInvestorDataDto:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+        description:
+          type: string
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+    CreateCareerDto:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        location:
+          type: string
+        type:
+          type: string
+        department:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        isActive:
+          type: boolean
+      required:
+        - title
+        - slug
+    UpdateCareerDto:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        location:
+          type: string
+        type:
+          type: string
+        department:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        isActive:
+          type: boolean
+    UpdateContactSubmissionDto:
+      type: object
+      properties:
+        read:
+          type: boolean
     CreateWarehouseDto:
       type: object
       properties:

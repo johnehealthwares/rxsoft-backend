@@ -33,7 +33,7 @@ export class WebsiteAuthController {
     if (!existingParty) {
       await this.partyRepo.save(
         this.partyRepo.create({
-          organizationId: currentUser.organizationId ?? 'df3b4afd-9955-4617-9a82-264cc73dd8b2',
+          organizationId: currentUser.organizationId,
           partyType: 'customer',
           name: dto.username,
           phone: dto.phone ?? null,

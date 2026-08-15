@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import type { StockLocationType } from '../../../shared/domain';
 import { toStockLocationType } from '../../../shared/domain/mappers';
 import { WarehouseOrmEntity } from '../entities/warehouse.orm-entity';
@@ -20,7 +19,7 @@ export class StockLocationsService {
 
   async list(
     query: ListStockLocationsDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<{ data: StockLocationType[]; total: number }> {
     const qb = this.stockLocationRepository
       .createQueryBuilder('stock_location')
@@ -42,7 +41,7 @@ export class StockLocationsService {
     return { data: data.map(toStockLocationType), total };
   }
 
-  async get(id: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<StockLocationType> {
+  async get(id: string, organizationId ): Promise<StockLocationType> {
     const item = await this.stockLocationRepository.findOne({
       where: { id, organizationId },
       relations: { warehouse: true, parent: true },
@@ -53,7 +52,7 @@ export class StockLocationsService {
 
   async create(
     payload: CreateStockLocationDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<StockLocationType> {
     if (payload.code) {
       const last = await this.stockLocationRepository.findOne({
@@ -108,7 +107,7 @@ export class StockLocationsService {
   async update(
     id: string,
     payload: UpdateStockLocationDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<StockLocationType> {
     const item = await this.stockLocationRepository.findOne({
       where: { id, organizationId },

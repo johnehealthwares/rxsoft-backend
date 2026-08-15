@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,6 +13,7 @@ import { ListItemDependenciesUseCase } from '../services/list-item-dependencies.
 import { ListItemsUseCase } from '../services/list-items.use-case';
 import { Item } from '../domains/item.entity';
 import { ItemOrmEntity } from '../entities/item.orm-entity';
+import { OrganisationItemsService } from '../services/organisation-items.service';
 import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -50,6 +51,7 @@ export class ItemsController {
     private readonly updateItemUseCase: UpdateItemUseCase,
     private readonly patchItemUseCase: PatchItemUseCase,
     private readonly genericDrugCache: GenericDrugCacheService,
+    private readonly organisationItemsService: OrganisationItemsService,
     @InjectRepository(ItemOrmEntity)
     private readonly itemRepo: Repository<ItemOrmEntity>,
     @InjectRepository(UomOrmEntity)
@@ -273,5 +275,33 @@ export class ItemsController {
     });
 
     return { data: uoms };
+  }
+
+  @Get('organisations/:orgId/items')
+  @Roles('admin', 'super_admin')
+  @ApiOperation({ summary: 'List items activated for an organisation' })
+  async listOrganisationItems(@Param('orgId') orgId: string) {
+    return this.organisationItemsService.listForOrg(orgId);
+  }
+
+  @Put('organisations/:orgId/items/:itemId')
+  @Roles('admin', 'super_admin')
+  @ApiOperation({ summary: 'Activate an item for an organisation' })
+  async activateOrganisationItem(
+    @Param('orgId') orgId: string,
+    @Param('itemId') itemId: string,
+    @Body() body?: { alias?: string | null; orgItemCode?: string | null; barcode?: string | null },
+  ) {
+    return this.organisationItemsService.activate(orgId, itemId, body);
+  }
+
+  @Delete('organisations/:orgId/items/:itemId')
+  @Roles('admin', 'super_admin')
+  @ApiOperation({ summary: 'Deactivate an item for an organisation' })
+  async deactivateOrganisationItem(
+    @Param('orgId') orgId: string,
+    @Param('itemId') itemId: string,
+  ) {
+    return this.organisationItemsService.deactivate(orgId, itemId);
   }
 }

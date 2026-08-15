@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import { AuditLogOrmEntity } from '../entities';
 import { AuditLog } from '../domains/audit.types';
@@ -13,11 +12,11 @@ export class AuditService {
     private readonly auditLogRepository: Repository<AuditLogOrmEntity>,
   ) {}
 
-  async log(entry: Omit<AuditLog, 'id' | 'createdAt'>): Promise<void> {
+  async log(organizationId: string, entry: Omit<AuditLog, 'id' | 'createdAt'>): Promise<void> {
     throw new Error('Method not implemented.');
 
     const row = this.auditLogRepository.create({
-      organizationId: DEFAULT_ORGANIZATION_ID,
+      organizationId,
       actorUserId: entry.userId,
       action: entry.action,
       resource: entry.entity,
@@ -29,10 +28,10 @@ export class AuditService {
     await this.auditLogRepository.save(row);
   }
 
-  async list(query: ListQueryDto): Promise<{ data: AuditLog[]; total: number }> {
+  async list(organizationId: string, query: ListQueryDto): Promise<{ data: AuditLog[]; total: number }> {
     const qb = this.auditLogRepository
       .createQueryBuilder('audit')
-      .where('audit.organization_id = :organizationId', { organizationId: DEFAULT_ORGANIZATION_ID });
+      .where('audit.organization_id = :organizationId', { organizationId });
 
     if (query.search) {
       qb.andWhere('(audit.action LIKE :search OR audit.resource LIKE :search)', { search: `%${query.search}%` });

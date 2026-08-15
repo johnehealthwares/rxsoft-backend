@@ -11,8 +11,11 @@ export class OrderItemOrmEntity {
   @JoinColumn({ name: 'order_id' })
   order!: OrderOrmEntity;
 
-  @Column({ name: 'item_id', type: 'uuid' })
-  itemId!: string;
+  @Column({ name: 'item_id', type: 'uuid', nullable: true })
+  itemId!: string | null;
+
+  @Column({ name: 'freetext_name', type: 'text', nullable: true })
+  freetextName!: string | null;
 
   @Column({ type: 'int' })
   quantity!: number;

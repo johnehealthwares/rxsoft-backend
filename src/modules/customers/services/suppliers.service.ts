@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import { PartyOrmEntity } from '../entities/party.orm-entity';
 import { PartyType } from 'src/shared/domain';
 import { ListQueryDto } from 'src/shared/dto/list-query.dto';
@@ -15,10 +14,10 @@ export class SuppliersService {
   ) {}
 
 
-    async list(query: ListQueryDto): Promise<{ data: PartyType[]; total: number }> {
+    async list(organizationId: string, query: ListQueryDto): Promise<{ data: PartyType[]; total: number }> {
       const qb = this.partyRepository
         .createQueryBuilder('party')
-        .where('party.organization_id = :organizationId', { organizationId: DEFAULT_ORGANIZATION_ID })
+        .where('party.organization_id = :organizationId', { organizationId })
         .andWhere('party.deleted_at IS NULL')
         .andWhere("party.party_type IN ('supplier', 'both')");
   
@@ -41,9 +40,9 @@ export class SuppliersService {
       const [data, total] = await qb.getManyAndCount();
       return { data: data.map(toPartyType), total };
     } 
-  async create(payload: { name: string; phone?: string; email?: string; address?: string }) {
+  async create(organizationId: string, payload: { name: string; phone?: string; email?: string; address?: string }) {
     const party = this.partyRepository.create({
-      organizationId: DEFAULT_ORGANIZATION_ID,
+      organizationId,
       partyType: 'supplier',
       code: null,
       name: payload.name,

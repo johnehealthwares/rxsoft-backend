@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import type { SalesRepository } from '../repositories/sales.repository';
 import { SALES_REPOSITORY } from './sales.di-tokens';
@@ -11,9 +10,9 @@ export class SalesService {
     private readonly salesRepository: SalesRepository,
   ) {}
 
-  async list(query: ListQueryDto): Promise<{ data: Array<Record<string, unknown>>; total: number }> {
+  async list(organizationId: string, query: ListQueryDto): Promise<{ data: Array<Record<string, unknown>>; total: number }> {
     const result = await this.salesRepository.list({
-      organizationId: DEFAULT_ORGANIZATION_ID,
+      organizationId,
       offset: query.offset,
       limit: query.limit,
     });
@@ -33,9 +32,9 @@ export class SalesService {
     };
   }
 
-  async listAll(): Promise<Array<{ saleDate: Date; totalAmount: number }>> {
+  async listAll(organizationId: string): Promise<Array<{ saleDate: Date; totalAmount: number }>> {
     const result = await this.salesRepository.list({
-      organizationId: DEFAULT_ORGANIZATION_ID,
+      organizationId,
       offset: 0,
       limit: 10000,
     });

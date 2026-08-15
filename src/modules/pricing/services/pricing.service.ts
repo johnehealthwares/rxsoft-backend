@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
-import { DEFAULT_ORGANIZATION_ID } from '../../../shared/constants/persistence-scope';
+import { DeepPartial, In, Repository } from 'typeorm';
 import { toPriceListItemType, toPriceListType } from '../../../shared/domain/mappers';
 import type { PriceListItemType, PriceListType } from '../../../shared/domain';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
@@ -34,7 +33,7 @@ export class PricingService {
 
   async listPriceLists(
     query: ListPriceListsDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<{ data: PriceListType[]; total: number }> {
 
 
@@ -57,13 +56,13 @@ export class PricingService {
     return { data: data.map(toPriceListType), total };
   }
 
-  async getPriceList(id: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<PriceListType> {
+  async getPriceList(id: string, organizationId ): Promise<PriceListType> {
     const item = await this.priceListRepository.findOne({ where: { id, organizationId } });
     if (!item) throw new NotFoundException('Price list not found');
     return toPriceListType(item);
   }
 
-  async createPriceList(payload: CreatePriceListDto, organizationId = DEFAULT_ORGANIZATION_ID): Promise<PriceListType> {
+  async createPriceList(payload: CreatePriceListDto, organizationId ): Promise<PriceListType> {
     const last = await this.priceListRepository.findOne({
       where: { organizationId },
       order: { createdAt: 'DESC' },
@@ -101,7 +100,7 @@ export class PricingService {
   async updatePriceList(
     id: string,
     payload: UpdatePriceListDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<PriceListType> {
     const item = await this.priceListRepository.findOne({ where: { id, organizationId } });
     if (!item) throw new NotFoundException('Price list not found');
@@ -127,7 +126,7 @@ export class PricingService {
   async listPriceListItems(
     priceListId: string | null,
     query: ListPriceListItemsDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<{ data: PriceListItemType[]; total: number }> {
     if (priceListId) await this.getPriceList(priceListId, organizationId);
     const qb = this.priceListItemRepository
@@ -162,7 +161,7 @@ export class PricingService {
 
   async createPriceListItem(
     payload: CreatePriceListItemDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<PriceListItemType> {
     const priceList = await this.priceListRepository.findOne({ where: { id: payload.priceListId, organizationId } });
     if (!priceList) throw new NotFoundException('Price list not found');
@@ -240,7 +239,7 @@ export class PricingService {
     priceListId: string,
     priceListItemId: string,
     payload: UpdatePriceListItemDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<PriceListItemType> {
     await this.getPriceList(priceListId, organizationId);
     const item = await this.priceListItemRepository.findOne({
@@ -280,7 +279,7 @@ export class PricingService {
 
   async adjustItemPrice(
     payload: AdjustItemPriceDto,
-    organizationId = DEFAULT_ORGANIZATION_ID,
+    organizationId : string,
   ): Promise<PriceListItemType> {
     const priceList = await this.priceListRepository.findOne({
       where: { id: payload.priceListId, organizationId },
@@ -329,12 +328,43 @@ export class PricingService {
     return toPriceListItemType(fullEntity);
   }
 
-  async deletePriceList(id: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<void> {
+  async getDefaultPriceList(organizationId: string): Promise<PriceListType | null> {
+    const defaultList = await this.priceListRepository.findOne({
+      where: { organizationId, isActive: true, isDefault: true },
+    });
+    if (defaultList) return toPriceListType(defaultList);
+
+    const first = await this.priceListRepository.findOne({
+      where: { organizationId, isActive: true },
+      order: { createdAt: 'ASC' },
+    });
+    return first ? toPriceListType(first) : null;
+  }
+
+  async getPricesForItems(
+    itemIds: string[],
+    organizationId: string,
+  ): Promise<Map<string, number>> {
+    if (!itemIds.length) return new Map();
+    const priceList = await this.getDefaultPriceList(organizationId);
+    if (!priceList) return new Map();
+
+    const items = await this.priceListItemRepository.find({
+      where: {
+        priceList: { id: priceList.id },
+        item: { id: In(itemIds) },
+      },
+      relations: ['item'],
+    });
+    return new Map(items.map((i) => [i.item.id, i.unitPrice]));
+  }
+
+  async deletePriceList(id: string, organizationId ): Promise<void> {
     const result = await this.priceListRepository.delete({ id, organizationId });
     if (!result.affected) throw new NotFoundException('Price list not found');
   }
 
-  async deletePriceListItem(priceListId: string, itemId: string, organizationId = DEFAULT_ORGANIZATION_ID): Promise<void> {
+  async deletePriceListItem(priceListId: string, itemId: string, organizationId ): Promise<void> {
     await this.getPriceList(priceListId, organizationId);
     const item = await this.priceListItemRepository.findOne({
       where: { id: itemId, priceList: { id: priceListId, organizationId } },

@@ -26,7 +26,14 @@ export class UsersProxyController {
 
   @Get()
   @ApiOperation({ summary: 'List users (proxied from rxsoft-identity)' })
-  async list(@Headers('authorization') auth: string, @Query() query: Record<string, string>) {
+  async list(
+    @Headers('authorization') auth: string,
+    @Headers('x-api-key') apiKey: string,
+    @Query() query: Record<string, string>,
+  ) {
+    if (apiKey) {
+      return this.proxy.listByApiKey(query);
+    }
     return this.proxy.list(auth?.replace('Bearer ', '') ?? '', query);
   }
 

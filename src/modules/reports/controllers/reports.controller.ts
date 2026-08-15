@@ -1,5 +1,7 @@
 import { Controller, Get, Header, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
@@ -20,8 +22,8 @@ export class ReportsController {
 
   @Get('daily-sales')
   @Roles('super_admin', 'admin', 'manager', 'auditor')
-  async dailySales(): Promise<Array<{ day: string; salesCount: number; totalAmount: number }>> {
-    const allSales = await this.salesService.listAll();
+  async dailySales(@CurrentUser() currentUser: RequestUser): Promise<Array<{ day: string; salesCount: number; totalAmount: number }>> {
+    const allSales = await this.salesService.listAll(currentUser.organizationId);
 
     const grouped = new Map<string, { day: string; salesCount: number; totalAmount: number }>();
     allSales.forEach((sale) => {
@@ -37,8 +39,8 @@ export class ReportsController {
 
   @Get('inventory-valuation')
   @Roles('super_admin', 'admin', 'manager', 'auditor')
-  async inventoryValuation(): Promise<{ itemsCount: number; totalQuantity: number }> {
-    const inventory = await this.inventoryService.listAll();
+  async inventoryValuation(@CurrentUser() currentUser: RequestUser): Promise<{ itemsCount: number; totalQuantity: number }> {
+    const inventory = await this.inventoryService.listAll(currentUser.organizationId);
 
     return {
       itemsCount: inventory.length,
@@ -58,8 +60,8 @@ export class ReportsController {
   @Get('export')
   @Roles('super_admin', 'admin', 'manager', 'auditor')
   @Header('Content-Type', 'text/csv')
-  async exportSummary(@Query() query: ListQueryDto): Promise<string> {
-    const sales = (await this.salesService.list(query)).data;
+  async exportSummary(@Query() query: ListQueryDto, @CurrentUser() currentUser: RequestUser): Promise<string> {
+    const sales = (await this.salesService.list(currentUser.organizationId, query)).data;
     return toCsv(sales as Array<Record<string, unknown>>);
   }
 }

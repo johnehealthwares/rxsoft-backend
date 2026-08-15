@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
@@ -53,8 +53,8 @@ export class WebsiteController {
 
   @Get('categories/:slug')
   @ApiOperation({ summary: 'Get category by slug with products' })
-  getCategoryBySlug(@Param('slug') slug: string) {
-    return this.websiteService.getCategoryBySlug(slug);
+  getCategoryBySlug(@Param('slug') slug: string, @Headers('x-organization-id') organizationId?: string) {
+    return this.websiteService.getCategoryBySlug(slug, organizationId);
   }
 
   // ── Health Concerns ────────────────────────────────────────────
@@ -67,8 +67,8 @@ export class WebsiteController {
 
   @Get('health-concerns/:slug')
   @ApiOperation({ summary: 'Get health concern by slug' })
-  getHealthConcernBySlug(@Param('slug') slug: string) {
-    return this.websiteService.getHealthConcernBySlug(slug);
+  getHealthConcernBySlug(@Param('slug') slug: string, @Headers('x-organization-id') organizationId?: string) {
+    return this.websiteService.getHealthConcernBySlug(slug, organizationId);
   }
 
   // ── Prescriptions ──────────────────────────────────────────────
@@ -109,16 +109,16 @@ export class WebsiteController {
   @Post('cart')
   @ApiOperation({ summary: 'Add to cart (returns product details for given ids)' })
   @ApiBody({ type: [AddToCartDto] })
-  addToCart(@Body() payload: AddToCartDto[]) {
+  addToCart(@Body() payload: AddToCartDto[], @Headers('x-organization-id') organizationId?: string) {
     const ids = payload.map((p) => p.productId);
-    return this.websiteService.getCart(ids);
+    return this.websiteService.getCart(ids, organizationId);
   }
 
   @Get('cart')
   @ApiOperation({ summary: 'Get cart product details' })
-  getCart(@Query('ids') ids: string) {
+  getCart(@Query('ids') ids: string, @Headers('x-organization-id') organizationId?: string) {
     const productIds = ids ? ids.split(',').filter(Boolean) : [];
-    return this.websiteService.getCart(productIds);
+    return this.websiteService.getCart(productIds, organizationId);
   }
 
   @Delete('cart/:id')
@@ -132,8 +132,8 @@ export class WebsiteController {
   @UseGuards(OptionalAuthGuard)
   @Post('orders')
   @ApiOperation({ summary: 'Create order' })
-  createOrder(@Body() payload: CreateOrderDto, @Req() req: any) {
-    return this.websiteService.createOrder(payload, req.user?.sub);
+  createOrder(@Body() payload: CreateOrderDto, @Req() req: any, @Headers('x-organization-id') organizationId?: string) {
+    return this.websiteService.createOrder(payload, req.user?.sub, organizationId);
   }
 
   @UseGuards(OptionalAuthGuard)
@@ -237,7 +237,7 @@ export class WebsiteController {
 
   @Get('search')
   @ApiOperation({ summary: 'Global search' })
-  search(@Query() query: SearchQueryDto) {
-    return this.websiteService.search(query);
+  search(@Query() query: SearchQueryDto, @Headers('x-organization-id') organizationId?: string) {
+    return this.websiteService.search(query, organizationId);
   }
 }

@@ -12,7 +12,6 @@ import { SalesModule } from './modules/sales/sales.module';
 import { CacheModule } from './common/cache/cache.module';
 import { AuditModule } from './common/audit/audit.module';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
-import { DatabaseSeeedService } from './database/seeding.service';
 import { AuditModule as AdminAuditModule } from './modules/audit/audit.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CustomersModule } from './modules/customers/customers.module';
@@ -27,6 +26,7 @@ import { OrganisationConfigModule } from './modules/organisation-config/organisa
 import { SeedsModule } from './modules/seeds/seeds.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { WebsiteModule } from './modules/website/website.module';
+import { OrdersModule } from './modules/orders/orders.module';
 import { ApmModule } from './modules/apm/apm.module';
 import { EhealthwaresModule } from './modules/ehealthwares/ehealthwares.module';
 import { UploadModule } from './modules/upload/upload.module';
@@ -124,6 +124,7 @@ const applicationModules = useInMemoryRepos
       WarehousesModule,
       UsersProxyModule,
       SeedsModule,
+      OrdersModule,
     ];
 
 @Module({
@@ -142,7 +143,6 @@ const applicationModules = useInMemoryRepos
   ],
   controllers: [HealthController],
   providers: [
-    DatabaseSeeedService,
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditLogInterceptor,
