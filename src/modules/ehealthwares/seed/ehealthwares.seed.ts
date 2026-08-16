@@ -12,7 +12,7 @@ import {
  * Bump this constant whenever the seed content changes so the backend
  * re-runs the upserts on next start ("update and reseed where necessary").
  */
-const SEED_VERSION = 5;
+const SEED_VERSION = 6;
 
 /**
  * eHealthwares brand asset helpers.
