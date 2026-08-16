@@ -12,7 +12,7 @@ import {
  * Bump this constant whenever the seed content changes so the backend
  * re-runs the upserts on next start ("update and reseed where necessary").
  */
-const SEED_VERSION = 6;
+const SEED_VERSION = 8;
 
 /**
  * eHealthwares brand asset helpers.
@@ -22,44 +22,70 @@ const SEED_VERSION = 6;
  */
 const UNSPLASH = {
   pharmacy:
-    'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80',
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/photo-1587854692152-cbe660dbde88.avif',
   digitalHealth:
-    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80',
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/photo-1576091160399-112ba8d25d1d.jpg',
   researchDna:
-    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1200&q=80',
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/photo-1559757148-5c350d0d3c56.jpg',
   team:
-    'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=80',
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/photo-1521737711867-e3b97375f902.jpg',
   doctorLaptop:
-    'https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=1200&q=80',
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/photo-1550831107-1553da8c8464.jpg',
 };
 
 const ASSETS = {
-  emr: '/assets/pexels-polina-tankilevitch-5234506.jpg',
-  emrTablet: '/assets/pexels-tessy-agbonome-521343232-19957218.jpg',
-  emrVideo: '/assets/6097001-uhd_2160_3840_24fps.mp4',
-  labMicroscope: '/assets/pexels-pavel-danilyuk-8442154.jpg',
-  labTechnician: '/assets/pexels-carmel-nsenga-735492-18712504.jpg',
-  labAnalysis: '/assets/pexels-kenneth-mulindwa-445017357-15457773.jpg',
-  radiologyMri: '/assets/pexels-mart-production-7089614.jpg',
-  radiologyXray: '/assets/pexels-tima-miroshnichenko-5452186.jpg',
-  radiologyScan: '/assets/pexels-tima-miroshnichenko-6234991.jpg',
-  radiologyCt: '/assets/pexels-valery-arispe-2149327983-34170810.jpg',
-  radiologyVideo: '/assets/7579839-uhd_2160_4096_25fps.mp4',
-  telemedicineConsult: '/assets/pexels-cottonbro-5867190.jpg',
-  telemedicineVideoCall: '/assets/pexels-karola-g-7195191.jpg',
-  telemedicineVideo: '/assets/8375668-uhd_2160_4096_25fps.mp4',
-  trainingDiscussion: '/assets/pexels-gustavo-fring-7446984.jpg',
-  trainingMobile: '/assets/pexels-ivan-s-4989164.jpg',
-  echoBrainscope: '/assets/pexels-kos-chiropractic-integrative-health-716706805-19034027.jpg',
-  echoNeurofeedback: '/assets/pexels-mindfield-biosystems-ltd-564865676-24346267.jpg',
-  echoScanner: '/assets/pexels-neuphonyforyou-27260729.jpg',
-  echoCardiac: '/assets/pexels-vantik93-12197315.jpg',
-  interopNetwork: '/assets/pexels-omar-ashraf-575569521-38246354.jpg',
-  interopCables: '/assets/pexels-markus-erichsen-3167926-4779729.jpg',
-  interopEcg: '/assets/pexels-daliladalprat-5875565.jpg',
-  aiLab: '/assets/pexels-polina-tankilevitch-3735707.jpg',
-  researchVideo: '/assets/12645675-uhd_4096_2160_30fps.mp4',
-  monitoringEcg: '/assets/pexels-stephentcandrews-9408868.jpg',
+  emr:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-polina-tankilevitch-5234506.jpg',
+  emrTablet:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-tessy-agbonome-521343232-19957218.jpg',
+  emrVideo:
+    'https://res.cloudinary.com/phw6kagk/video/upload/f_auto,q_auto/ehw/6097001-uhd_2160_3840_24fps.mp4',
+  labMicroscope:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-pavel-danilyuk-8442154.jpg',
+  labTechnician:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-carmel-nsenga-735492-18712504.jpg',
+  labAnalysis:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-kenneth-mulindwa-445017357-15457773.jpg',
+  radiologyMri:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-mart-production-7089614.jpg',
+  radiologyXray:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-tima-miroshnichenko-5452186.jpg',
+  radiologyScan:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-tima-miroshnichenko-6234991.jpg',
+  radiologyCt:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-valery-arispe-2149327983-34170810.jpg',
+  radiologyVideo:
+    'https://res.cloudinary.com/phw6kagk/video/upload/f_auto,q_auto/ehw/7579839-uhd_2160_4096_25fps.mp4',
+  telemedicineConsult:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-cottonbro-5867190.jpg',
+  telemedicineVideoCall:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-karola-g-7195191.jpg',
+  telemedicineVideo:
+    'https://res.cloudinary.com/phw6kagk/video/upload/f_auto,q_auto/ehw/8375668-uhd_2160_4096_25fps.mp4',
+  trainingDiscussion:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-gustavo-fring-7446984.jpg',
+  trainingMobile:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-ivan-s-4989164.jpg',
+  echoBrainscope:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-kos-chiropractic-integrative-health-716706805-19034027.jpg',
+  echoNeurofeedback:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-mindfield-biosystems-ltd-564865676-24346267.jpg',
+  echoScanner:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-neuphonyforyou-27260729.jpg',
+  echoCardiac:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-vantik93-12197315.jpg',
+  interopNetwork:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-omar-ashraf-575569521-38246354.jpg',
+  interopCables:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-markus-erichsen-3167926-4779729.jpg',
+  interopEcg:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-daliladalprat-5875565.jpg',
+  aiLab:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-polina-tankilevitch-3735707.jpg',
+  researchVideo:
+    'https://res.cloudinary.com/phw6kagk/video/upload/f_auto,q_auto/ehw/12645675-uhd_4096_2160_30fps.mp4',
+  monitoringEcg:
+    'https://res.cloudinary.com/phw6kagk/image/upload/f_auto,q_auto/ehw/pexels-stephentcandrews-9408868.jpg',
 };
 
 @Injectable()
