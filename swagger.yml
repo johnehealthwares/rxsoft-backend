@@ -6677,6 +6677,20 @@ paths:
           description: ''
       summary: Get career positions
       tags: *ref_87
+  /api/ehealthwares/cache/clear:
+    post:
+      operationId: EhealthwaresController_clearCache
+      parameters:
+        - name: x-api-key
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      summary: Clear the eHealthwares response cache (service-to-service)
+      tags: *ref_87
   /api/ehealthwares/admin/sections:
     get:
       operationId: EhealthwaresAdminController_listSections

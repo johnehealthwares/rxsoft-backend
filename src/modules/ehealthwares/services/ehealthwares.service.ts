@@ -188,6 +188,16 @@ export class EhealthwaresService {
   }
 
   /**
+   * Drop every cached eHealthwares entry (list + detail keys share the
+   * `ehealthwares:` prefix), so the next request reads fresh from MongoDB.
+   */
+  async clearCache(): Promise<{ cleared: boolean }> {
+    await this.cache.invalidateByPrefix('ehealthwares:');
+    this.logger.log('eHealthwares cache cleared');
+    return { cleared: true };
+  }
+
+  /**
    * Warm the cache once the app has bootstrapped, so the first real requests
    * are served from cache instead of hitting MongoDB.
    */

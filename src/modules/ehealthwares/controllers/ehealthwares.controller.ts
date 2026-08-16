@@ -1,12 +1,16 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, UnauthorizedException } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import { EhealthwaresService } from '../services/ehealthwares.service';
 import { CreateContactDto } from '../dto/ehealthwares.dto';
 
 @ApiTags('ehealthwares')
 @Controller('ehealthwares')
 export class EhealthwaresController {
-  constructor(private readonly ehealthwaresService: EhealthwaresService) {}
+  constructor(
+    private readonly ehealthwaresService: EhealthwaresService,
+    private readonly config: ConfigService,
+  ) {}
 
   @Get('sections')
   @ApiOperation({ summary: 'Get all active site sections' })
@@ -96,5 +100,15 @@ export class EhealthwaresController {
   @ApiOperation({ summary: 'Get career positions' })
   getCareers() {
     return this.ehealthwaresService.getCareers();
+  }
+
+  @Post('cache/clear')
+  @ApiOperation({ summary: 'Clear the eHealthwares response cache (service-to-service)' })
+  async clearCache(@Headers('x-api-key') apiKey?: string) {
+    const expected = this.config.get<string>('INTERNAL_API_KEY', 'rxsoft-internal-key');
+    if (!apiKey || apiKey !== expected) {
+      throw new UnauthorizedException('Invalid or missing x-api-key');
+    }
+    return this.ehealthwaresService.clearCache();
   }
 }
