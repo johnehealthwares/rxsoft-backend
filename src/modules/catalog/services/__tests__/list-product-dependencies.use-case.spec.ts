@@ -5,19 +5,17 @@ describe('ListItemDependenciesUseCase', () => {
   const itemRepository: jest.Mocked<ItemRepository> = {
     list: jest.fn(),
     findById: jest.fn(),
-    findByCode: jest.fn(),
     findCategoryById: jest.fn(),
-    findGenericProductById: jest.fn(),
     findUomById: jest.fn(),
     listCategories: jest.fn(),
-    listGenericProducts: jest.fn(),
     listUoms: jest.fn(),
     save: jest.fn(),
-    findByBarcode: jest.fn(),
-    findLastCreated: jest.fn().mockResolvedValue(null),
+    getMetrics: jest.fn(),
   };
 
-  const useCase = new ListItemDependenciesUseCase(itemRepository);
+  const genericDrugCache = { searchLightweight: jest.fn(), getByCode: jest.fn() } as any;
+
+  const useCase = new ListItemDependenciesUseCase(itemRepository, genericDrugCache);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,7 +37,6 @@ describe('ListItemDependenciesUseCase', () => {
     );
 
     expect(itemRepository.listCategories).toHaveBeenCalledWith({
-      organizationId: 'org1',
       offset: 10,
       limit: 10,
       search: 'ana',

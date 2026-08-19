@@ -1,6 +1,5 @@
 import type { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 import type { ManufacturerOrmEntity } from '../../modules/manufacturers/entities/manufacturer.orm-entity';
-import type { OrganizationOrmEntity } from '../../modules/organizations/entities/organization.orm-entity';
 // import type { ItemCategoryOrmEntity } from '../../modules/categories/entities/item-category.orm-entity';
 import type { GlAccountOrmEntity, JournalEntryLineOrmEntity, JournalEntryOrmEntity, JournalOrmEntity } from '../../modules/accounting/entities';
 import type { PartyOrmEntity } from '../../modules/customers/entities/party.orm-entity';
@@ -42,10 +41,9 @@ export const toManufacturerType = (entity: ManufacturerOrmEntity): ManufacturerT
 
 export const toItemSummaryType = (entity: ItemOrmEntity): ItemSummaryType => ({
   id: entity.id,
-  organizationId: entity.organizationId,
-  code: entity.code,
+  code: null,
   name: entity.name,
-  barcode: entity.barcode,
+  barcode: null,
   baseUomId: entity.baseUomId,
   purchaseUomId: entity.purchaseUomId,
   saleUomId: entity.saleUomId,
@@ -60,12 +58,10 @@ export const toItemSummaryType = (entity: ItemOrmEntity): ItemSummaryType => ({
 
 export const toItemCategoryType = (entity: ItemCategoryOrmEntity): ItemCategoryType => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   parentId: entity.parent?.id ?? null,
   parent: entity.parent
     ? {
         id: entity.parent.id,
-        organizationId: entity.parent.organizationId,
         code: entity.parent.code,
         name: entity.parent.name,
       }
@@ -94,7 +90,6 @@ export const toPartyType = (entity: PartyOrmEntity): PartyType => ({
 
 export const toUomCategoryType = (entity: UomCategoryOrmEntity): UomCategoryType => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   code: entity.code,
   name: entity.name,
   createdAt: entity.createdAt.toISOString(),
@@ -103,7 +98,6 @@ export const toUomCategoryType = (entity: UomCategoryOrmEntity): UomCategoryType
 
 export const toUomType = (entity: UomOrmEntity): UomType => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   categoryId: entity.categoryId,
   category: entity.category,
   code: entity.code,
@@ -230,16 +224,6 @@ export const toPaymentMethodType = (entity: PaymentMethodOrmEntity): PaymentMeth
   updatedAt: entity.updatedAt.toISOString(),
 });
 
-export const toOrganizationType = (entity: OrganizationOrmEntity) => ({
-  id: entity.id,
-  code: entity.code,
-  name: entity.name,
-  isActive: entity.isActive,
-  createdAt: entity.createdAt.toISOString(),
-  updatedAt: entity.updatedAt.toISOString(),
-  deletedAt: toIsoString(entity.deletedAt),
-});
-
 export const toGlAccountType = (entity: GlAccountOrmEntity) => ({
   id: entity.id,
   organizationId: entity.organizationId,
@@ -300,7 +284,7 @@ export const toStockBalanceType = (entity: StockBalance): StockBalanceType => ({
   organizationId: entity.organizationId,
   item: {
     id: entity.item.id,
-    code: entity.item.code,
+    code: null,
     name: entity.item.name,
   },
   location: {

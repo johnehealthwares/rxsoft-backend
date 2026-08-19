@@ -17,7 +17,7 @@ export class UsersProxyService {
   }
 
   private get baseUrl(): string {
-    return this.config.get<string>('IDENTITY_SERVICE_URL', 'http://localhost:8092');
+    return this.config.get<string>('IDENTITY_SERVICE_URL', 'https://api.ehealthwares.com/identity');
   }
 
   private cacheKey(prefix: string, token: string, ...parts: string[]): string {

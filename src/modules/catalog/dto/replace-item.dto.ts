@@ -4,12 +4,6 @@ import { AdjustStockByReferenceDto } from 'src/modules/inventory/dto/stock-locat
 import { CreatePriceListItemDto } from 'src/modules/pricing/dto/pricing.dto';
 
 export class ReplaceItemDto {
-  @ApiProperty({ example: 'PCM001' })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(32)
-  code!: string;
-
   @ApiProperty({ example: 'Paracetamol 500mg Tablet' })
   @IsString()
   @IsNotEmpty()
@@ -39,11 +33,6 @@ export class ReplaceItemDto {
   @IsString()
   @IsNotEmpty()
   saleUomId!: string;
-
-  @ApiPropertyOptional({ example: '1234567890123' })
-  @IsOptional()
-  @IsString()
-  barcode?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()
@@ -84,10 +73,6 @@ export class ReplaceItemDto {
   @IsOptional()
   @IsString()
   largeImageUrl?: string;
-
-  @ApiPropertyOptional({ default: false })
-  @IsOptional()
-  overrideCodeValidation?: boolean;
 
   @IsOptional()
   priceListItems?: CreatePriceListItemDto[];

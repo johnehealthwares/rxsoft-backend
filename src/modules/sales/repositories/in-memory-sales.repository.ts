@@ -99,6 +99,31 @@ export class InMemorySalesRepository implements SalesRepository {
     };
   }
 
+  async postExistingSale(
+    organizationId: string,
+    saleId: string,
+    _stockLocationId: string | null,
+    _soldByUserId: string,
+  ): Promise<Sale> {
+    const sale = this.sales.find((s) => s.organizationId === organizationId && s.id === saleId);
+    if (!sale) throw new Error('Draft sale not found');
+    const posted = new Sale(
+      sale.id,
+      sale.organizationId,
+      sale.saleNumber,
+      sale.saleChannel,
+      sale.storeId,
+      sale.storeName,
+      'posted',
+      sale.totalAmount,
+      sale.paidAmount,
+      sale.changeAmount,
+      sale.saleDate,
+    );
+    this.sales.splice(this.sales.indexOf(sale), 1, posted);
+    return posted;
+  }
+
   async getMetrics(query: SalesMetricsQuery): Promise<SalesMetrics> {
     let items = this.sales.filter((s) => s.organizationId === query.organizationId);
 

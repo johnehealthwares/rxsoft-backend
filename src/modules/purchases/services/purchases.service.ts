@@ -1,10 +1,11 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { DEFAULT_SYSTEM_USER_ID, DEFAULT_UOM_ID } from '../../../shared/constants/persistence-scope';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { WarehouseOrmEntity } from '../../inventory/entities';
+import { OrganisationItemOrmEntity } from '../../catalog/entities/organisation-item.orm-entity';
 import { CreatePurchaseDto, CreatePurchaseLineDto, PurchaseLineDto, UpdatePurchaseDto, UpdatePurchaseLineDto } from '../dto/purchases.dto';
 import { PurchaseOrderLineOrmEntity, PurchaseOrderOrmEntity } from '../entities';
 import { validateSequentialCode } from '../../../shared/utils/code-validation';
@@ -52,6 +53,8 @@ export class PurchasesService {
     private readonly purchaseOrderLineRepository: Repository<PurchaseOrderLineOrmEntity>,
     @InjectRepository(WarehouseOrmEntity)
     private readonly warehouseRepository: Repository<WarehouseOrmEntity>,
+    @InjectRepository(OrganisationItemOrmEntity)
+    private readonly orgItemRepository: Repository<OrganisationItemOrmEntity>,
   ) {}
 
   async list(query: ListQueryDto, organizationId): Promise<{ data: PurchaseSummaryType[]; total: number }> {
@@ -137,6 +140,7 @@ export class PurchasesService {
 
       const warehouse = await this.resolveWarehouse(payload.warehouseId ?? payload.branchId ?? '', warehouseRepo, currentUser.organizationId);
       const linesPayload = this.normalizeLines(payload);
+      await this.assertItemsOrgAdded(linesPayload.map((l) => l.itemId), currentUser.organizationId);
       const totals = this.calculateTotals(linesPayload);
       const purchaseOrderNumber = userPurchaseOrderNumber || `PO-${Date.now()}`;
 
@@ -271,6 +275,7 @@ export class PurchasesService {
       if (payload.lines || payload.itemId || payload.quantity || payload.unitCost) {
         await purchaseOrderLineRepo.delete({ purchaseOrder: { id: order.id } });
         const linesPayload = this.normalizeLines(payload);
+        await this.assertItemsOrgAdded(linesPayload.map((l) => l.itemId), currentUser.organizationId);
         const totals = this.calculateTotals(linesPayload);
         order.subtotalAmount = totals.subtotalAmount;
         order.taxAmount = totals.taxAmount;
@@ -316,6 +321,8 @@ export class PurchasesService {
       if (order.status !== 'draft') {
         throw new ForbiddenException('Lines can only be added to draft purchase orders');
       }
+
+      await this.assertItemsOrgAdded([payload.itemId], currentUser.organizationId);
 
       const line = poLineRepo.create({
         purchaseOrder: order,
@@ -482,6 +489,25 @@ export class PurchasesService {
     });
   }
 
+  // Strict tenant scope: purchase lines may only reference items the org has
+  // explicitly added (active organisation_items rows).
+  private async assertItemsOrgAdded(itemIds: string[], organizationId: string): Promise<void> {
+    const uniqueIds = [...new Set(itemIds.filter(Boolean))];
+    if (!uniqueIds.length) return;
+
+    const rows = await this.orgItemRepository.find({
+      where: { organizationId, itemId: In(uniqueIds), isActive: true },
+      select: ['itemId'],
+    });
+    const added = new Set(rows.map((r) => r.itemId));
+    const missing = uniqueIds.filter((id) => !added.has(id));
+    if (missing.length) {
+      throw new BadRequestException(
+        `Item(s) not added to this organisation: ${missing.join(', ')}`,
+      );
+    }
+  }
+
   private resolveSortColumn(sortBy: string): string {
     const map: Record<string, string> = {
       status: 'purchase.status',
@@ -542,7 +568,7 @@ export class PurchasesService {
     return {
       id: line.id,
       itemId: line.itemId,
-      itemCode: line.item?.code ?? '',
+      itemCode: line.item?.name ?? '',
       itemName: line.item?.name ?? '',
       orderedQty: Number(line.orderedQty),
       receivedQty: Number(line.receivedQty),

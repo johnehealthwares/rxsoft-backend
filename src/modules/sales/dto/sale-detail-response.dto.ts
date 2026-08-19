@@ -19,7 +19,7 @@ class SaleDetailUomDto {
 
 class SaleDetailItemDto {
   @ApiProperty() id!: string;
-  @ApiPropertyOptional() code?: string;
+  @ApiPropertyOptional({ nullable: true }) code?: string | null;
   @ApiProperty() name!: string;
   @ApiPropertyOptional({ type: SaleDetailCategoryDto }) category?: SaleDetailCategoryDto | null;
   @ApiPropertyOptional() baseUomId?: string;

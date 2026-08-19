@@ -20,6 +20,7 @@ import {
   WarehouseOrmEntity,
 } from '../inventory/entities';
 import { PartyOrmEntity } from '../customers/entities/party.orm-entity';
+import { OrganisationItemOrmEntity } from '../catalog/entities/organisation-item.orm-entity';
 import { AccountingModule } from '../accounting/accounting.module';
 
 const purchasesConfigService = new ConfigService();
@@ -38,6 +39,7 @@ const purchasesPersistenceImports = useInMemoryRepos
         StockAdjustmentOrmEntity,
         WarehouseOrmEntity,
         PartyOrmEntity,
+        OrganisationItemOrmEntity,
       ]),
     ];
 const purchasesRepositoryProviders = useInMemoryRepos

@@ -11,11 +11,19 @@ class ReconcileItemDto {
   @IsUUID()
   @IsNotEmpty()
   itemId!: string;
+
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 }
 
 class ReconcileAllDto {
   @IsObject()
   itemIds!: Record<string, string>;
+
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 }
 
 @ApiTags('orders-admin')
@@ -55,7 +63,7 @@ export class OrderAdminController {
   @ApiOperation({ summary: 'Post order as draft sale' })
   async postAsSale(
     @Param('id') id: string,
-    @Body() dto: { stockLocationId?: string },
+    @Body() dto: { stockLocationId?: string; organizationId?: string },
     @CurrentUser() currentUser: RequestUser,
   ) {
     return this.ordersService.postOrderAsSale(id, dto, currentUser);
@@ -68,7 +76,9 @@ export class OrderAdminController {
     @Param('orderItemId') orderItemId: string,
     @Body() dto: ReconcileItemDto,
   ) {
-    return this.ordersService.reconcileItem(orderId, orderItemId, dto.itemId);
+    return this.ordersService.reconcileItem(orderId, orderItemId, dto.itemId, {
+      organizationId: dto.organizationId,
+    });
   }
 
   @Post('orders/:orderId/reconcile-all')
@@ -77,7 +87,9 @@ export class OrderAdminController {
     @Param('orderId') orderId: string,
     @Body() dto: ReconcileAllDto,
   ) {
-    return this.ordersService.reconcileAllItems(orderId, dto.itemIds);
+    return this.ordersService.reconcileAllItems(orderId, dto.itemIds, {
+      organizationId: dto.organizationId,
+    });
   }
 
   @Post('complete-sale/:saleId')

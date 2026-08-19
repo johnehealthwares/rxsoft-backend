@@ -8,22 +8,22 @@ import { OrderOrmEntity } from '../website/entities/order.orm-entity';
 import { OrderItemOrmEntity } from '../website/entities/order-item.orm-entity';
 import { DeliveryOrmEntity } from '../website/entities/delivery.orm-entity';
 import { ItemOrmEntity } from '../catalog/entities/item.orm-entity';
+import { OrganisationItemOrmEntity } from '../catalog/entities/organisation-item.orm-entity';
+import { OrganisationsProxyModule } from '../organisations-proxy/organisations-proxy.module';
 import { SaleOrmEntity, SaleLineOrmEntity } from '../sales/entities';
-import {
-  StockBalanceOrmEntity,
-  StockAdjustmentOrmEntity,
-  StoreStockLocationOrmEntity,
-  StockLocationOrmEntity,
-} from '../inventory/entities';
+import { StockLocationOrmEntity } from '../inventory/entities';
 import { PartyOrmEntity } from '../customers/entities/party.orm-entity';
 import { PricingModule } from '../pricing/pricing.module';
+import { SalesModule } from '../sales/sales.module';
 import { OrdersService } from './orders.service';
 import { OrderAdminController } from './order-admin.controller';
 
 @Module({
   imports: [
     PricingModule,
+    SalesModule,
     ConfigModule,
+    OrganisationsProxyModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -34,13 +34,11 @@ import { OrderAdminController } from './order-admin.controller';
       OrderOrmEntity,
       OrderItemOrmEntity,
       DeliveryOrmEntity,
-      ItemOrmEntity,
+ItemOrmEntity,
+      OrganisationItemOrmEntity,
       PartyOrmEntity,
       SaleOrmEntity,
       SaleLineOrmEntity,
-      StockBalanceOrmEntity,
-      StockAdjustmentOrmEntity,
-      StoreStockLocationOrmEntity,
       StockLocationOrmEntity,
     ]),
   ],

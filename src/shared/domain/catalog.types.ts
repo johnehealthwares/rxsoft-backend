@@ -40,8 +40,7 @@ export type GenericProductType = {
 
 export type ItemSummaryType = {
   id: string;
-  organizationId: string;
-  code: string;
+  code: string | null;
   name: string;
   barcode: string | null;
   baseUomId: string;
@@ -58,11 +57,9 @@ export type ItemSummaryType = {
 
 export type ItemCategoryType = {
   id: string;
-  organizationId: string;
   parentId: string | null;
   parent: {
     id: string;
-    organizationId: string;
     code: string;
     name: string;
   } | null;

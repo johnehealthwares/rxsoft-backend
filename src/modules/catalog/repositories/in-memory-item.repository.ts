@@ -16,6 +16,8 @@ export class InMemoryItemRepository implements ItemRepository {
   private readonly createdAtById = new Map<string, Date>();
   private readonly categories = new Map<string, ItemCategory>();
   private readonly uoms = new Map<string, UomLookup>();
+  // orgId -> itemId -> isActive (true=whitelist, false=blacklist)
+  private readonly orgItems = new Map<string, Map<string, boolean>>();
 
   constructor() {
     const category = new ItemCategory(
@@ -26,8 +28,6 @@ export class InMemoryItemRepository implements ItemRepository {
     const uom: UomLookup = { id: 'u1', code: 'UNIT', name: 'Unit', uomType: 'reference', rounding: 1, factor: 1, isActive: true};
     const product = new Item(
       '7cf2f9c1-e045-46f7-b8e6-d6d218f7dd23',
-      'org1',
-      'PCM500',
       'Paracetamol 500mg Tablet',
       'GEN001',
       category.id,
@@ -38,7 +38,6 @@ export class InMemoryItemRepository implements ItemRepository {
       uom,
       null,
       uom,
-      '1234567890123',
       true,
       true,
       null,
@@ -52,14 +51,17 @@ export class InMemoryItemRepository implements ItemRepository {
   }
 
   async list(query: ItemListQuery): Promise<{ items: Item[]; total: number }> {
+    const orgFlags = this.orgItems.get(query.organizationId) ?? new Map();
     let items = [...this.items.values()].filter(
-      (product) => product.organizationId === query.organizationId && product.isActive,
+      (product) => product.isActive && orgFlags.get(product.id) !== false,
     );
 
     if (query.search) {
       const q = query.search.toLowerCase();
       items = items.filter((product) =>
-        product.name.toLowerCase().includes(q) || product.code.toLowerCase().includes(q),
+        product.displayName.toLowerCase().includes(q) ||
+        (product.code ? product.code.toLowerCase().includes(q) : false) ||
+        (product.barcode ? product.barcode.toLowerCase().includes(q) : false),
       );
     }
 
@@ -76,8 +78,8 @@ export class InMemoryItemRepository implements ItemRepository {
         left = this.createdAtById.get(a.id) ?? new Date(0);
         right = this.createdAtById.get(b.id) ?? new Date(0);
       } else if (query.sortBy === 'code') {
-        left = a.code;
-        right = b.code;
+        left = a.code ?? '';
+        right = b.code ?? '';
       } else {
         left = a.name;
         right = b.name;
@@ -99,34 +101,17 @@ export class InMemoryItemRepository implements ItemRepository {
 
   async findById(id: string, organizationId: string): Promise<Item | null> {
     const item = this.items.get(id) ?? null;
-    if (!item || item.organizationId !== organizationId || !item.isActive) {
+    if (!item || !item.isActive) {
       return null;
     }
-    return item;
+    return this.withOverlay(item, organizationId);
   }
 
-  async findByCode(code: string, organizationId: string): Promise<Item | null> {
-    return (
-      [...this.items.values()].find(
-        (product) => product.code === code && product.organizationId === organizationId && product.isActive,
-      ) ?? null
-    );
-  }
-
-  async findByBarcode(barcode: string, organizationId: string): Promise<Item | null> {
-    return (
-      [...this.items.values()].find(
-        (product) => product.barcode === barcode && product.organizationId === organizationId && product.isActive,
-      ) ?? null
-    );
-  }
-
-
-  async findCategoryById(id: string, _organizationId: string): Promise<ItemCategory | null> {
+  async findCategoryById(id: string): Promise<ItemCategory | null> {
     return this.categories.get(id) ?? null;
   }
 
-  async findUomById(id: string, _organizationId: string): Promise<UomLookup | null> {
+  async findUomById(id: string): Promise<UomLookup | null> {
     return this.uoms.get(id) ?? null;
   }
 
@@ -170,19 +155,8 @@ export class InMemoryItemRepository implements ItemRepository {
     };
   }
 
-  async findLastCreated(organizationId: string): Promise<Item | null> {
-    const items = [...this.items.values()]
-      .filter((p) => p.organizationId === organizationId && p.isActive)
-      .sort((a, b) => {
-        const da = this.createdAtById.get(a.id) ?? new Date(0);
-        const db = this.createdAtById.get(b.id) ?? new Date(0);
-        return db.getTime() - da.getTime();
-      });
-    return items[0] ?? null;
-  }
-
   async getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics> {
-    let items = [...this.items.values()].filter((p) => p.organizationId === query.organizationId);
+    let items = [...this.items.values()];
 
     if (query.search) {
       const q = query.search.toLowerCase();
@@ -208,5 +182,35 @@ export class InMemoryItemRepository implements ItemRepository {
     this.items.set(product.id, product);
     this.createdAtById.set(product.id, new Date());
     return product;
+  }
+
+  private withOverlay(item: Item, organizationId: string): Item {
+    const flag = this.orgItems.get(organizationId)?.get(item.id);
+    const visibility = flag === undefined ? 'default' : flag ? 'whitelisted' : 'blacklisted';
+    return new Item(
+      item.id,
+      item.name,
+      item.genericProductCode,
+      item.categoryId,
+      item.category,
+      item.baseUomId,
+      item.purchaseUomId,
+      item.saleUomId,
+      item.baseUom,
+      item.purchaseUom,
+      item.saleUom,
+      item.trackLot,
+      item.trackExpiry,
+      item.shelfLifeDays,
+      item.isActive,
+      item.imageUrl,
+      item.smallImageUrl,
+      item.mediumImageUrl,
+      item.largeImageUrl,
+      null,
+      null,
+      null,
+      visibility,
+    );
   }
 }

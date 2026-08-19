@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockAdjustmentOrmEntity } from './stock-adjustment.orm-entity';
 import { StockLocationOrmEntity } from './stock-location.orm-entity';
@@ -6,7 +6,14 @@ import { StockLotOrmEntity } from './stock-lot.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
 @Entity('stock_balances')
-@Unique('uq_stock_balances_org_location_item_lot', ['organizationId', 'location', 'item', 'lot'])
+@Index('uq_stock_balances_org_location_item_lot', ['organizationId', 'location', 'item', 'lot'], {
+  unique: true,
+  where: 'lot_id IS NOT NULL',
+})
+@Index('uq_stock_balances_org_location_item_nolot', ['organizationId', 'location', 'item'], {
+  unique: true,
+  where: 'lot_id IS NULL',
+})
 export class StockBalanceOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

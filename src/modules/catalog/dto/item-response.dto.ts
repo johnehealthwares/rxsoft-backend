@@ -61,11 +61,18 @@ export class ItemResponseDto {
   @ApiProperty()
   id!: string;
 
-  @ApiProperty()
-  code!: string;
+  @ApiProperty({ nullable: true, description: 'Org-level code from the organisation_items override' })
+  code!: string | null;
 
   @ApiProperty()
   name!: string;
+
+  @ApiProperty({ description: 'Alias when set by the org, otherwise the default item name' })
+  displayName!: string;
+
+  @ApiProperty({ enum: ['default', 'whitelisted', 'blacklisted'] })
+  visibility!: 'default' | 'whitelisted' | 'blacklisted';
+
   @ApiProperty()
   categoryId!: string;
   @ApiProperty()
@@ -79,6 +86,9 @@ export class ItemResponseDto {
 
   @ApiProperty({ nullable: true })
   barcode!: string | null;
+
+  @ApiProperty({ nullable: true })
+  alias!: string | null;
 
   @ApiProperty()
   baseUomId!: string;

@@ -7,6 +7,7 @@ import { CreateSaleDto } from '../dto/create-sale.dto';
 import { SALES_REPOSITORY } from './sales.di-tokens';
 import type { SalesRepository } from '../repositories/sales.repository';
 import { UomOrmEntity } from '../entities';
+import { OrganisationItemOrmEntity } from '../../catalog/entities/organisation-item.orm-entity';
 
 @Injectable()
 export class CreateSaleUseCase {
@@ -17,6 +18,9 @@ export class CreateSaleUseCase {
     private readonly salesRepository: SalesRepository,
     @InjectRepository(UomOrmEntity)
     private readonly uomRepository: Repository<UomOrmEntity>,
+    @Optional()
+    @InjectRepository(OrganisationItemOrmEntity)
+    private readonly orgItemRepository?: Repository<OrganisationItemOrmEntity>,
     @Optional()
     private readonly cacheService?: AppCacheService,
     @Optional()
@@ -42,9 +46,13 @@ export class CreateSaleUseCase {
       throw new BadRequestException('At least one sale line is required');
     }
 
+    if (this.orgItemRepository) {
+      await this.assertItemsOrgAdded(payload.lines.map((l) => l.itemId), organizationId);
+    }
+
     const uomIds = [...new Set(payload.lines.map((l) => l.uomId))];
     const uoms = await this.uomRepository.find({
-      where: { id: In(uomIds), organizationId },
+      where: { id: In(uomIds) },
       select: ['id', 'factor', 'uomType'],
     });
     const uomFactorMap = new Map(uoms.map((u) => [u.id, u.uomType === 'smaller' ? 1 / u.factor : u.factor]));
@@ -126,5 +134,24 @@ export class CreateSaleUseCase {
     }
 
     return result;
+  }
+
+  // Strict tenant scope: sale lines may only reference items the org has
+  // explicitly added (active organisation_items rows).
+  private async assertItemsOrgAdded(itemIds: string[], organizationId: string): Promise<void> {
+    const uniqueIds = [...new Set(itemIds.filter(Boolean))];
+    if (!uniqueIds.length) return;
+
+    const rows = await this.orgItemRepository!.find({
+      where: { organizationId, itemId: In(uniqueIds), isActive: true },
+      select: ['itemId'],
+    });
+    const added = new Set(rows.map((r) => r.itemId));
+    const missing = uniqueIds.filter((id) => !added.has(id));
+    if (missing.length) {
+      throw new BadRequestException(
+        `Item(s) not active for this organisation: ${missing.join(', ')}`,
+      );
+    }
   }
 }

@@ -7,9 +7,6 @@ export class UomOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'organization_id', type: 'text' })
-  organizationId!: string;
-
   @Column({ name: 'category_id', type: 'uuid', nullable: true })
   categoryId!: string | null;
 

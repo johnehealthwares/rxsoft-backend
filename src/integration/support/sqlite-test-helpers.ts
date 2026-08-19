@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { ItemCategoryOrmEntity } from '../../modules/catalog/entities/item-category.orm-entity';
 import { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
+import { OrganisationItemOrmEntity } from '../../modules/catalog/entities/organisation-item.orm-entity';
 import { PartyOrmEntity } from '../../modules/customers/entities/party.orm-entity';
 import { UserOrmEntity } from '../../modules/identity/entities/user.orm-entity';
 import {
@@ -81,6 +82,7 @@ type SeededIds = {
 
 type Repositories = {
   itemRepository: Repository<ItemOrmEntity>;
+  orgItemRepository: Repository<OrganisationItemOrmEntity>;
   priceListItemRepository: Repository<PriceListItemOrmEntity>;
   stockBalanceRepository: Repository<StockBalanceOrmEntity>;
   stockMovementRepository: Repository<StockMovementOrmEntity>;
@@ -107,6 +109,7 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
   const userRepo = moduleFixture.get<Repository<UserOrmEntity>>(getRepositoryToken(UserOrmEntity));
   const categoryRepo = moduleFixture.get<Repository<ItemCategoryOrmEntity>>(getRepositoryToken(ItemCategoryOrmEntity));
   const itemRepo = moduleFixture.get<Repository<ItemOrmEntity>>(getRepositoryToken(ItemOrmEntity));
+  const orgItemRepo = moduleFixture.get<Repository<OrganisationItemOrmEntity>>(getRepositoryToken(OrganisationItemOrmEntity));
   const stockLocationRepo = moduleFixture.get<Repository<StockLocationOrmEntity>>(getRepositoryToken(StockLocationOrmEntity));
   const stockLotRepo = moduleFixture.get<Repository<StockLotOrmEntity>>(getRepositoryToken(StockLotOrmEntity));
   const stockBalanceRepo = moduleFixture.get<Repository<StockBalanceOrmEntity>>(getRepositoryToken(StockBalanceOrmEntity));
@@ -142,14 +145,12 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
 
   const uomCategory = await uomCategoryRepo.save(
     uomCategoryRepo.create({
-      organizationId,
       name: 'Units',
     }),
   );
 
   const baseUom = await uomRepo.save(
     uomRepo.create({
-      organizationId,
       code: 'UNIT',
       name: 'Unit',
       uomType: 'reference',
@@ -162,7 +163,6 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
 
   const category = await categoryRepo.save(
     categoryRepo.create({
-      organizationId,
       code: 'ANALGESICS',
       name: 'Analgesics',
     }),
@@ -170,8 +170,6 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
 
   const seedItem = await itemRepo.save({
     id: undefined as unknown as string,
-    organizationId,
-    code: 'PCM-SEED-001',
     name: 'Paracetamol 500mg Tablet (Seed)',
     category,
     genericProductCode: null,
@@ -181,12 +179,22 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     purchaseUom: null,
     saleUomId: baseUom.id,
     saleUom: baseUom,
-    barcode: '9999999999999',
     isActive: true,
     trackLot: true,
     trackExpiry: true,
     shelfLifeDays: null,
   });
+
+  await orgItemRepo.save(
+    orgItemRepo.create({
+      organizationId,
+      item: seedItem,
+      itemId: seedItem.id,
+      isActive: true,
+      code: 'PCM-SEED-001',
+      barcode: '9999999999999',
+    }),
+  );
 
   const location = await stockLocationRepo.save(
     stockLocationRepo.create({
@@ -302,6 +310,7 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     },
     repositories: {
       itemRepository: itemRepo,
+      orgItemRepository: orgItemRepo,
       priceListItemRepository: priceListItemRepo,
       stockBalanceRepository: stockBalanceRepo,
       stockMovementRepository: stockMovementRepo,

@@ -2,7 +2,6 @@ import { ForeignProperty } from "src/modules/catalog/dto/item-response.dto";
 
 export type UomCategoryType = {
   id: string;
-  organizationId: string;
   code: string | null;
   name: string;
   createdAt: string;
@@ -11,7 +10,6 @@ export type UomCategoryType = {
 
 export type UomType = {
   id: string;
-  organizationId: string;
   categoryId: string | null;
   category: ForeignProperty | null;
   code: string | null;

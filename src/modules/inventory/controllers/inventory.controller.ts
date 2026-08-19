@@ -25,7 +25,7 @@ type InventoryListResponse<T> = {
 
 function mapBalance(balance: {
   id: string;
-  item: { id: string; code: string; name: string };
+  item: { id: string; code: string | null; name: string };
   location: { id: string; name: string };
   lot: { id: string; code: string } | null;
   quantityOnHand: number;

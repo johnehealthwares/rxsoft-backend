@@ -1,7 +1,8 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, IsNull, Repository } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
+import { OrganisationItemOrmEntity } from '../../catalog/entities/organisation-item.orm-entity';
 import { UsersProxyService } from '../../users-proxy/users-proxy.service';
 import {
   StockAdjustmentOrmEntity,
@@ -262,14 +263,24 @@ export class TypeormSalesRepository implements SalesRepository {
       const items: ItemOrmEntity[] = [];
       if (itemIds.length) {
         const foundItems = await itemRepo.find({
-          where: {
-            id: In(itemIds),
-            organizationId: payload.organizationId,
-          },
+          where: { id: In(itemIds) },
           select: ['id', 'baseUomId'],
         });
         if (foundItems.length !== itemIds.length) {
           throw new Error('One or more item references are invalid');
+        }
+        const blacklisted = await manager
+          .getRepository(OrganisationItemOrmEntity)
+          .find({
+            where: {
+              organizationId: payload.organizationId,
+              itemId: In(itemIds),
+              isActive: false,
+            },
+            select: ['itemId'],
+          });
+        if (blacklisted.length) {
+          throw new Error('One or more items are blacklisted for this organisation');
         }
         items.push(...foundItems);
       }
@@ -280,7 +291,6 @@ export class TypeormSalesRepository implements SalesRepository {
         const uoms = await uomRepo.find({
           where: {
             id: In(uomIds),
-            organizationId: payload.organizationId,
           },
           select: ['id'],
         });
@@ -403,103 +413,17 @@ export class TypeormSalesRepository implements SalesRepository {
       }
 
       if (payload.status !== 'draft') {
-        const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
-        const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
-        const stockMovementRepo = manager.getRepository(StockMovementOrmEntity);
-        const storeStockLocationRepo = manager.getRepository(StoreStockLocationOrmEntity);
-        const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
-
-        let stockLocation: StockLocationOrmEntity | null = null;
-        if (payload.stockLocationId) {
-          stockLocation = await stockLocationRepo.findOne({
-            where: { id: payload.stockLocationId, organizationId: payload.organizationId },
-          });
-          if (!stockLocation) {
-            throw new BadRequestException('Stock location not found');
-          }
-        } else {
-          const ssl = await storeStockLocationRepo.findOne({
-            where: {
-              organizationId: payload.organizationId,
-              storeId: payload.storeId,
-              purpose: 'sale_issue',
-              isActive: true,
-            },
-            relations: ['stockLocation'],
-          });
-          if (!ssl) {
-            throw new BadRequestException(
-              'No active sale_issue stock location configured for this store, and no stockLocationId provided',
-            );
-          }
-          stockLocation = ssl.stockLocation;
-        }
-
-        const uomMap = new Map<string, UomOrmEntity>();
-        const uomIds = [...new Set(payload.lines.map((l) => l.uomId))];
-        const uoms = await uomRepo.find({ where: { id: In(uomIds) } });
-        for (const u of uoms) uomMap.set(u.id, u);
-
-        for (const line of payload.lines) {
-          const baseUomId = itemBaseUomMap.get(line.itemId);
-          if (!baseUomId) continue;
-
-          const uom = uomMap.get(line.uomId);
-          if (!uom) continue;
-
-          const baseQty = await this.uomConverter.convertToBaseUom(line.quantity, line.uomId, baseUomId);
-
-          const balanceWhere: any = {
-            organizationId: payload.organizationId,
-            item: { id: line.itemId },
-            location: { id: stockLocation.id },
-          };
-          if (line.lotId) balanceWhere.lot = { id: line.lotId };
-          let stockBalance = await stockBalanceRepo.findOne({ where: balanceWhere,
-            relations: ['item', 'location', 'lot'],
-          });
-
-          if (!stockBalance) {
-            throw new BadRequestException(
-              `No stock balance found for item ${line.itemId} at location ${stockLocation.id}`,
-            );
-          }
-
-          const available = Number((stockBalance.quantityOnHand - stockBalance.quantityReserved).toFixed(4));
-          if (available < baseQty) {
-            throw new BadRequestException(
-              `Insufficient stock for item ${line.itemId}: ${available} available, ${baseQty} needed`,
-            );
-          }
-
-          stockBalance.quantityOnHand = Number((stockBalance.quantityOnHand - baseQty).toFixed(4));
-          const savedBalance = await stockBalanceRepo.save(stockBalance);
-
-          const adjustment = stockAdjustmentRepo.create({
-            stockBalance: savedBalance,
-            reason: `sale:${savedSale.saleNumber}`,
-            deltaQuantity: -baseQty,
-            performedByUserId: payload.soldByUserId,
-            performedAt: payload.saleDate,
-          });
-          const savedAdjustment = await stockAdjustmentRepo.save(adjustment);
-
-          const movement = stockMovementRepo.create({
-            organizationId: payload.organizationId,
-            inventoryDocumentId: savedSale.id,
-            inventoryDocumentLineId: null,
-            item: { id: line.itemId },
-            lot: line.lotId ? { id: line.lotId } : null,
-            fromLocation: { id: stockLocation.id },
-            toLocation: null,
-            movementType: 'out',
-            quantity: baseQty,
-            unitCost: line.unitPrice,
-            occurredAt: payload.saleDate,
-            createdByUserId: payload.soldByUserId,
-          });
-          await stockMovementRepo.save(movement);
-        }
+        await this.applyStockIssue(manager, {
+          organizationId: payload.organizationId,
+          storeId: payload.storeId,
+          stockLocationId: payload.stockLocationId ?? null,
+          saleNumber: payload.saleNumber,
+          soldByUserId: payload.soldByUserId,
+          saleDate: payload.saleDate,
+          inventoryDocumentId: savedSale.id,
+          lines: payload.lines,
+          itemBaseUomMap,
+        });
       }
 
       return {
@@ -509,6 +433,174 @@ export class TypeormSalesRepository implements SalesRepository {
         outstandingAmount,
       };
     });
+  }
+
+  async postExistingSale(
+    organizationId: string,
+    saleId: string,
+    stockLocationId: string | null,
+    soldByUserId: string,
+  ): Promise<Sale> {
+    return this.dataSource.transaction(async (manager) => {
+      const saleRepo = manager.getRepository(SaleOrmEntity);
+      const saleLineRepo = manager.getRepository(SaleLineOrmEntity);
+      const itemRepo = manager.getRepository(ItemOrmEntity);
+
+      const sale = await saleRepo.findOne({ where: { id: saleId, organizationId } });
+      if (!sale) throw new NotFoundException('Draft sale not found');
+      if (sale.status !== 'draft') throw new BadRequestException('Only draft sales can be completed');
+
+      const lines = await saleLineRepo.find({ where: { sale: { id: sale.id } } });
+      if (!lines.length) throw new BadRequestException('Sale has no lines');
+
+      const itemIds = [...new Set(lines.map((l) => l.item.id))];
+      const items = await itemRepo.find({ where: { id: In(itemIds) }, select: ['id', 'baseUomId'] });
+      const itemBaseUomMap = new Map(items.map((i) => [i.id, i.baseUomId]));
+
+      const blacklisted = await manager.getRepository(OrganisationItemOrmEntity).find({
+        where: { organizationId, itemId: In(itemIds), isActive: false },
+        select: ['itemId'],
+      });
+      if (blacklisted.length) {
+        throw new BadRequestException('One or more items are blacklisted for this organisation');
+      }
+
+      await this.applyStockIssue(manager, {
+        organizationId,
+        storeId: sale.storeId,
+        stockLocationId: stockLocationId ?? sale.stockLocationId,
+        saleNumber: sale.saleNumber,
+        soldByUserId,
+        saleDate: sale.saleDate,
+        inventoryDocumentId: sale.id,
+        lines: lines.map((l) => ({
+          itemId: l.item.id,
+          uomId: l.uom.id,
+          lotId: l.lot?.id ?? null,
+          quantity: l.quantity,
+          unitPrice: l.unitPrice,
+        })),
+        itemBaseUomMap,
+      });
+
+      sale.status = 'posted';
+      const saved = await saleRepo.save(sale);
+      return toDomain(saved);
+    });
+  }
+
+  private async applyStockIssue(
+    manager: EntityManager,
+    opts: {
+      organizationId: string;
+      storeId: string;
+      stockLocationId: string | null;
+      saleNumber: string;
+      soldByUserId: string;
+      saleDate: Date;
+      inventoryDocumentId: string | null;
+      lines: Array<{ itemId: string; uomId: string; lotId?: string | null; quantity: number; unitPrice: number }>;
+      itemBaseUomMap: Map<string, string>;
+    },
+  ): Promise<void> {
+    const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
+    const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
+    const stockMovementRepo = manager.getRepository(StockMovementOrmEntity);
+    const storeStockLocationRepo = manager.getRepository(StoreStockLocationOrmEntity);
+    const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
+    const uomRepo = manager.getRepository(UomOrmEntity);
+
+    let stockLocation: StockLocationOrmEntity | null = null;
+    if (opts.stockLocationId) {
+      stockLocation = await stockLocationRepo.findOne({
+        where: { id: opts.stockLocationId, organizationId: opts.organizationId },
+      });
+      if (!stockLocation) {
+        throw new BadRequestException('Stock location not found');
+      }
+    } else {
+      const ssl = await storeStockLocationRepo.findOne({
+        where: {
+          organizationId: opts.organizationId,
+          storeId: opts.storeId,
+          purpose: 'sale_issue',
+          isActive: true,
+        },
+        relations: ['stockLocation'],
+      });
+      if (!ssl) {
+        throw new BadRequestException(
+          'No active sale_issue stock location configured for this store, and no stockLocationId provided',
+        );
+      }
+      stockLocation = ssl.stockLocation;
+    }
+
+    const uomMap = new Map<string, UomOrmEntity>();
+    const uomIds = [...new Set(opts.lines.map((l) => l.uomId))];
+    const uoms = await uomRepo.find({ where: { id: In(uomIds) } });
+    for (const u of uoms) uomMap.set(u.id, u);
+
+    for (const line of opts.lines) {
+      const baseUomId = opts.itemBaseUomMap.get(line.itemId);
+      if (!baseUomId) continue;
+
+      const uom = uomMap.get(line.uomId);
+      if (!uom) continue;
+
+      const baseQty = await this.uomConverter.convertToBaseUom(line.quantity, line.uomId, baseUomId);
+
+      const balanceWhere: any = {
+        organizationId: opts.organizationId,
+        item: { id: line.itemId },
+        location: { id: stockLocation.id },
+      };
+      if (line.lotId) balanceWhere.lot = { id: line.lotId };
+      const stockBalance = await stockBalanceRepo.findOne({ where: balanceWhere, relations: ['item', 'location', 'lot'] });
+
+      if (!stockBalance) {
+        throw new BadRequestException(
+          `No stock balance found for item ${line.itemId} at location ${stockLocation.id}`,
+        );
+      }
+
+      const available = Number((stockBalance.quantityOnHand - stockBalance.quantityReserved).toFixed(4));
+      if (available < baseQty) {
+        throw new BadRequestException(
+          `Insufficient stock for item ${line.itemId}: ${available} available, ${baseQty} needed`,
+        );
+      }
+
+      stockBalance.quantityOnHand = Number((stockBalance.quantityOnHand - baseQty).toFixed(4));
+      const savedBalance = await stockBalanceRepo.save(stockBalance);
+
+      await stockAdjustmentRepo.save(
+        stockAdjustmentRepo.create({
+          stockBalance: savedBalance,
+          reason: `sale:${opts.saleNumber}`,
+          deltaQuantity: -baseQty,
+          performedByUserId: opts.soldByUserId,
+          performedAt: opts.saleDate,
+        }),
+      );
+
+      await stockMovementRepo.save(
+        stockMovementRepo.create({
+          organizationId: opts.organizationId,
+          inventoryDocumentId: opts.inventoryDocumentId,
+          inventoryDocumentLineId: null,
+          item: { id: line.itemId },
+          lot: line.lotId ? { id: line.lotId } : null,
+          fromLocation: { id: stockLocation.id },
+          toLocation: null,
+          movementType: 'out',
+          quantity: baseQty,
+          unitCost: line.unitPrice,
+          occurredAt: opts.saleDate,
+          createdByUserId: opts.soldByUserId,
+        }),
+      );
+    }
   }
 
   async createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult> {

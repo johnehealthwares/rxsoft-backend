@@ -12,6 +12,15 @@ export class OrderOrmEntity {
   @Column({ name: 'order_number', type: 'text' })
   orderNumber!: string;
 
+  @Column({ name: 'organization_id', type: 'text', nullable: true })
+  organizationId!: string | null;
+
+  @Column({ name: 'stock_location_id', type: 'uuid', nullable: true })
+  stockLocationId!: string | null;
+
+  @Column({ type: 'text', default: 'website' })
+  origin!: 'website' | 'pos';
+
   @Column({ name: 'customer_id', type: 'uuid', nullable: true })
   customerId!: string | null;
 

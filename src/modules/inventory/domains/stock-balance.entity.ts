@@ -1,7 +1,7 @@
 export class ItemReference {
   constructor(
     public readonly id: string,
-    public readonly code: string,
+    public readonly code: string | null,
     public readonly name: string,
   ) {}
 }

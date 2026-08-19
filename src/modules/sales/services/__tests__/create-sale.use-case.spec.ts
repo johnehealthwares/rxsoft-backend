@@ -8,6 +8,7 @@ describe('CreateSaleUseCase', () => {
     createWithSettlement: jest.fn(),
     createRefund: jest.fn(),
     findLastCreated: jest.fn().mockResolvedValue(null),
+    postExistingSale: jest.fn().mockResolvedValue(null),
   };
 
   const useCase = new CreateSaleUseCase(salesRepository);

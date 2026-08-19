@@ -86,7 +86,7 @@ export class SalesController {
         lineNumber: line.lineNumber,
         item: {
           id: line.item.id,
-          code: line.item.code,
+          code: null,
           name: line.item.name,
           category: line.item.category
             ? { id: line.item.category.id, name: line.item.category.name }

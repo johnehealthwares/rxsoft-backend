@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, In, IsNull } from 'typeorm';
+import { Repository, ILike, In, IsNull, SelectQueryBuilder } from 'typeorm';
 import { ItemOrmEntity } from '../../../modules/catalog/entities/item.orm-entity';
 import { ItemCategoryOrmEntity } from '../../../modules/catalog/entities/item-category.orm-entity';
+import { OrganisationItemOrmEntity } from '../../../modules/catalog/entities/organisation-item.orm-entity';
 import { PartyOrmEntity } from '../../../modules/customers/entities/party.orm-entity';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
 import { OrdersService } from '../../orders/orders.service';
@@ -83,7 +84,13 @@ export class WebsiteService {
       .andWhere('item.isActive = :active', { active: true });
 
     if (organizationId) {
-      qb.andWhere('item.organizationId = :orgId', { orgId: organizationId });
+      qb.leftJoin(
+        OrganisationItemOrmEntity,
+        'orgItem',
+        'orgItem.item_id = item.id AND orgItem.organization_id = :orgId',
+        { orgId: organizationId },
+      )
+        .andWhere('(orgItem.id IS NULL OR orgItem.is_active = :orgActive)', { orgActive: true });
     }
 
     if (query.search) {
@@ -105,9 +112,12 @@ export class WebsiteService {
 
     const data = await qb.getMany();
 
-    const enriched = organizationId
-      ? await this.enrichWithPrices(data, organizationId)
+    const withAliases = organizationId
+      ? await this.attachOrgAliases(data, organizationId)
       : data;
+    const enriched = organizationId
+      ? await this.enrichWithPrices(withAliases, organizationId)
+      : withAliases;
 
     return { data: enriched, total, page: query.page, limit: query.limit };
   }
@@ -120,7 +130,13 @@ export class WebsiteService {
       .andWhere('item.isActive = :active', { active: true });
 
     if (organizationId) {
-      qb.andWhere('item.organizationId = :orgId', { orgId: organizationId });
+      qb.leftJoin(
+        OrganisationItemOrmEntity,
+        'orgItem',
+        'orgItem.item_id = item.id AND orgItem.organization_id = :orgId',
+        { orgId: organizationId },
+      )
+        .andWhere('(orgItem.id IS NULL OR orgItem.is_active = :orgActive)', { orgActive: true });
     }
 
     const product = await qb.getOne();
@@ -139,19 +155,59 @@ export class WebsiteService {
       .take(4);
 
     if (organizationId) {
-      relatedQb.andWhere('item.organizationId = :orgId', { orgId: organizationId });
+      relatedQb.leftJoin(
+        OrganisationItemOrmEntity,
+        'orgItem',
+        'orgItem.item_id = item.id AND orgItem.organization_id = :orgId',
+        { orgId: organizationId },
+      )
+        .andWhere('(orgItem.id IS NULL OR orgItem.is_active = :orgActive)', { orgActive: true });
     }
 
     const related = await relatedQb.getMany();
 
-    const [enrichedProduct] = organizationId
-      ? await this.enrichWithPrices([product], organizationId)
+    const [withAlias] = organizationId
+      ? await this.attachOrgAliases([product], organizationId)
       : [product];
     const enrichedRelated = organizationId
       ? await this.enrichWithPrices(related, organizationId)
       : related;
+    const enrichedProduct = organizationId
+      ? await this.enrichWithPrices([withAlias], organizationId)
+      : [withAlias];
 
-    return { product: enrichedProduct, reviews, related: enrichedRelated };
+    return { product: enrichedProduct[0], reviews, related: enrichedRelated };
+  }
+
+  // Fixes the catalogue tenant-scoping bug: several site endpoints applied
+  // `where.organizationId` straight onto the (org-less) items table, silently
+  // leaking every item to every organisation. Applies the same
+  // default-visible-unless-blacklisted filter the products page uses.
+  private applyOrgVisibility(
+    qb: SelectQueryBuilder<ItemOrmEntity>,
+    organizationId: string,
+  ): void {
+    qb.leftJoin(
+      OrganisationItemOrmEntity,
+      'orgItem',
+      'orgItem.item_id = item.id AND orgItem.organization_id = :orgId',
+      { orgId: organizationId },
+    ).andWhere('(orgItem.id IS NULL OR orgItem.is_active = :orgActive)', { orgActive: true });
+  }
+
+  private async attachOrgAliases(items: ItemOrmEntity[], organizationId: string): Promise<ItemOrmEntity[]> {
+    if (!items.length) return items;
+    const overlays = await this.itemRepo.manager.getRepository(OrganisationItemOrmEntity).find({
+      where: { organizationId, itemId: In(items.map((i) => i.id)) },
+    });
+    const overlayMap = new Map(overlays.map((o) => [o.itemId, o]));
+    return items.map((item) => {
+      const overlay = overlayMap.get(item.id);
+      if (overlay?.alias) {
+        (item as any).displayName = overlay.alias;
+      }
+      return item;
+    });
   }
 
   // ── Categories ─────────────────────────────────────────────────
@@ -164,10 +220,13 @@ export class WebsiteService {
     const category = await this.categoryRepo.findOne({ where: { code: slug, deletedAt:  IsNull() } });
     if (!category) throw new NotFoundException('Category not found');
 
-    const where: any = { category: { id: category.id }, deletedAt:  IsNull(), isActive: true };
-    if (organizationId) where.organizationId = organizationId;
-
-    const products = await this.itemRepo.find({ where });
+    const qb = this.itemRepo
+      .createQueryBuilder('item')
+      .where('item.category_id = :categoryId', { categoryId: category.id })
+      .andWhere('item.deleted_at IS NULL')
+      .andWhere('item.is_active = :active', { active: true });
+    if (organizationId) this.applyOrgVisibility(qb, organizationId);
+    const products = await qb.getMany();
 
     const enriched = organizationId
       ? await this.enrichWithPrices(products, organizationId)
@@ -186,14 +245,15 @@ export class WebsiteService {
     const concern = await this.healthConcernRepo.findOne({ where: { slug, isActive: true } });
     if (!concern) throw new NotFoundException('Health concern not found');
 
-    const where: any = { deletedAt:  IsNull(), isActive: true };
-    if (organizationId) where.organizationId = organizationId;
+    const qb = this.itemRepo
+      .createQueryBuilder('item')
+      .leftJoinAndSelect('item.category', 'category')
+      .where('item.deleted_at IS NULL')
+      .andWhere('item.is_active = :active', { active: true })
+      .take(20);
+    if (organizationId) this.applyOrgVisibility(qb, organizationId);
 
-    const products = await this.itemRepo.find({
-      where,
-      relations: ['category'],
-      take: 20,
-    });
+    const products = await qb.getMany();
 
     const enriched = organizationId
       ? await this.enrichWithPrices(products, organizationId)
@@ -264,10 +324,14 @@ export class WebsiteService {
 
   async getCart(productIds: string[], organizationId?: string) {
     if (!productIds.length) return [];
-    const where: any = { id: In(productIds), deletedAt:  IsNull(), isActive: true };
-    if (organizationId) where.organizationId = organizationId;
+    const qb = this.itemRepo
+      .createQueryBuilder('item')
+      .where('item.id IN (:...productIds)', { productIds })
+      .andWhere('item.deleted_at IS NULL')
+      .andWhere('item.is_active = :active', { active: true });
+    if (organizationId) this.applyOrgVisibility(qb, organizationId);
 
-    const items = await this.itemRepo.find({ where });
+    const items = await qb.getMany();
 
     return organizationId ? this.enrichWithPrices(items, organizationId) : items;
   }
@@ -376,15 +440,18 @@ export class WebsiteService {
     const results: Record<string, unknown[]> = {};
 
     if (!query.type || query.type === 'medicines') {
-      const where: any[] = [
-        { name: ILike(`%${query.q}%`), deletedAt:  IsNull(), isActive: true },
-        { code: ILike(`%${query.q}%`), deletedAt:  IsNull(), isActive: true },
-      ];
-      if (organizationId) {
-        where.forEach((w) => (w.organizationId = organizationId));
-      }
+      const qb = this.itemRepo
+        .createQueryBuilder('item')
+        .where('item.deleted_at IS NULL')
+        .andWhere('item.is_active = :active', { active: true })
+        .andWhere(
+          '(item.name ILIKE :q OR item.code ILIKE :q)',
+          { q: `%${query.q}%` },
+        )
+        .take(10);
+      if (organizationId) this.applyOrgVisibility(qb, organizationId);
 
-      const medicines = await this.itemRepo.find({ where, take: 10 });
+      const medicines = await qb.getMany();
 
       results.medicines = organizationId
         ? await this.enrichWithPrices(medicines, organizationId)
@@ -424,15 +491,16 @@ export class WebsiteService {
   // ── Helpers ────────────────────────────────────────────────────
 
   private async getFeaturedProducts(organizationId?: string) {
-    const where: any = { deletedAt:  IsNull(), isActive: true };
-    if (organizationId) where.organizationId = organizationId;
+    const qb = this.itemRepo
+      .createQueryBuilder('item')
+      .leftJoinAndSelect('item.category', 'category')
+      .where('item.deleted_at IS NULL')
+      .andWhere('item.is_active = :active', { active: true })
+      .take(8)
+      .orderBy('item.created_at', 'DESC');
+    if (organizationId) this.applyOrgVisibility(qb, organizationId);
 
-    const items = await this.itemRepo.find({
-      where,
-      relations: ['category'],
-      take: 8,
-      order: { createdAt: 'DESC' },
-    });
+    const items = await qb.getMany();
 
     return organizationId ? this.enrichWithPrices(items, organizationId) : items;
   }

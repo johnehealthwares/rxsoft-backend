@@ -5,16 +5,12 @@ describe('ListItemsUseCase', () => {
   const itemRepository: jest.Mocked<ItemRepository> = {
     list: jest.fn(),
     findById: jest.fn(),
-    findByCode: jest.fn(),
     findCategoryById: jest.fn(),
-    findGenericProductById: jest.fn(),
     findUomById: jest.fn(),
     listCategories: jest.fn(),
-    listGenericProducts: jest.fn(),
     listUoms: jest.fn(),
     save: jest.fn(),
-    findByBarcode: jest.fn(),
-    findLastCreated: jest.fn().mockResolvedValue(null),
+    getMetrics: jest.fn(),
   };
 
   const useCase = new ListItemsUseCase(itemRepository);

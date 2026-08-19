@@ -1,18 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { OrderOrmEntity } from '../website/entities/order.orm-entity';
 import { OrderItemOrmEntity } from '../website/entities/order-item.orm-entity';
 import { DeliveryOrmEntity } from '../website/entities/delivery.orm-entity';
 import { ItemOrmEntity } from '../catalog/entities/item.orm-entity';
+import { OrganisationItemOrmEntity } from '../catalog/entities/organisation-item.orm-entity';
+import { OrganisationsProxyService } from '../organisations-proxy/organisations-proxy.service';
 import { SaleOrmEntity, SaleLineOrmEntity } from '../sales/entities';
-import {
-  StockBalanceOrmEntity,
-  StockAdjustmentOrmEntity,
-  StoreStockLocationOrmEntity,
-  StockLocationOrmEntity,
-} from '../inventory/entities';
+import { SALES_REPOSITORY } from '../sales/services/sales.di-tokens';
+import type { SalesRepository } from '../sales/repositories/sales.repository';
 import { PartyOrmEntity } from '../customers/entities/party.orm-entity';
+import { StockLocationOrmEntity } from '../inventory/entities';
 import { PricingService } from '../pricing/services/pricing.service';
 import { DEFAULT_STORE_ID, DEFAULT_UOM_ID } from '../../shared/constants/persistence-scope';
 
@@ -37,21 +36,20 @@ export class OrdersService {
     private readonly deliveryRepo: Repository<DeliveryOrmEntity>,
     @InjectRepository(ItemOrmEntity)
     private readonly itemRepo: Repository<ItemOrmEntity>,
+    @InjectRepository(OrganisationItemOrmEntity)
+    private readonly orgItemRepo: Repository<OrganisationItemOrmEntity>,
     @InjectRepository(PartyOrmEntity)
     private readonly partyRepo: Repository<PartyOrmEntity>,
     @InjectRepository(SaleOrmEntity)
     private readonly saleRepo: Repository<SaleOrmEntity>,
     @InjectRepository(SaleLineOrmEntity)
     private readonly saleLineRepo: Repository<SaleLineOrmEntity>,
-    @InjectRepository(StockBalanceOrmEntity)
-    private readonly stockBalanceRepo: Repository<StockBalanceOrmEntity>,
-    @InjectRepository(StockAdjustmentOrmEntity)
-    private readonly stockAdjustmentRepo: Repository<StockAdjustmentOrmEntity>,
-    @InjectRepository(StoreStockLocationOrmEntity)
-    private readonly storeStockLocationRepo: Repository<StoreStockLocationOrmEntity>,
     @InjectRepository(StockLocationOrmEntity)
     private readonly stockLocationRepo: Repository<StockLocationOrmEntity>,
+    @Inject(SALES_REPOSITORY)
+    private readonly salesRepository: SalesRepository,
     private readonly pricingService: PricingService,
+    private readonly organisationsProxy: OrganisationsProxyService,
   ) {}
 
   async listOrders(userId?: string) {
@@ -116,6 +114,9 @@ export class OrdersService {
 
     const order = this.orderRepo.create({
       orderNumber: `ORD-${Date.now()}`,
+      organizationId: organizationId ?? null,
+      stockLocationId: null,
+      origin: 'website',
       customerId,
       paymentMethod: payload.paymentMethod,
       notes: payload.notes ?? null,
@@ -130,7 +131,7 @@ export class OrdersService {
     if (orderItems.length > 0) {
       await this.orderItemRepo.save(
         orderItems.map((oi) =>
-          this.orderItemRepo.create({ order: savedOrder, itemId: oi.itemId, freetextName: oi.freetextName, quantity: oi.quantity, unitPrice: oi.unitPrice }),
+          this.orderItemRepo.create({ order: savedOrder, itemId: oi.itemId, freetextName: oi.freetextName, quantity: oi.quantity, unitPrice: oi.unitPrice, resolvedAt: oi.itemId ? new Date() : null }),
         ),
       );
     }
@@ -191,24 +192,53 @@ export class OrdersService {
     return this.orderRepo.save(order);
   }
 
-  async reconcileItem(orderId: string, orderItemId: string, itemId: string) {
+  private async resolveOrderOrg(order: OrderOrmEntity, organizationId?: string): Promise<string | null> {
+    if (order.organizationId) return order.organizationId;
+    if (!organizationId) return null;
+
+    const org = await this.organisationsProxy.findById(organizationId);
+    if (!org) throw new BadRequestException('Organization does not exist');
+
+    order.organizationId = organizationId;
+    await this.orderRepo.save(order);
+    return organizationId;
+  }
+
+  private async assertItemVisibleInOrg(itemId: string, organizationId: string | null) {
+    const item = await this.itemRepo.findOne({ where: { id: itemId } });
+    if (!item) throw new NotFoundException('Item not found');
+    if (!organizationId) return;
+
+    // Strict tenant scope: orders may only reference items the org has
+    // explicitly added (active organisation_items row).
+    const orgItem = await this.orgItemRepo.findOne({
+      where: { organizationId, itemId, isActive: true },
+    });
+    if (!orgItem) {
+      throw new BadRequestException('Item is not active for this organisation');
+    }
+  }
+
+  async reconcileItem(orderId: string, orderItemId: string, itemId: string, opts?: { organizationId?: string }) {
     const order = await this.orderRepo.findOne({ where: { id: orderId } });
     if (!order) throw new NotFoundException('Order not found');
 
-    const item = await this.itemRepo.findOne({ where: { id: itemId } });
-    if (!item) throw new NotFoundException('Item not found');
+    const organizationId = await this.resolveOrderOrg(order, opts?.organizationId);
+    await this.assertItemVisibleInOrg(itemId, organizationId);
 
     const orderItem = await this.orderItemRepo.findOne({ where: { id: orderItemId, order: { id: orderId } } });
     if (!orderItem) throw new NotFoundException('Order item not found');
 
     orderItem.itemId = itemId;
-    orderItem.freetextName = null;
+    orderItem.resolvedAt = new Date();
     return this.orderItemRepo.save(orderItem);
   }
 
-  async reconcileAllItems(orderId: string, itemIds: Record<string, string>) {
+  async reconcileAllItems(orderId: string, itemIds: Record<string, string>, opts?: { organizationId?: string }) {
     const order = await this.orderRepo.findOne({ where: { id: orderId }, relations: ['items'] });
     if (!order) throw new NotFoundException('Order not found');
+
+    const organizationId = await this.resolveOrderOrg(order, opts?.organizationId);
 
     const results: OrderItemOrmEntity[] = [];
     for (const orderItem of order.items) {
@@ -216,18 +246,17 @@ export class OrdersService {
         const matchingItemId = itemIds[orderItem.id];
         if (!matchingItemId) continue;
 
-        const item = await this.itemRepo.findOne({ where: { id: matchingItemId } });
-        if (!item) throw new NotFoundException(`Item not found: ${matchingItemId}`);
+        await this.assertItemVisibleInOrg(matchingItemId, organizationId);
 
         orderItem.itemId = matchingItemId;
-        orderItem.freetextName = null;
+        orderItem.resolvedAt = new Date();
         results.push(await this.orderItemRepo.save(orderItem));
       }
     }
     return results;
   }
 
-  async postOrderAsSale(orderId: string, dto: { stockLocationId?: string }, currentUser: { organizationId: string; sub: string }) {
+  async postOrderAsSale(orderId: string, dto: { stockLocationId?: string; organizationId?: string }, currentUser: { organizationId: string; sub: string }) {
     const order = await this.orderRepo.findOne({
       where: { id: orderId, orderStatus: 'confirmed' },
       relations: ['items'],
@@ -235,10 +264,23 @@ export class OrdersService {
     if (!order) throw new NotFoundException('Order must be in confirmed status to post as sale');
     if (!order.items?.length) throw new BadRequestException('Order has no items');
 
+    const organizationId = await this.resolveOrderOrg(order, dto.organizationId ?? currentUser.organizationId);
+    if (!organizationId) {
+      throw new BadRequestException('Order must be assigned to an organisation before posting as a sale');
+    }
+
     for (const item of order.items) {
       if (!item.itemId) {
         throw new BadRequestException(`Order item "${item.freetextName ?? item.id}" has no linked item. Reconcile before posting.`);
       }
+      await this.assertItemVisibleInOrg(item.itemId, organizationId);
+    }
+
+    if (dto.stockLocationId) {
+      const found = await this.stockLocationRepo.findOne({
+        where: { id: dto.stockLocationId, organizationId },
+      });
+      if (!found) throw new BadRequestException('Stock location does not exist for this organisation');
     }
 
     const itemIds = order.items.map((i) => i.itemId as string);
@@ -246,7 +288,7 @@ export class OrdersService {
     const itemMap = new Map(items.map((i) => [i.id, i]));
 
     const sale = this.saleRepo.create({
-      organizationId: currentUser.organizationId,
+      organizationId,
       saleNumber: `WEBORD-${order.orderNumber.replace('ORD-', '')}`,
       saleChannel: 'website',
       storeId: DEFAULT_STORE_ID,
@@ -296,47 +338,13 @@ export class OrdersService {
   }
 
   async completeSale(saleId: string, currentUser: { organizationId: string; sub: string }) {
-    const sale = await this.saleRepo.findOne({ where: { id: saleId, status: 'draft' }, relations: ['lines', 'lines.item'] });
-    if (!sale) throw new NotFoundException('Draft sale not found');
-
-    const locationId = sale.stockLocationId;
-    if (!locationId) {
-      const ssl = await this.storeStockLocationRepo.findOne({
-        where: { organizationId: currentUser.organizationId, storeId: sale.storeId, purpose: 'sale_issue', isActive: true },
-        relations: ['stockLocation'],
-      });
-      if (!ssl) throw new BadRequestException('No sale_issue stock location configured');
-      sale.stockLocationId = ssl.stockLocation.id;
-    }
-
-    const finalLocId = sale.stockLocationId!;
-    if (!sale.lines?.length) throw new BadRequestException('Sale has no lines');
-
-    for (const line of sale.lines) {
-      const balance = await this.stockBalanceRepo.findOne({
-        where: { organizationId: currentUser.organizationId, item: { id: line.item.id }, location: { id: finalLocId } },
-        relations: ['item', 'location'],
-      } as any);
-      if (!balance) continue;
-
-      balance.quantityOnHand = Number(Math.max(0, balance.quantityOnHand - line.quantity).toFixed(4));
-      const savedBalance = await this.stockBalanceRepo.save(balance);
-
-      await this.stockAdjustmentRepo.save(
-        this.stockAdjustmentRepo.create({
-          stockBalance: savedBalance,
-          reason: `sale_fulfillment:${sale.saleNumber}`,
-          deltaQuantity: -line.quantity,
-          performedByUserId: currentUser.sub,
-          performedAt: new Date(),
-        }),
-      );
-    }
-
-    sale.status = 'posted';
-    await this.saleRepo.save(sale);
+    const sale = await this.salesRepository.postExistingSale(
+      currentUser.organizationId,
+      saleId,
+      null,
+      currentUser.sub,
+    );
     await this.orderRepo.update({ saleId: sale.id }, { orderStatus: 'dispatched' } as any);
-
     return { id: sale.id, status: sale.status };
   }
 }

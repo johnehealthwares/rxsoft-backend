@@ -4,8 +4,8 @@ export class StockBalanceItemRefDto {
   @ApiProperty()
   id!: string;
 
-  @ApiProperty()
-  code!: string;
+  @ApiProperty({ nullable: true })
+  code!: string | null;
 
   @ApiProperty()
   name!: string;

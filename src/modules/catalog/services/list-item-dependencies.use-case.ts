@@ -14,10 +14,9 @@ export class ListItemDependenciesUseCase {
 
   async listCategories(
     payload: ListItemDependenciesDto,
-    organizationId: string,
+    _organizationId: string,
   ): Promise<Awaited<ReturnType<ItemRepository['listCategories']>>> {
     return this.productRepository.listCategories({
-      organizationId,
       offset: payload.offset,
       limit: payload.limit,
       search: payload.search,
@@ -38,10 +37,9 @@ export class ListItemDependenciesUseCase {
 
   async listUoms(
     payload: ListItemDependenciesDto,
-    organizationId: string,
+    _organizationId: string,
   ): Promise<Awaited<ReturnType<ItemRepository['listUoms']>>> {
     return this.productRepository.listUoms({
-      organizationId,
       offset: payload.offset,
       limit: payload.limit,
       search: payload.search,

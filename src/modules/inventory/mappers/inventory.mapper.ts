@@ -12,7 +12,7 @@ export class InventoryMapper {
       orm.organizationId,
       {
         id: orm.item.id,
-        code: orm.item.code,
+        code: null,
         name: orm.item.name,
       },
       {

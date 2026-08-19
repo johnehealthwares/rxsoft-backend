@@ -270,6 +270,49 @@ paths:
       security: *ref_0
       summary: Get item metrics
       tags: *ref_1
+  /api/items/me:
+    get:
+      operationId: ItemsController_listMyOrganisationItems
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: >-
+        List active catalogue for the current organisation (org-added items
+        only)
+      tags: *ref_1
+  /api/items/me/{itemId}:
+    put:
+      operationId: ItemsController_upsertMyOrganisationItem
+      parameters:
+        - name: itemId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: >-
+        Set an override for the current organisation
+        (whitelist/blacklist/alias/code/barcode)
+      tags: *ref_1
+    delete:
+      operationId: ItemsController_clearMyOrganisationItem
+      parameters:
+        - name: itemId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: Remove an override for the current organisation
+      tags: *ref_1
   /api/items/{itemId}:
     get:
       operationId: ItemsController_get
@@ -365,11 +408,27 @@ paths:
         '200':
           description: ''
       security: *ref_0
-      summary: List items activated for an organisation
+      summary: List the catalogue for an organisation (default items + org overrides)
+      tags: *ref_1
+    put:
+      operationId: ItemsController_bulkWhitelistOrganisationItems
+      parameters:
+        - name: orgId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: >-
+        Bulk-add every active global item to an organisation (org
+        setup/backfill)
       tags: *ref_1
   /api/items/organisations/{orgId}/items/{itemId}:
     put:
-      operationId: ItemsController_activateOrganisationItem
+      operationId: ItemsController_upsertOrganisationItem
       parameters:
         - name: orgId
           required: true
@@ -385,10 +444,12 @@ paths:
         '200':
           description: ''
       security: *ref_0
-      summary: Activate an item for an organisation
+      summary: >-
+        Set an item override for an organisation
+        (whitelist/blacklist/alias/code/barcode)
       tags: *ref_1
     delete:
-      operationId: ItemsController_deactivateOrganisationItem
+      operationId: ItemsController_clearOrganisationItem
       parameters:
         - name: orgId
           required: true
@@ -404,7 +465,7 @@ paths:
         '200':
           description: ''
       security: *ref_0
-      summary: Deactivate an item for an organisation
+      summary: Remove an item override for an organisation (back to default visibility)
       tags: *ref_1
   /api/generic-products:
     get:
@@ -7598,21 +7659,24 @@ paths:
       security: *ref_91
       summary: Delete a warehouse
       tags: *ref_92
-  /api/seeds/run:
+  /api/print/pdf:
     post:
-      operationId: SeedsController_run
-      parameters:
-        - name: key
-          required: true
-          in: query
-          schema:
-            type: string
+      operationId: PrintController_printPdf
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrintPdfDto'
       responses:
         '201':
           description: ''
-      summary: Run all database seeds (requires key query param)
+      security:
+        - bearer: []
+      summary: Render HTML to a PDF file
       tags:
-        - seeds
+        - print
 info:
   title: RxSoft Backend API
   description: Phase 3 identity module and API contracts
@@ -7687,9 +7751,20 @@ components:
         id:
           type: string
         code:
-          type: string
+          type: object
+          nullable: true
+          description: Org-level code from the organisation_items override
         name:
           type: string
+        displayName:
+          type: string
+          description: Alias when set by the org, otherwise the default item name
+        visibility:
+          type: string
+          enum:
+            - default
+            - whitelisted
+            - blacklisted
         categoryId:
           type: string
         genericProductCode:
@@ -7702,6 +7777,9 @@ components:
           allOf:
             - $ref: '#/components/schemas/GenericProductResponse'
         barcode:
+          type: object
+          nullable: true
+        alias:
           type: object
           nullable: true
         baseUomId:
@@ -7746,11 +7824,14 @@ components:
         - id
         - code
         - name
+        - displayName
+        - visibility
         - categoryId
         - genericProductCode
         - category
         - genericProduct
         - barcode
+        - alias
         - baseUomId
         - purchaseUomId
         - saleUomId
@@ -7768,9 +7849,6 @@ components:
     CreateItemDto:
       type: object
       properties:
-        code:
-          type: string
-          example: PCM001
         name:
           type: string
           example: Paracetamol 500mg Tablet
@@ -7789,9 +7867,15 @@ components:
         saleUomId:
           type: string
           example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        code:
+          type: string
+          example: PCM001
         barcode:
           type: string
           example: '1234567890123'
+        alias:
+          type: string
+          example: Panadol 500mg
         trackLot:
           type: boolean
           default: true
@@ -7812,20 +7896,13 @@ components:
           type: string
         largeImageUrl:
           type: string
-        overrideCodeValidation:
-          type: boolean
-          default: false
       required:
-        - code
         - name
         - categoryId
         - baseUomId
     ReplaceItemDto:
       type: object
       properties:
-        code:
-          type: string
-          example: PCM001
         name:
           type: string
           example: Paracetamol 500mg Tablet
@@ -7844,9 +7921,6 @@ components:
         saleUomId:
           type: string
           example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
-        barcode:
-          type: string
-          example: '1234567890123'
         trackLot:
           type: boolean
           default: true
@@ -7867,11 +7941,7 @@ components:
           type: string
         largeImageUrl:
           type: string
-        overrideCodeValidation:
-          type: boolean
-          default: false
       required:
-        - code
         - name
         - categoryId
         - baseUomId
@@ -7880,9 +7950,6 @@ components:
     PatchItemDto:
       type: object
       properties:
-        code:
-          type: string
-          example: PCM001
         name:
           type: string
           example: Paracetamol 500mg Tablet
@@ -7901,9 +7968,6 @@ components:
         saleUomId:
           type: string
           example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
-        barcode:
-          type: string
-          example: '1234567890123'
         trackLot:
           type: boolean
           default: true
@@ -8551,7 +8615,8 @@ components:
         id:
           type: string
         code:
-          type: string
+          type: object
+          nullable: true
         name:
           type: string
         category:
@@ -9240,9 +9305,6 @@ components:
           type: string
         isActive:
           type: boolean
-        overrideCodeValidation:
-          type: boolean
-          default: false
       required:
         - code
         - name
@@ -10480,3 +10542,18 @@ components:
           type: object
         isActive:
           type: boolean
+    PrintPdfDto:
+      type: object
+      properties:
+        html:
+          type: string
+          description: HTML content to render to PDF
+        filename:
+          type: string
+          description: 'Download filename (default: document.pdf)'
+        landscape:
+          type: boolean
+          description: Render in landscape orientation
+          default: false
+      required:
+        - html

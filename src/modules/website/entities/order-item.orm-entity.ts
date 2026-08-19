@@ -17,6 +17,9 @@ export class OrderItemOrmEntity {
   @Column({ name: 'freetext_name', type: 'text', nullable: true })
   freetextName!: string | null;
 
+  @Column({ name: 'resolved_at', type: 'timestamptz', nullable: true })
+  resolvedAt!: Date | null;
+
   @Column({ type: 'int' })
   quantity!: number;
 

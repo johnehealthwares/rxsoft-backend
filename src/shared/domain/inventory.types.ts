@@ -40,7 +40,7 @@ export type StockBalanceType = {
   organizationId: string;
   item: {
     id: string;
-    code: string;
+    code: string | null;
     name: string;
   };
   location: {

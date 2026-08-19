@@ -28,9 +28,9 @@ export class UomCategoriesService {
     private readonly uomCategoryRepository?: Repository<UomCategoryOrmEntity>,
   ) {}
 
-  async list(query: ListUomCategoriesDto, organizationId: string): Promise<{ data: UomCategoryType[]; total: number }> {
+  async list(query: ListUomCategoriesDto, _organizationId: string): Promise<{ data: UomCategoryType[]; total: number }> {
     if (!this.uomCategoryRepository) {
-      let items = [...this.inMemory.values()].filter((item) => item.organizationId === organizationId);
+      let items = [...this.inMemory.values()];
       if (query.search) {
         const search = query.search.toLowerCase();
         items = items.filter((item) => item.name.toLowerCase().includes(search) || (item.code?.toLowerCase().includes(search) ?? false));
@@ -40,7 +40,6 @@ export class UomCategoriesService {
 
     const qb = this.uomCategoryRepository
       .createQueryBuilder('category')
-      .where('category.organization_id = :organizationId', { organizationId })
       .orderBy('category.name', 'ASC')
       .skip(query.offset)
       .take(query.limit);
@@ -55,26 +54,25 @@ export class UomCategoriesService {
     return { data: items.map(toUomCategoryType), total };
   }
 
-  async get(id: string, organizationId: string): Promise<UomCategoryType> {
+  async get(id: string, _organizationId: string): Promise<UomCategoryType> {
     if (!this.uomCategoryRepository) {
       const item = this.inMemory.get(id);
-      if (!item || item.organizationId !== organizationId) {
+      if (!item) {
         throw new NotFoundException('UOM category not found');
       }
       return item;
     }
 
-    const item = await this.uomCategoryRepository.findOne({ where: { id, organizationId } });
+    const item = await this.uomCategoryRepository.findOne({ where: { id } });
     if (!item) {
       throw new NotFoundException('UOM category not found');
     }
     return toUomCategoryType(item);
   }
 
-  async create(payload: CreateUomCategoryDto, organizationId: string): Promise<UomCategoryType> {
+  async create(payload: CreateUomCategoryDto, _organizationId: string): Promise<UomCategoryType> {
     if (payload.code && this.uomCategoryRepository) {
       const last = await this.uomCategoryRepository.findOne({
-        where: { organizationId },
         order: { createdAt: 'DESC' },
         select: ['code'],
       });
@@ -92,7 +90,7 @@ export class UomCategoriesService {
       const now = new Date().toISOString();
       const record: UomCategoryRecord = {
         id: randomUUID(),
-        organizationId,
+        organizationId: '',
         code: payload.code ?? null,
         name: payload.name,
         createdAt: now,
@@ -103,17 +101,16 @@ export class UomCategoriesService {
     }
 
     const entity = this.uomCategoryRepository.create({
-      organizationId,
       code: payload.code ?? null,
       name: payload.name,
     });
     return toUomCategoryType(await this.uomCategoryRepository.save(entity));
   }
 
-  async update(id: string, payload: UpdateUomCategoryDto, organizationId: string): Promise<UomCategoryType> {
+  async update(id: string, payload: UpdateUomCategoryDto, _organizationId: string): Promise<UomCategoryType> {
     if (!this.uomCategoryRepository) {
       const existing = this.inMemory.get(id);
-      if (!existing || existing.organizationId !== organizationId) {
+      if (!existing) {
         throw new NotFoundException('UOM category not found');
       }
 
@@ -127,7 +124,7 @@ export class UomCategoriesService {
       return updated;
     }
 
-    const existing = await this.uomCategoryRepository.findOne({ where: { id, organizationId } });
+    const existing = await this.uomCategoryRepository.findOne({ where: { id } });
     if (!existing) {
       throw new NotFoundException('UOM category not found');
     }

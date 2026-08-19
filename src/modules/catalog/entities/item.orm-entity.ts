@@ -1,19 +1,11 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { ItemCategoryOrmEntity } from './item-category.orm-entity';
 import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 
 @Entity('items')
-@Unique('uq_items_org_code', ['organizationId', 'code'])
-@Unique('uq_items_org_barcode', ['organizationId', 'barcode'])
 export class ItemOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @Column({ name: 'organization_id', type: 'text' })
-  organizationId!: string;
-
-  @Column({ type: 'text' })
-  code!: string;
 
   @Column({ type: 'text' })
   name!: string;
@@ -47,9 +39,6 @@ export class ItemOrmEntity {
   @ManyToOne(() => UomOrmEntity, { nullable: true })
   @JoinColumn({ name: 'sale_uom_id' })
   saleUom!: UomOrmEntity | null;
-
-  @Column({ type: 'text', nullable: true })
-  barcode!: string | null;
 
   @Column({ name: 'track_lot', type: 'boolean', default: true })
   trackLot!: boolean;

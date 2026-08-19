@@ -21,6 +21,7 @@ import {
   SaleRefundOrmEntity,
   UomOrmEntity,
 } from './entities';
+import { OrganisationItemOrmEntity } from '../catalog/entities/organisation-item.orm-entity';
 import { InMemorySalesRepository } from './repositories/in-memory-sales.repository';
 import { TypeormSalesRepository } from './repositories/typeorm-sales.repository';
 import { CreateSaleRefundUseCase } from './services/create-sale-refund.use-case';
@@ -52,6 +53,7 @@ const salesPersistenceImports = useInMemoryRepos
         UomOrmEntity,
         ItemOrmEntity,
         StockLotOrmEntity,
+        OrganisationItemOrmEntity,
       ]),
     ];
 const salesRepositoryProviders = useInMemoryRepos
@@ -86,6 +88,6 @@ const salesRepositoryProviders = useInMemoryRepos
     RolesGuard,
     ...salesRepositoryProviders,
   ],
-  exports: [SalesService, UomConverterService],
+  exports: [SalesService, UomConverterService, SALES_REPOSITORY],
 })
 export class SalesModule {}

@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateCandidateTourDto {
   @ApiProperty() @IsString() @IsNotEmpty() title!: string;
@@ -49,7 +49,7 @@ export class CreateListeningMentionDto {
   @ApiPropertyOptional() @IsString() @IsOptional() mentionedAt?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() source?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() category?: string;
-  @ApiPropertyOptional() @IsString() @IsOptional() isUrgent?: boolean;
+  @ApiPropertyOptional() @IsBoolean() @IsOptional() isUrgent?: boolean;
 }
 
 export class CreateRapidResponseDto {

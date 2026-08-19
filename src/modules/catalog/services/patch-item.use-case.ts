@@ -32,29 +32,27 @@ export class PatchItemUseCase {
 
     let category = existing.category;
     if (payload.categoryId !== undefined) {
-      category = await this.productRepository.findCategoryById(payload.categoryId, organizationId) as any;
+      category = await this.productRepository.findCategoryById(payload.categoryId) as any;
       if (!category) {
         throw new BadRequestException('Category does not exist');
       }
     }
 
     if (payload.baseUomId !== undefined) {
-      const baseUom = await this.productRepository.findUomById(payload.baseUomId, organizationId);
+      const baseUom = await this.productRepository.findUomById(payload.baseUomId);
       if (!baseUom) throw new BadRequestException('Base UOM does not exist');
     }
     if (payload.purchaseUomId !== undefined) {
-      const purchaseUom = await this.productRepository.findUomById(payload.purchaseUomId, organizationId);
+      const purchaseUom = await this.productRepository.findUomById(payload.purchaseUomId);
       if (!purchaseUom) throw new BadRequestException('Purchase UOM does not exist');
     }
     if (payload.saleUomId !== undefined) {
-      const saleUom = await this.productRepository.findUomById(payload.saleUomId, organizationId);
+      const saleUom = await this.productRepository.findUomById(payload.saleUomId);
       if (!saleUom) throw new BadRequestException('Sale UOM does not exist');
     }
 
     const patched = new Item(
       existing.id,
-      existing.organizationId,
-      payload.code ?? existing.code,
       payload.name ?? existing.name,
       payload.genericProductCode ?? existing.genericProductCode,
       payload.categoryId ?? existing.categoryId,
@@ -65,7 +63,6 @@ export class PatchItemUseCase {
       existing.baseUom,
       existing.purchaseUom,
       existing.saleUom,
-      payload.barcode ?? existing.barcode,
       payload.trackLot ?? existing.trackLot,
       payload.trackExpiry ?? existing.trackExpiry,
       payload.shelfLifeDays ?? existing.shelfLifeDays,

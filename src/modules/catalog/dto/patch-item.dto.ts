@@ -2,11 +2,6 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class PatchItemDto {
-  @ApiPropertyOptional({ example: 'PCM001' })
-  @IsOptional()
-  @IsString()
-  code?: string;
-
   @ApiPropertyOptional({ example: 'Paracetamol 500mg Tablet' })
   @IsOptional()
   @IsString()
@@ -36,11 +31,6 @@ export class PatchItemDto {
   @IsOptional()
   @IsString()
   saleUomId?: string;
-
-  @ApiPropertyOptional({ example: '1234567890123' })
-  @IsOptional()
-  @IsString()
-  barcode?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()

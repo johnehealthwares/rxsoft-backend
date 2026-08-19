@@ -68,6 +68,8 @@ export class ItemsController {
       id: item.id,
       code: item.code,
       name: item.name,
+      displayName: item.displayName,
+      visibility: item.visibility,
       category: item.category && {
         id: item.category.id,
         code: item.category.code,
@@ -99,6 +101,7 @@ export class ItemsController {
       purchaseUom: item.purchaseUom,
       saleUom: item.saleUom,
       barcode: item.barcode,
+      alias: item.alias,
       trackLot: item.trackLot,
       trackExpiry: item.trackExpiry,
       shelfLifeDays: item.shelfLifeDays,
@@ -189,14 +192,41 @@ export class ItemsController {
   @ApiOperation({ summary: 'Get item metrics' })
   async metrics(
     @Query() query: ListItemsDto,
-    @CurrentUser() currentUser: RequestUser,
+    @CurrentUser() _currentUser: RequestUser,
   ) {
     const metricsQuery: ItemMetricsQuery = {
-      organizationId: currentUser.organizationId,
       search: query.search,
       categoryCode: query.categoryCode,
     };
     return this.itemRepository.getMetrics(metricsQuery);
+  }
+
+  @Get('me')
+  @Roles('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk')
+  @ApiOperation({ summary: 'List active catalogue for the current organisation (org-added items only)' })
+  async listMyOrganisationItems(@CurrentUser() currentUser: RequestUser) {
+    return this.organisationItemsService.listActiveForOrg(currentUser.organizationId);
+  }
+
+  @Put('me/:itemId')
+  @Roles('admin', 'super_admin', 'pharmacist')
+  @ApiOperation({ summary: 'Set an override for the current organisation (whitelist/blacklist/alias/code/barcode)' })
+  async upsertMyOrganisationItem(
+    @CurrentUser() currentUser: RequestUser,
+    @Param('itemId') itemId: string,
+    @Body() body?: { isActive?: boolean; alias?: string | null; code?: string | null; barcode?: string | null },
+  ) {
+    return this.organisationItemsService.upsert(currentUser.organizationId, itemId, body);
+  }
+
+  @Delete('me/:itemId')
+  @Roles('admin', 'super_admin', 'pharmacist')
+  @ApiOperation({ summary: 'Remove an override for the current organisation' })
+  async clearMyOrganisationItem(
+    @Param('itemId') itemId: string,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    return this.organisationItemsService.clear(currentUser.organizationId, itemId);
   }
 
   @Get(':itemId')
@@ -261,7 +291,7 @@ export class ItemsController {
     @CurrentUser() currentUser: RequestUser,
   ) {
     const item = await this.itemRepo.findOne({
-      where: { id: itemId, organizationId: currentUser.organizationId },
+      where: { id: itemId },
       relations: ['baseUom'],
     });
     if (!item) return { data: [] };
@@ -279,29 +309,36 @@ export class ItemsController {
 
   @Get('organisations/:orgId/items')
   @Roles('admin', 'super_admin')
-  @ApiOperation({ summary: 'List items activated for an organisation' })
+  @ApiOperation({ summary: 'List the catalogue for an organisation (default items + org overrides)' })
   async listOrganisationItems(@Param('orgId') orgId: string) {
     return this.organisationItemsService.listForOrg(orgId);
   }
 
+  @Put('organisations/:orgId/items')
+  @Roles('admin', 'super_admin')
+  @ApiOperation({ summary: 'Bulk-add every active global item to an organisation (org setup/backfill)' })
+  async bulkWhitelistOrganisationItems(@Param('orgId') orgId: string) {
+    return this.organisationItemsService.bulkWhitelistAll(orgId);
+  }
+
   @Put('organisations/:orgId/items/:itemId')
   @Roles('admin', 'super_admin')
-  @ApiOperation({ summary: 'Activate an item for an organisation' })
-  async activateOrganisationItem(
+  @ApiOperation({ summary: 'Set an item override for an organisation (whitelist/blacklist/alias/code/barcode)' })
+  async upsertOrganisationItem(
     @Param('orgId') orgId: string,
     @Param('itemId') itemId: string,
-    @Body() body?: { alias?: string | null; orgItemCode?: string | null; barcode?: string | null },
+    @Body() body?: { isActive?: boolean; alias?: string | null; code?: string | null; barcode?: string | null },
   ) {
-    return this.organisationItemsService.activate(orgId, itemId, body);
+    return this.organisationItemsService.upsert(orgId, itemId, body);
   }
 
   @Delete('organisations/:orgId/items/:itemId')
   @Roles('admin', 'super_admin')
-  @ApiOperation({ summary: 'Deactivate an item for an organisation' })
-  async deactivateOrganisationItem(
+  @ApiOperation({ summary: 'Remove an item override for an organisation (back to default visibility)' })
+  async clearOrganisationItem(
     @Param('orgId') orgId: string,
     @Param('itemId') itemId: string,
   ) {
-    return this.organisationItemsService.deactivate(orgId, itemId);
+    return this.organisationItemsService.clear(orgId, itemId);
   }
 }

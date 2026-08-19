@@ -128,7 +128,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
         organizationId: movement.organizationId,
         itemId: movement.itemId,
         item: movement.item
-          ? { id: movement.item.id, code: movement.item.code, name: movement.item.name }
+          ? { id: movement.item.id, code: null, name: movement.item.name }
           : null,
         lotId: movement.lotId,
         fromLocationId: movement.fromLocationId,
@@ -215,7 +215,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
 
       const item = await itemRepo.findOne({
-        where: { id: payload.itemId, organizationId: payload.organizationId },
+        where: { id: payload.itemId },
       });
       if (!item) throw new NotFoundException('Item not found');
 
@@ -303,7 +303,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const [fromLocation, toLocation, item] = await Promise.all([
         stockLocationRepo.findOne({ where: { id: payload.fromLocationId, organizationId: payload.organizationId } }),
         stockLocationRepo.findOne({ where: { id: payload.toLocationId, organizationId: payload.organizationId } }),
-        itemRepo.findOne({ where: { id: payload.itemId, organizationId: payload.organizationId, isActive: true } }),
+        itemRepo.findOne({ where: { id: payload.itemId, isActive: true } }),
       ]);
       if (!fromLocation) throw new NotFoundException('Source stock location not found');
       if (!toLocation) throw new NotFoundException('Destination stock location not found');

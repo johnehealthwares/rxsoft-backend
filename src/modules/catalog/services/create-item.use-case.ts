@@ -9,7 +9,7 @@ import { Item } from '../domains/item.entity';
 import { CreateItemDto } from '../dto/create-item.dto';
 import { validateUoms } from './utils';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
-import { validateSequentialCode } from '../../../shared/utils/code-validation';
+import { OrganisationItemsService } from './organisation-items.service';
 
 @Injectable()
 export class CreateItemUseCase {
@@ -17,6 +17,8 @@ export class CreateItemUseCase {
     @Inject(ITEM_REPOSITORY)
     private readonly productRepository: ItemRepository,
     private readonly cache: GenericDrugCacheService,
+    @Optional()
+    private readonly organisationItemsService?: OrganisationItemsService,
     @Optional()
     private readonly pricingService?: PricingService,
     @Optional()
@@ -26,29 +28,7 @@ export class CreateItemUseCase {
   ) { }
 
   async execute(payload: CreateItemDto, organizationId: string, performedByUserId?: string): Promise<Item> {
-    const lastItem = await this.productRepository.findLastCreated(organizationId);
-    const { valid, expectedCode } = validateSequentialCode({
-      providedCode: payload.code,
-      lastCode: lastItem?.code,
-      override: payload.overrideCodeValidation,
-    });
-    if (!valid) {
-      throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
-    }
-
-    const existing = await this.productRepository.findByCode(payload.code, organizationId);
-    if (existing) {
-      throw new BadRequestException('Item code already exists');
-    }
-
-    if (payload.barcode) {
-      const barcode = await this.productRepository.findByBarcode(payload.barcode, organizationId);
-      if (barcode) {
-        throw new BadRequestException('Item barcode already exists');
-      }
-    }
-
-    const category = await this.productRepository.findCategoryById(payload.categoryId, organizationId);
+    const category = await this.productRepository.findCategoryById(payload.categoryId);
     if (!category) {
       throw new BadRequestException('Category does not exist');
     }
@@ -64,31 +44,25 @@ export class CreateItemUseCase {
       throw new BadRequestException('Base UOM, Purchase UOM and Sale UOM are required');
     }
     let baseUom, purchaseUom, saleUom;
-    baseUom = await this.productRepository.findUomById(payload.baseUomId, organizationId);
+    baseUom = await this.productRepository.findUomById(payload.baseUomId);
     if (!baseUom) {
       throw new BadRequestException('Base UOM does not exist');
     }
 
-    purchaseUom = await this.productRepository.findUomById(payload.purchaseUomId, organizationId);
+    purchaseUom = await this.productRepository.findUomById(payload.purchaseUomId);
     if (!purchaseUom) {
       throw new BadRequestException('Purchase UOM does not exist');
     }
 
-
-    saleUom = await this.productRepository.findUomById(payload.saleUomId, organizationId);
+    saleUom = await this.productRepository.findUomById(payload.saleUomId);
     if (!saleUom) {
       throw new BadRequestException('Sale UOM does not exist');
     }
 
-
     validateUoms({ baseUom, saleUom, purchaseUom })
-
-
 
     const product = new Item(
       randomUUID(),
-      organizationId,
-      payload.code,
       payload.name,
       payload.genericProductCode ?? null,
       category.id,
@@ -99,17 +73,61 @@ export class CreateItemUseCase {
       baseUom ?? null,
       purchaseUom ?? null,
       saleUom ?? null,
-      payload.barcode ?? null,
       payload.trackLot ?? true,
       payload.trackExpiry ?? true,
       payload.shelfLifeDays ?? null,
       payload.isActive ?? true,
+      payload.imageUrl ?? null,
+      payload.smallImageUrl ?? null,
+      payload.mediumImageUrl ?? null,
+      payload.largeImageUrl ?? null,
     );
-
 
     const created = await this.productRepository.save(product);
 
+    // Every item is org-added for the creating user's org, so it is selectable
+    // at point of sale under strict tenant scoping. Carries org identity fields
+    // (code/barcode/alias) when supplied.
+    await this.organisationItemsService?.upsert(organizationId, created.id, {
+      isActive: true,
+      alias: payload.alias ?? null,
+      code: payload.code ?? null,
+      barcode: payload.barcode ?? null,
+    });
+
+    const withOverlay = await this.productRepository.findById(created.id, organizationId, true);
+
+    for (const item of payload.priceListItems ?? []) {
+      if (!item.priceListId) {
+        throw new BadRequestException('Price list id is required for each price list item');
+      }
+
+      await this.pricingService?.createPriceListItem(
+        {
+          ...item,
+          priceListId: item.priceListId,
+          itemId: created.id,
+        },
+        organizationId,
+      );
+    }
+
+    for (const item of payload.stockItems ?? []) {
+      if (!performedByUserId) {
+        throw new BadRequestException('Performed by user id is required when creating stock items');
+      }
+
+      await this.inventoryService?.adjustByReference(
+        {
+          ...item,
+          itemId: created.id,
+        },
+        performedByUserId,
+        organizationId,
+      );
+    }
+
     await this.cacheService?.invalidateByPrefix(`catalog:list:${organizationId}:`);
-    return created;
+    return withOverlay ?? created;
   }
 }

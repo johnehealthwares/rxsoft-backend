@@ -1,15 +1,11 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import type { ItemOrmEntity } from './item.orm-entity';
-import { DEFAULT_ORGANIZATION_ID } from 'src/shared/constants/persistence-scope';
 
 @Entity('item_categories')
-@Unique('uq_product_categories_org_code', ['organizationId', 'code'])
+@Unique('uq_product_categories_code', ['code'])
 export class ItemCategoryOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @Column({ name: 'organization_id', type: 'uuid', default: DEFAULT_ORGANIZATION_ID  })
-  organizationId!: string;
 
   @ManyToOne(() => ItemCategoryOrmEntity, (parent) => parent.children, { nullable: true })
   @JoinColumn({ name: 'parent_id' })
@@ -23,6 +19,9 @@ export class ItemCategoryOrmEntity {
 
   @Column({ type: 'text' })
   name!: string;
+
+  @Column({ name: 'uom_category_id', type: 'uuid', nullable: true })
+  uomCategoryId!: string | null;
 
   @OneToMany('ItemOrmEntity', 'category')
   items!: ItemOrmEntity[];

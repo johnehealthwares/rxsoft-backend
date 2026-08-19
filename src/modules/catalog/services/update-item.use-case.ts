@@ -24,9 +24,7 @@ export class UpdateItemUseCase {
   ) { }
 
   async execute(productId: string, payload: ReplaceItemDto, organizationId: string, performedByUserId?: string): Promise<Item> {
-     
-
-    const category = await this.productRepository.findCategoryById(payload.categoryId, organizationId);
+    const category = await this.productRepository.findCategoryById(payload.categoryId);
     if (!category) {
       throw new BadRequestException('Category does not exist');
     }
@@ -42,31 +40,25 @@ export class UpdateItemUseCase {
       throw new BadRequestException('Base UOM, Purchase UOM and Sale UOM are required');
     }
     let baseUom, purchaseUom, saleUom;
-    baseUom = await this.productRepository.findUomById(payload.baseUomId, organizationId);
+    baseUom = await this.productRepository.findUomById(payload.baseUomId);
     if (!baseUom) {
       throw new BadRequestException('Base UOM does not exist');
     }
 
-    purchaseUom = await this.productRepository.findUomById(payload.purchaseUomId, organizationId);
+    purchaseUom = await this.productRepository.findUomById(payload.purchaseUomId);
     if (!purchaseUom) {
       throw new BadRequestException('Purchase UOM does not exist');
     }
 
-
-    saleUom = await this.productRepository.findUomById(payload.saleUomId, organizationId);
+    saleUom = await this.productRepository.findUomById(payload.saleUomId);
     if (!saleUom) {
       throw new BadRequestException('Sale UOM does not exist');
     }
 
-
     validateUoms({ baseUom, saleUom, purchaseUom })
-
-
 
     const product = new Item(
       productId,
-      organizationId,
-      payload.code,
       payload.name,
       payload.genericProductCode ?? null,
       category.id,
@@ -77,7 +69,6 @@ export class UpdateItemUseCase {
       baseUom ?? null,
       purchaseUom ?? null,
       saleUom ?? null,
-      payload.barcode ?? null,
       payload.trackLot ?? true,
       payload.trackExpiry ?? true,
       payload.shelfLifeDays ?? null,
@@ -87,7 +78,6 @@ export class UpdateItemUseCase {
       payload.mediumImageUrl ?? null,
       payload.largeImageUrl ?? null,
     );
-
 
     const created = await this.productRepository.save(product);
 
@@ -99,7 +89,7 @@ export class UpdateItemUseCase {
       await this.pricingService?.createPriceListItem(
         {
           ...item,
-          priceListId:item.priceListId,
+          priceListId: item.priceListId,
           itemId: created.id,
         },
         organizationId,

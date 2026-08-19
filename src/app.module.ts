@@ -23,7 +23,6 @@ import { ManufacturersModule } from './modules/manufacturers/manufacturers.modul
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { UserPosConfigModule } from './modules/user-pos-config/user-pos-config.module';
 import { OrganisationConfigModule } from './modules/organisation-config/organisation-config.module';
-import { SeedsModule } from './modules/seeds/seeds.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { WebsiteModule } from './modules/website/website.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -31,6 +30,8 @@ import { ApmModule } from './modules/apm/apm.module';
 import { EhealthwaresModule } from './modules/ehealthwares/ehealthwares.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { UsersProxyModule } from './modules/users-proxy/users-proxy.module';
+import { OrganisationsProxyModule } from './modules/organisations-proxy/organisations-proxy.module';
+import { PrintModule } from './modules/print/print.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -100,7 +101,7 @@ const infrastructureImports = useInMemoryRepos
     ];
 
 const applicationModules = useInMemoryRepos
-  ? [CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule, SeedsModule]
+  ? [CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule]
   : [
       CatalogModule,
       CategoriesModule,
@@ -123,8 +124,9 @@ const applicationModules = useInMemoryRepos
       OrganisationConfigModule,
       WarehousesModule,
       UsersProxyModule,
-      SeedsModule,
+      OrganisationsProxyModule,
       OrdersModule,
+      PrintModule,
     ];
 
 @Module({

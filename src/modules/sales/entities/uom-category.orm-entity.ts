@@ -2,13 +2,10 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Un
 import { UomOrmEntity } from './uom.orm-entity';
 
 @Entity('uom_categories')
-@Unique('uq_uom_categories_org_name', ['organizationId', 'name'])
+@Unique('uq_uom_categories_name', ['name'])
 export class UomCategoryOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @Column({ name: 'organization_id', type: 'text' })
-  organizationId!: string;
 
   @Column({ type: 'text', nullable: true })
   code!: string | null;

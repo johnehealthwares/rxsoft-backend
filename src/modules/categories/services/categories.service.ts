@@ -15,12 +15,11 @@ export class CategoriesService {
     private readonly categoryRepository: Repository<ItemCategoryOrmEntity>,
   ) {}
 
-  async list(query: ListQueryDto, organizationId: string): Promise<{ data: ItemCategoryType[]; total: number }> {
+  async list(query: ListQueryDto, _organizationId: string): Promise<{ data: ItemCategoryType[]; total: number }> {
     const qb = this.categoryRepository
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.parent', 'parent')
-      .where('category.organization_id = :organizationId', { organizationId })
-      .andWhere('category.deleted_at IS NULL');
+      .where('category.deleted_at IS NULL');
 
     if (query.search) {
       qb.andWhere('(category.code ILIKE :search OR category.name ILIKE :search)', { search: `%${query.search}%` });
@@ -32,18 +31,18 @@ export class CategoriesService {
     return { data: data.map(toItemCategoryType), total };
   }
 
-  async getLastCreated(organizationId: string): Promise<{ id: string; code: string; createdAt: string } | null> {
+  async getLastCreated(_organizationId: string): Promise<{ id: string; code: string; createdAt: string } | null> {
     const entity = await this.categoryRepository.findOne({
-      where: { organizationId, deletedAt: IsNull() },
+      where: { deletedAt: IsNull() },
       order: { createdAt: 'DESC' },
     });
     if (!entity) return null;
     return { id: entity.id, code: entity.code, createdAt: entity.createdAt.toISOString() };
   }
 
-  async createCategory(payload: CreateCategoryDto, organizationId: string): Promise<ItemCategoryType> {
+  async createCategory(payload: CreateCategoryDto, _organizationId: string): Promise<ItemCategoryType> {
     const last = await this.categoryRepository.findOne({
-      where: { organizationId, deletedAt: IsNull() },
+      where: { deletedAt: IsNull() },
       order: { createdAt: 'DESC' },
       select: ['code'],
     });
@@ -57,7 +56,7 @@ export class CategoriesService {
     }
 
     const duplicate = await this.categoryRepository.findOne({
-      where: { code: payload.code, organizationId, deletedAt: IsNull() },
+      where: { code: payload.code, deletedAt: IsNull() },
     });
 
     if (duplicate) {
@@ -67,7 +66,7 @@ export class CategoriesService {
     let parent: ItemCategoryOrmEntity | null = null;
     if (payload.parentId) {
       parent = await this.categoryRepository.findOne({
-        where: { id: payload.parentId, organizationId, deletedAt: IsNull() },
+        where: { id: payload.parentId, deletedAt: IsNull() },
       });
       if (!parent) {
         throw new BadRequestException('Parent category not found');
@@ -75,7 +74,6 @@ export class CategoriesService {
     }
 
     const category = this.categoryRepository.create({
-      organizationId,
       code: payload.code,
       name: payload.name,
       parent,
@@ -83,7 +81,7 @@ export class CategoriesService {
 
     const savedCategory = await this.categoryRepository.save(category);
     const fullCategory = await this.categoryRepository.findOneOrFail({
-      where: { id: savedCategory.id, organizationId, deletedAt: IsNull() },
+      where: { id: savedCategory.id, deletedAt: IsNull() },
       relations: ['parent'],
     });
     return toItemCategoryType(fullCategory);
@@ -97,9 +95,9 @@ export class CategoriesService {
     return toItemCategoryType(category);
   }
 
-  async updateCategory(id: string, payload: UpdateCategoryDto, organizationId: string): Promise<ItemCategoryType> {
+  async updateCategory(id: string, payload: UpdateCategoryDto, _organizationId: string): Promise<ItemCategoryType> {
     const category = await this.categoryRepository.findOne({
-      where: { id, organizationId, deletedAt: IsNull() },
+      where: { id, deletedAt: IsNull() },
       relations: ['parent'],
     });
 
@@ -109,7 +107,7 @@ export class CategoriesService {
 
     if (payload.code && payload.code !== category.code) {
       const duplicate = await this.categoryRepository.findOne({
-        where: { code: payload.code, organizationId, deletedAt: IsNull() },
+        where: { code: payload.code, deletedAt: IsNull() },
       });
       if (duplicate) {
         throw new BadRequestException('Category code already exists');
@@ -126,7 +124,7 @@ export class CategoriesService {
         category.parent = null;
       } else {
         const parent = await this.categoryRepository.findOne({
-          where: { id: payload.parentId, organizationId, deletedAt: IsNull() },
+          where: { id: payload.parentId, deletedAt: IsNull() },
         });
         if (!parent) {
           throw new BadRequestException('Parent category not found');
@@ -137,14 +135,14 @@ export class CategoriesService {
 
     const savedCategory = await this.categoryRepository.save(category);
     const fullCategory = await this.categoryRepository.findOneOrFail({
-      where: { id: savedCategory.id, organizationId, deletedAt: IsNull() },
+      where: { id: savedCategory.id, deletedAt: IsNull() },
       relations: ['parent'],
     });
     return toItemCategoryType(fullCategory);
   }
 
-  async archive(id: string, organizationId: string): Promise<void> {
-    const result = await this.categoryRepository.softDelete({ id, organizationId });
+  async archive(id: string, _organizationId: string): Promise<void> {
+    const result = await this.categoryRepository.softDelete({ id });
     if (!result.affected) {
       throw new NotFoundException('Category not found');
     }

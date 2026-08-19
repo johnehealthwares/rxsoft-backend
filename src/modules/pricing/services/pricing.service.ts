@@ -4,6 +4,7 @@ import { DeepPartial, In, Repository } from 'typeorm';
 import { toPriceListItemType, toPriceListType } from '../../../shared/domain/mappers';
 import type { PriceListItemType, PriceListType } from '../../../shared/domain';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
+import { OrganisationItemOrmEntity } from '../../catalog/entities/organisation-item.orm-entity';
 import { StockLocationOrmEntity } from '../../inventory/entities/stock-location.orm-entity';
 import {
   AdjustItemPriceDto,
@@ -27,9 +28,21 @@ export class PricingService {
     private readonly priceListItemRepository: Repository<PriceListItemOrmEntity>,
     @InjectRepository(ItemOrmEntity)
     private readonly itemRepository: Repository<ItemOrmEntity>,
+    @InjectRepository(OrganisationItemOrmEntity)
+    private readonly organisationItemRepository: Repository<OrganisationItemOrmEntity>,
     @InjectRepository(StockLocationOrmEntity)
     private readonly stockLocationRepository: Repository<StockLocationOrmEntity>,
   ) { }
+
+  private async assertItemVisible(organizationId: string, itemId: string): Promise<ItemOrmEntity> {
+    const item = await this.itemRepository.findOne({ where: { id: itemId, isActive: true } });
+    if (!item) throw new BadRequestException('Item not found');
+    const blacklisted = await this.organisationItemRepository.findOne({
+      where: { organizationId, itemId, isActive: false },
+    });
+    if (blacklisted) throw new BadRequestException('Item is blacklisted for this organisation');
+    return item;
+  }
 
   async listPriceLists(
     query: ListPriceListsDto,
@@ -165,8 +178,7 @@ export class PricingService {
   ): Promise<PriceListItemType> {
     const priceList = await this.priceListRepository.findOne({ where: { id: payload.priceListId, organizationId } });
     if (!priceList) throw new NotFoundException('Price list not found');
-    const item = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId, isActive: true } });
-    if (!item) throw new BadRequestException('Item not found');
+    const item = await this.assertItemVisible(organizationId, payload.itemId);
 
     const location = payload.locationId
       ? await this.stockLocationRepository.findOne({ where: { id: payload.locationId, organizationId } })
@@ -252,8 +264,7 @@ export class PricingService {
     }
 
     if (payload.itemId) {
-      const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId, isActive: true } });
-      if (!itemRef) throw new BadRequestException('Item not found');
+      const itemRef = await this.assertItemVisible(organizationId, payload.itemId);
       item.item = itemRef;
     }
 
@@ -285,8 +296,7 @@ export class PricingService {
       where: { id: payload.priceListId, organizationId },
     });
     if (!priceList) throw new NotFoundException('Price list not found');
-    const itemRef = await this.itemRepository.findOne({ where: { id: payload.itemId, organizationId, isActive: true } });
-    if (!itemRef) throw new BadRequestException('Item not found');
+    const itemRef = await this.assertItemVisible(organizationId, payload.itemId);
 
     const location = payload.locationId
       ? await this.stockLocationRepository.findOne({ where: { id: payload.locationId, organizationId } })

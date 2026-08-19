@@ -2,6 +2,7 @@ import { Item } from '../domains/item.entity';
 import { ItemCategory } from '../domains/item-category.entity';
 import { ItemOrmEntity } from '../entities/item.orm-entity';
 import { ItemCategoryOrmEntity } from '../entities/item-category.orm-entity';
+import { OrganisationItemOrmEntity } from '../entities/organisation-item.orm-entity';
 import { ForeignProperty } from '../dto/item-response.dto';
 
 export class CatalogMapper {
@@ -17,11 +18,15 @@ export class CatalogMapper {
     };
   }
 
-  static toDomainItem(orm: ItemOrmEntity): Item {
+  static toDomainItem(orm: ItemOrmEntity, overlay?: OrganisationItemOrmEntity | null): Item {
+    const visibility: Item['visibility'] = overlay
+      ? overlay.isActive
+        ? 'whitelisted'
+        : 'blacklisted'
+      : 'default';
+
     return new Item(
       orm.id,
-      orm.organizationId,
-      orm.code,
       orm.name,
       orm.genericProductCode,
       orm.category?.id,
@@ -32,7 +37,6 @@ export class CatalogMapper {
       orm.baseUom && this.toForeignProperty(orm.baseUom),
       orm.purchaseUom && this.toForeignProperty(orm.purchaseUom),
       orm.saleUom && this.toForeignProperty(orm.saleUom),
-      orm.barcode,
       orm.trackLot,
       orm.trackExpiry,
       orm.shelfLifeDays,
@@ -41,6 +45,10 @@ export class CatalogMapper {
       orm.smallImageUrl ?? null,
       orm.mediumImageUrl ?? null,
       orm.largeImageUrl ?? null,
+      overlay?.code ?? null,
+      overlay?.barcode ?? null,
+      overlay?.alias ?? null,
+      visibility,
     );
   }
 }

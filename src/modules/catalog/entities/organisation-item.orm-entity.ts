@@ -1,21 +1,22 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { ItemOrmEntity } from './item.orm-entity';
-import { OrganizationOrmEntity } from '../../organizations/entities/organization.orm-entity';
 
 @Entity('organisation_items')
 @Unique('uq_org_item_org_item', ['organizationId', 'itemId'])
-@Unique('uq_org_item_org_code', ['organizationId', 'orgItemCode'])
-@Unique('uq_org_item_barcode', ['organizationId', 'barcode'])
+@Index('uq_org_item_org_code', ['organizationId', 'code'], {
+  unique: true,
+  where: 'code IS NOT NULL',
+})
+@Index('uq_org_item_org_barcode', ['organizationId', 'barcode'], {
+  unique: true,
+  where: 'barcode IS NOT NULL',
+})
 export class OrganisationItemOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column({ name: 'organization_id', type: 'text' })
   organizationId!: string;
-
-  @ManyToOne(() => OrganizationOrmEntity, { nullable: false })
-  @JoinColumn({ name: 'organization_id' })
-  organization!: OrganizationOrmEntity;
 
   @Column({ name: 'item_id', type: 'uuid' })
   itemId!: string;
@@ -24,14 +25,15 @@ export class OrganisationItemOrmEntity {
   @JoinColumn({ name: 'item_id' })
   item!: ItemOrmEntity;
 
-  @Column({ name: 'is_active', type: 'boolean', default: true })
+  // true = explicit whitelist, false = explicit blacklist. Absence of a row = not decided (default).
+  @Column({ name: 'is_active', type: 'boolean' })
   isActive!: boolean;
 
   @Column({ type: 'text', nullable: true })
   alias!: string | null;
 
-  @Column({ name: 'org_item_code', type: 'text', nullable: true })
-  orgItemCode!: string | null;
+  @Column({ type: 'text', nullable: true })
+  code!: string | null;
 
   @Column({ type: 'text', nullable: true })
   barcode!: string | null;

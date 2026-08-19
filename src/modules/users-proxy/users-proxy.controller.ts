@@ -55,6 +55,14 @@ export class UsersProxyController {
     const token = auth?.replace('Bearer ', '') ?? '';
     const { posConfig, ...identityPayload } = payload;
 
+    // Sync the per-user session timeout to identity so the token issuer can
+    // apply it at login/refresh time (local copy stays for POS defaults).
+    if (posConfig && posConfig.loginTimeoutMinutes !== undefined) {
+      identityPayload.loginTimeoutMinutes = posConfig.loginTimeoutMinutes === null
+        ? null
+        : Number(posConfig.loginTimeoutMinutes);
+    }
+
     const result = await this.proxy.update(token, id, identityPayload);
 
     if (posConfig) {
@@ -75,6 +83,12 @@ export class UsersProxyController {
   ) {
     const token = auth?.replace('Bearer ', '') ?? '';
     const { posConfig, ...identityPayload } = payload;
+
+    if (posConfig && posConfig.loginTimeoutMinutes !== undefined) {
+      identityPayload.loginTimeoutMinutes = posConfig.loginTimeoutMinutes === null
+        ? null
+        : Number(posConfig.loginTimeoutMinutes);
+    }
 
     const result = await this.proxy.update(token, id, identityPayload);
 

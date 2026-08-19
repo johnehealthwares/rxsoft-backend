@@ -4,12 +4,6 @@ import { AdjustStockByReferenceDto } from 'src/modules/inventory/dto/stock-locat
 import { CreatePriceListItemDto } from 'src/modules/pricing/dto/pricing.dto';
 
 export class CreateItemDto {
-  @ApiProperty({ example: 'PCM001' })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(32)
-  code!: string;
-
   @ApiProperty({ example: 'Paracetamol 500mg Tablet' })
   @IsString()
   @IsNotEmpty()
@@ -40,10 +34,22 @@ export class CreateItemDto {
   @IsString()
   saleUomId?: string;
 
+  // Org-level override fields (stored on the organisation_items whitelist row)
+  @ApiPropertyOptional({ example: 'PCM001' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  code?: string;
+
   @ApiPropertyOptional({ example: '1234567890123' })
   @IsOptional()
   @IsString()
   barcode?: string;
+
+  @ApiPropertyOptional({ example: 'Panadol 500mg' })
+  @IsOptional()
+  @IsString()
+  alias?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()
@@ -84,10 +90,6 @@ export class CreateItemDto {
   @IsOptional()
   @IsString()
   largeImageUrl?: string;
-
-  @ApiPropertyOptional({ default: false })
-  @IsOptional()
-  overrideCodeValidation?: boolean;
 
   @IsOptional()
   priceListItems?: CreatePriceListItemDto[];

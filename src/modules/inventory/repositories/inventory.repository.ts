@@ -24,7 +24,7 @@ export type StockMovement = {
   id: string;
   organizationId: string;
   itemId: string;
-  item?: { id: string; code: string; name: string } | null;
+  item?: { id: string; code: string | null; name: string } | null;
   lotId: string | null;
   fromLocationId: string | null;
   fromLocation?: { id: string; name: string } | null;

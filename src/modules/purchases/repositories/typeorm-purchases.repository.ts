@@ -185,7 +185,7 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
 
       const itemIds = [...new Set(payload.lines.map((l) => l.itemId))];
       const grItems = await itemRepo2.find({
-        where: { id: In(itemIds), organizationId: payload.organizationId },
+        where: { id: In(itemIds) },
         select: ['id', 'baseUomId'],
       });
       const itemBaseUomMap = new Map(grItems.map((i) => [i.id, i.baseUomId]));
