@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
-import type { SalesRepository } from '../repositories/sales.repository';
+import type { SalesAnalytics, SalesAnalyticsQuery, SalesRepository } from '../repositories/sales.repository';
 import { SALES_REPOSITORY } from './sales.di-tokens';
 
 @Injectable()
@@ -43,5 +43,9 @@ export class SalesService {
       saleDate: sale.saleDate,
       totalAmount: sale.totalAmount,
     }));
+  }
+
+  async getAnalytics(organizationId: string, query: Omit<SalesAnalyticsQuery, 'organizationId'>): Promise<SalesAnalytics> {
+    return this.salesRepository.getAnalytics({ ...query, organizationId });
   }
 }

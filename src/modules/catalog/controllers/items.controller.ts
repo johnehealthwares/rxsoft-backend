@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Inject, Param, Patch, Post, Put, Query, StreamableFile, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +14,9 @@ import { ListItemsUseCase } from '../services/list-items.use-case';
 import { Item } from '../domains/item.entity';
 import { ItemOrmEntity } from '../entities/item.orm-entity';
 import { OrganisationItemsService } from '../services/organisation-items.service';
+import { PrintPdfService } from '../../print/services/print-pdf.service';
+import { toCsv } from '../../../shared/utils/csv';
+import { buildTableHtml, prepareExportRows } from '../../../shared/utils/export';
 import { UomOrmEntity } from '../../sales/entities/uom.orm-entity';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -58,6 +61,7 @@ export class ItemsController {
     private readonly uomRepo: Repository<UomOrmEntity>,
     @Inject(ITEM_REPOSITORY)
     private readonly itemRepository: ItemRepository,
+    private readonly printPdfService: PrintPdfService,
   ) {}
 
   private toResponse(item: Item): ItemResponseDto {
@@ -105,7 +109,7 @@ export class ItemsController {
       trackLot: item.trackLot,
       trackExpiry: item.trackExpiry,
       shelfLifeDays: item.shelfLifeDays,
-      isActive: item.isActive,
+      isActive: item.visibility !== 'blacklisted',
       imageUrl: item.imageUrl,
       smallImageUrl: item.smallImageUrl,
       mediumImageUrl: item.mediumImageUrl,
@@ -192,13 +196,49 @@ export class ItemsController {
   @ApiOperation({ summary: 'Get item metrics' })
   async metrics(
     @Query() query: ListItemsDto,
-    @CurrentUser() _currentUser: RequestUser,
+    @CurrentUser() currentUser: RequestUser,
   ) {
     const metricsQuery: ItemMetricsQuery = {
       search: query.search,
       categoryCode: query.categoryCode,
+      organizationId: currentUser.organizationId,
     };
     return this.itemRepository.getMetrics(metricsQuery);
+  }
+
+  @Get('export')
+  @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
+  @Header('Content-Type', 'text/csv')
+  @ApiOperation({ summary: 'Export items as CSV' })
+  async exportCsv(
+    @Query() query: ListItemsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<string> {
+    query.limit = 1000000;
+    query.page = 1;
+    const { items } = await this.listItemsUseCase.execute(query, currentUser.organizationId);
+    return toCsv(prepareExportRows(items.map((item) => this.toResponse(item) as unknown as Record<string, unknown>)));
+  }
+
+  @Get('export/pdf')
+  @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
+  @ApiOperation({ summary: 'Export items as PDF' })
+  async exportPdf(
+    @Query() query: ListItemsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<StreamableFile> {
+    query.limit = 1000000;
+    query.page = 1;
+    const { items } = await this.listItemsUseCase.execute(query, currentUser.organizationId);
+    const rows = prepareExportRows(items.map((item) => this.toResponse(item) as unknown as Record<string, unknown>));
+    const { buffer, filename } = await this.printPdfService.generatePdf(
+      buildTableHtml(rows, 'Items Export'),
+      { filename: 'items.pdf' },
+    );
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Get('me')
@@ -279,7 +319,7 @@ export class ItemsController {
     @CurrentUser() currentUser: RequestUser,
     @Param('itemId') itemId: string,
   ): Promise<ItemResponseDto> {
-    const item = await this.patchItemUseCase.execute(itemId, payload, currentUser.organizationId);
+    const item = await this.patchItemUseCase.execute(itemId, payload, currentUser.organizationId, currentUser.sub);
     return this.toResponse(item);
   }
 

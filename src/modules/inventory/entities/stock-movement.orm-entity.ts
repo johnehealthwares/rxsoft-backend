@@ -1,15 +1,19 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLotOrmEntity } from './stock-lot.orm-entity';
 import { StockLocationOrmEntity } from './stock-location.orm-entity';
 import { ColumnNumericTransformer } from '../../../shared/utils/column-transformer';
 
 @Entity('stock_movements')
+@Index('idx_stock_movements_org', ['organizationId'])
+@Index('idx_stock_movements_item', ['itemId'])
+@Index('idx_stock_movements_doc', ['inventoryDocumentId'])
+@Index('idx_stock_movements_occurred_at', ['occurredAt'])
 export class StockMovementOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'organization_id', type: 'text' })
+  @Column({ name: 'organization_id', type: 'uuid' })
   organizationId!: string;
 
   @Column({ name: 'inventory_document_id', type: 'text', nullable: true })
@@ -50,7 +54,7 @@ export class StockMovementOrmEntity {
   uomId!: string | null;
 
   @Column({ name: 'movement_type', type: 'text' })
-  movementType!: 'in' | 'out' | 'transfer' | 'adjustment';
+  movementType!: 'in' | 'out' | 'transfer' | 'adjustment' | 'base-conversion';
 
   @Column({ type: 'decimal', precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   quantity!: number;

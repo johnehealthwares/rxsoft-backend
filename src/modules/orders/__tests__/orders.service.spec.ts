@@ -422,6 +422,36 @@ describe('OrdersService', () => {
 
       await expect(service.postOrderAsSale('order1', baseDto, currentUser)).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('overrides and persists the order organisation when an explicit organizationId is provided', async () => {
+      const processedOrder = { ...confirmedOrder, orderStatus: 'processing', saleId: 'sale1' };
+      orderRepo.findOne
+        .mockResolvedValueOnce(confirmedOrder)
+        .mockResolvedValueOnce(processedOrder);
+      itemRepo.findBy.mockResolvedValue([{ id: 'item1', baseUomId: 'u1' }]);
+      stockLocationRepo.findOne.mockResolvedValue({ id: 'loc1' });
+      organisationsProxy.findById.mockResolvedValue({ id: 'org2', name: 'Other Org' });
+      const savedSale = { id: 'sale1' };
+      saleRepo.create.mockReturnValue(savedSale);
+      saleRepo.save.mockResolvedValue(savedSale);
+      saleLineRepo.create.mockReturnValue({});
+      saleLineRepo.save.mockResolvedValue({});
+      const savedOrders: any[] = [];
+      orderRepo.save.mockImplementation((o: any) => {
+        savedOrders.push(o);
+        return Promise.resolve(o);
+      });
+
+      await service.postOrderAsSale(
+        'order1',
+        { stockLocationId: 'loc1', organizationId: 'org2' },
+        currentUser,
+      );
+
+      expect(organisationsProxy.findById).toHaveBeenCalledWith('org2');
+      expect(orderRepo.save).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 'org2' }));
+      expect(saleRepo.create).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 'org2' }));
+    });
   });
 
   describe('completeSale', () => {

@@ -10,11 +10,19 @@ export class CatalogMapper {
     return new ItemCategory(orm.id, orm.code, orm.name);
   }
 
-  static toForeignProperty(orm: {id: string, code: string | null, name: string}): ForeignProperty {
+  static toForeignProperty(orm: {
+    id: string;
+    code: string | null;
+    name: string;
+    uomType?: 'reference' | 'bigger' | 'smaller' | null;
+    factor?: number | null;
+  }): ForeignProperty {
     return {
       id: orm.id,
       code: orm.code,
       name: orm.name,
+      ...(orm.uomType !== undefined ? { uomType: orm.uomType } : {}),
+      ...(orm.factor !== undefined ? { factor: Number(orm.factor) } : {}),
     };
   }
 
@@ -40,7 +48,6 @@ export class CatalogMapper {
       orm.trackLot,
       orm.trackExpiry,
       orm.shelfLifeDays,
-      orm.isActive,
       orm.imageUrl ?? null,
       orm.smallImageUrl ?? null,
       orm.mediumImageUrl ?? null,

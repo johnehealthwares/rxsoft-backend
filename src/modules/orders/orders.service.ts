@@ -264,7 +264,21 @@ export class OrdersService {
     if (!order) throw new NotFoundException('Order must be in confirmed status to post as sale');
     if (!order.items?.length) throw new BadRequestException('Order has no items');
 
-    const organizationId = await this.resolveOrderOrg(order, dto.organizationId ?? currentUser.organizationId);
+    // Organisation is updatable: an explicit organizationId overrides the order's
+    // current org (and the caller's org), is validated, and is persisted onto
+    // the order so the order carries it.
+    let organizationId = order.organizationId ?? null;
+    if (dto.organizationId) {
+      const org = await this.organisationsProxy.findById(dto.organizationId);
+      if (!org) throw new BadRequestException('Organization does not exist');
+      organizationId = dto.organizationId;
+      if (order.organizationId !== organizationId) {
+        order.organizationId = organizationId;
+        await this.orderRepo.save(order);
+      }
+    } else if (!organizationId) {
+      organizationId = await this.resolveOrderOrg(order, currentUser.organizationId);
+    }
     if (!organizationId) {
       throw new BadRequestException('Order must be assigned to an organisation before posting as a sale');
     }

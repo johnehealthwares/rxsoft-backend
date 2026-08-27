@@ -12,7 +12,6 @@ import { SalesModule } from './modules/sales/sales.module';
 import { CacheModule } from './common/cache/cache.module';
 import { AuditModule } from './common/audit/audit.module';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
-import { AuditModule as AdminAuditModule } from './modules/audit/audit.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { PurchasesModule } from './modules/purchases/purchases.module';
@@ -31,27 +30,35 @@ import { EhealthwaresModule } from './modules/ehealthwares/ehealthwares.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { UsersProxyModule } from './modules/users-proxy/users-proxy.module';
 import { OrganisationsProxyModule } from './modules/organisations-proxy/organisations-proxy.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { PrintModule } from './modules/print/print.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
- 
+
 const appConfigService = new ConfigService();
 
 export const databaseConfig = {
-  type: appConfigService.get<'postgres' | 'sqlite' | 'sqljs'>('DB_TYPE', 'postgres'),
+  type: appConfigService.get<'postgres' | 'sqlite' | 'sqljs'>(
+    'DB_TYPE',
+    'postgres',
+  ),
   host: appConfigService.get<string>('DB_HOST', 'localhost'),
   port: Number(appConfigService.get<string>('DB_PORT', '5432')),
   username: appConfigService.get<string>('DB_USER', 'postgres'),
   password: appConfigService.get<string>('DB_PASSWORD', 'postgres'),
   database: appConfigService.get<string>('DB_NAME', 'rxsoft'),
-  synchronize: appConfigService.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
-  dropSchema: appConfigService.get<string>('DB_DROP_SCHEMA', 'false') === 'true',
+  synchronize:
+    appConfigService.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
+  dropSchema:
+    appConfigService.get<string>('DB_DROP_SCHEMA', 'false') === 'true',
   logging: appConfigService.get<string>('TYPEORM_LOGGING', 'false') === 'true',
 };
 
-const useInMemoryRepos = appConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
-const useMongoDb = appConfigService.get<string>('USE_MONGODB', 'false') === 'true';
+const useInMemoryRepos =
+  appConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
+const useMongoDb =
+  appConfigService.get<string>('USE_MONGODB', 'false') === 'true';
 const infrastructureImports = useInMemoryRepos
   ? []
   : [
@@ -60,7 +67,10 @@ const infrastructureImports = useInMemoryRepos
             MongooseModule.forRootAsync({
               inject: [ConfigService],
               useFactory: (configService: ConfigService) => ({
-                uri: configService.get<string>('MONGODB_URI', 'mongodb://localhost:27017/apm-campaign'),
+                uri: configService.get<string>(
+                  'MONGODB_URI',
+                  'mongodb://localhost:27017/apm-campaign',
+                ),
               }),
             }),
           ]
@@ -68,10 +78,15 @@ const infrastructureImports = useInMemoryRepos
       TypeOrmModule.forRootAsync({
         inject: [ConfigService],
         useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
-          const type = configService.get<'postgres' | 'sqlite' | 'sqljs'>('DB_TYPE', 'postgres');
+          const type = configService.get<'postgres' | 'sqlite' | 'sqljs'>(
+            'DB_TYPE',
+            'postgres',
+          );
           const database = configService.get<string>('DB_NAME', 'rxsoft');
-          const synchronize = configService.get<string>('DB_SYNCHRONIZE', 'false') === 'true';
-          const dropSchema = configService.get<string>('DB_DROP_SCHEMA', 'false') === 'true';
+          const synchronize =
+            configService.get<string>('DB_SYNCHRONIZE', 'false') === 'true';
+          const dropSchema =
+            configService.get<string>('DB_DROP_SCHEMA', 'false') === 'true';
           const host = configService.get<string>('DB_HOST', 'localhost');
           const port = Number(configService.get<string>('DB_PORT', '5432'));
           const username = configService.get<string>('DB_USER', 'postgres');
@@ -101,7 +116,14 @@ const infrastructureImports = useInMemoryRepos
     ];
 
 const applicationModules = useInMemoryRepos
-  ? [CatalogModule, InventoryModule, SalesModule, ReceivablesModule, ReportsModule, UploadModule]
+  ? [
+      CatalogModule,
+      InventoryModule,
+      SalesModule,
+      ReceivablesModule,
+      ReportsModule,
+      UploadModule,
+    ]
   : [
       CatalogModule,
       CategoriesModule,
@@ -115,7 +137,6 @@ const applicationModules = useInMemoryRepos
       ManufacturersModule,
       AccountingModule,
       ReportsModule,
-      AdminAuditModule,
       WebsiteModule,
       ApmModule.forRoot(),
       EhealthwaresModule.forRoot(),
@@ -127,6 +148,7 @@ const applicationModules = useInMemoryRepos
       OrganisationsProxyModule,
       OrdersModule,
       PrintModule,
+      PaymentsModule,
     ];
 
 @Module({
@@ -135,10 +157,10 @@ const applicationModules = useInMemoryRepos
       isGlobal: true, // Makes ConfigModule available everywhere
     }),
     ...infrastructureImports,
-     ServeStaticModule.forRoot({
-       rootPath: join(__dirname, '..', 'public'),
-       exclude: ['/api/*rest'],
-     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      exclude: ['/api/*rest'],
+    }),
     CacheModule,
     AuditModule,
     ...applicationModules,

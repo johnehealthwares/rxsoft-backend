@@ -9,6 +9,12 @@ export class ForeignProperty {
 
   @ApiProperty()
   name!: string;
+
+  @ApiPropertyOptional({ example: 'reference' })
+  uomType?: 'reference' | 'bigger' | 'smaller' | null;
+
+  @ApiPropertyOptional({ example: 1 })
+  factor?: number | null;
 }
 
 

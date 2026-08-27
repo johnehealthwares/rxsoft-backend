@@ -39,7 +39,6 @@ describe('GetItemUseCase', () => {
       true,
       true,
       null,
-      true,
     );
     itemRepository.findById.mockResolvedValue(item);
 

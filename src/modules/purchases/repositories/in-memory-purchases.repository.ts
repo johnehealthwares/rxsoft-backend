@@ -8,6 +8,8 @@ import {
   GoodsReceiptPayload,
   PurchaseListQuery,
   PurchaseUpdatePayload,
+  PurchasesAnalytics,
+  PurchasesAnalyticsQuery,
   PurchasesRepository,
   ReceiveGoodsResult,
   ReceiptListQuery,
@@ -175,5 +177,95 @@ export class InMemoryPurchasesRepository implements PurchasesRepository {
 
   async findLastReceipt(_organizationId: string): Promise<Pick<GoodsReceiptOrmEntity, 'receiptNumber'> | null> {
     return null;
+  }
+
+  async getAnalytics(query: PurchasesAnalyticsQuery): Promise<PurchasesAnalytics> {
+    let items = this.purchaseOrders.filter((po) => po.organizationId === query.organizationId);
+
+    if (query.from) {
+      items = items.filter((po) => po.orderDate >= query.from!);
+    }
+    if (query.to) {
+      items = items.filter((po) => po.orderDate <= query.to!);
+    }
+    if (query.warehouseId) {
+      items = items.filter((po) => po.warehouseId === query.warehouseId);
+    }
+    if (query.supplierId) {
+      items = items.filter((po) => po.supplierId === query.supplierId);
+    }
+
+    const poIds = new Set(items.map((po) => po.id));
+    const totalValue = items.reduce((sum, po) => sum + Number(po.totalAmount || 0), 0);
+    const totalPOs = items.length;
+    const activeSuppliers = new Set(items.map((po) => po.supplierId)).size;
+    const itemsPurchased = this.purchaseOrderLines
+      .filter((line) => line.purchaseOrder && poIds.has(line.purchaseOrder.id))
+      .reduce((sum, line) => sum + Number(line.orderedQty || 0), 0);
+
+    const byDay = new Map<string, { value: number; orders: number }>();
+    for (const po of items) {
+      const day = String(po.orderDate).slice(0, 10);
+      const current = byDay.get(day) ?? { value: 0, orders: 0 };
+      current.value += Number(po.totalAmount || 0);
+      current.orders += 1;
+      byDay.set(day, current);
+    }
+
+    const supplierMap = new Map<string, number>();
+    for (const po of items) {
+      supplierMap.set(po.supplierId, (supplierMap.get(po.supplierId) ?? 0) + Number(po.totalAmount || 0));
+    }
+    const bySupplier = [...supplierMap.entries()]
+      .map(([supplierId, value]) => ({ supplierId, name: supplierId, value }))
+      .sort((a, b) => b.value - a.value);
+
+    const locationMap = new Map<string, number>();
+    for (const po of items) {
+      locationMap.set(po.warehouseId, (locationMap.get(po.warehouseId) ?? 0) + Number(po.totalAmount || 0));
+    }
+    const byLocation = [...locationMap.entries()].map(([warehouseId, value]) => ({
+      warehouseId,
+      name: warehouseId,
+      value,
+      pct: totalValue > 0 ? Number(((value / totalValue) * 100).toFixed(1)) : 0,
+    }));
+
+    const statusMap = new Map<string, number>();
+    for (const po of items) {
+      statusMap.set(po.status, (statusMap.get(po.status) ?? 0) + 1);
+    }
+    const byStatus = [...statusMap.entries()].map(([status, count]) => ({ status, count }));
+
+    const recent = [...items]
+      .sort((a, b) => String(b.orderDate).localeCompare(String(a.orderDate)))
+      .slice(0, 5)
+      .map((po) => ({
+        id: po.id,
+        purchaseOrderNumber: po.purchaseOrderNumber,
+        orderDate: po.orderDate,
+        status: po.status,
+        totalAmount: Number(po.totalAmount || 0),
+        supplierName: null,
+      }));
+
+    return {
+      summary: {
+        totalValue,
+        totalPOs,
+        itemsPurchased,
+        averagePOValue: totalPOs > 0 ? Number((totalValue / totalPOs).toFixed(2)) : 0,
+        activeSuppliers,
+        topSupplier: bySupplier[0] ? { ...bySupplier[0] } : null,
+      },
+      trend: [...byDay.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([day, value]) => ({ day, ...value })),
+      byCategory: [],
+      bySupplier,
+      byLocation,
+      byStatus,
+      recent,
+    };
   }
 }

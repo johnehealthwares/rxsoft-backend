@@ -85,7 +85,7 @@ export class TypeormReceivablesRepository implements ReceivablesRepository {
       const paymentMethodRepo = manager.getRepository(PaymentMethodOrmEntity);
 
       const paymentMethod = await paymentMethodRepo.findOne({
-        where: { id: payload.paymentMethodId, organizationId: payload.organizationId },
+        where: { id: payload.paymentMethodId },
       });
       if (!paymentMethod) {
         throw new NotFoundException('Payment method not found');

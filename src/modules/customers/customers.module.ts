@@ -8,9 +8,10 @@ import { SuppliersController } from './controllers/suppliers.controller';
 import { CustomersService } from './services/customers.service';
 import { SuppliersService } from './services/suppliers.service';
 import { PartyOrmEntity } from './entities';
+import { PrintModule } from '../print/print.module';
 
 @Module({
-  imports: [JwtModule.register({}), TypeOrmModule.forFeature([PartyOrmEntity])],
+  imports: [JwtModule.register({}), TypeOrmModule.forFeature([PartyOrmEntity]), PrintModule],
   controllers: [CustomersController, SuppliersController],
   providers: [CustomersService, SuppliersService, JwtAuthGuard, RolesGuard],
   exports: [CustomersService, SuppliersService],

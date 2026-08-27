@@ -13,12 +13,7 @@ export function validateUoms({ purchaseUom, saleUom, baseUom }) {
     }
   });
 
-  // 2. Base UOM must be reference
-  if (baseUom.uomType !== "reference" || baseUom.factor !== 1) {
-    throw new BadRequestException(`Base UoM (${baseUom.name}) must be a uomType reference with factor = 1, current uomType - ${baseUom.uomType}, factor - ${baseUom.factor}}`);
-  }
-
-  // 3. Factors must be positive
+  // 2. Factors must be positive
   [purchaseUom, saleUom, baseUom].forEach(uom => {
     if (uom.factor <= 0) {
       throw new BadRequestException(`${uom.name} must have a positive factor`);

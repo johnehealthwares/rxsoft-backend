@@ -37,7 +37,6 @@ export type AccountReceivableType = {
 
 export type PaymentMethodType = {
   id: string;
-  organizationId: string;
   code: string;
   name: string;
   methodType: 'cash' | 'card' | 'transfer' | 'wallet' | 'insurance';

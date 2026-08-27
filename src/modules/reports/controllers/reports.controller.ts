@@ -1,5 +1,5 @@
 import { Controller, Get, Header, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -9,6 +9,9 @@ import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import { toCsv } from '../../../shared/utils/csv';
 import { SalesService } from '../../sales/services/sales.service';
 import { InventoryService } from '../../inventory/services/inventory.service';
+import { PurchasesService } from '../../purchases/services/purchases.service';
+import { SalesAnalyticsQueryDto } from '../dto/sales-analytics-query.dto';
+import { PurchasesAnalyticsQueryDto } from '../dto/purchases-analytics-query.dto';
 
 @ApiTags('reports')
 @ApiBearerAuth()
@@ -18,7 +21,28 @@ export class ReportsController {
   constructor(
     private readonly salesService: SalesService,
     private readonly inventoryService: InventoryService,
+    private readonly purchasesService: PurchasesService,
   ) {}
+
+  @Get('purchases-analytics')
+  @Roles('super_admin', 'admin', 'manager', 'auditor')
+  @ApiOperation({ summary: 'Get the purchases analytics dashboard payload' })
+  async purchasesAnalytics(
+    @Query() query: PurchasesAnalyticsQueryDto,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    return this.purchasesService.getAnalytics(currentUser.organizationId, query);
+  }
+
+  @Get('sales-analytics')
+  @Roles('super_admin', 'admin', 'manager', 'auditor')
+  @ApiOperation({ summary: 'Get the sales analytics dashboard payload' })
+  async salesAnalytics(
+    @Query() query: SalesAnalyticsQueryDto,
+    @CurrentUser() currentUser: RequestUser,
+  ) {
+    return this.salesService.getAnalytics(currentUser.organizationId, query);
+  }
 
   @Get('daily-sales')
   @Roles('super_admin', 'admin', 'manager', 'auditor')

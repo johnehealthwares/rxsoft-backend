@@ -34,6 +34,23 @@ export class ReplaceItemDto {
   @IsNotEmpty()
   saleUomId!: string;
 
+  // Org-level override fields (stored on the organisation_items whitelist row)
+  @ApiPropertyOptional({ example: 'PCM001' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  code?: string;
+
+  @ApiPropertyOptional({ example: '1234567890123' })
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
+  @ApiPropertyOptional({ example: 'Panadol 500mg' })
+  @IsOptional()
+  @IsString()
+  alias?: string;
+
   @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()

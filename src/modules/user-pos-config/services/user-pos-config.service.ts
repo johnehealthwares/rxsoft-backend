@@ -79,6 +79,14 @@ export class UserPosConfigService {
     return toType(entity!);
   }
 
+  async listByOrganization(organizationId: string): Promise<UserPosConfigType[]> {
+    const entities = await this.repo.find({
+      where: { organizationId },
+      relations: ['stockLocation', 'defaultCustomer', 'defaultPriceList'],
+    });
+    return entities.map(toType);
+  }
+
   async update(
     userId: string,
     organizationId: string,
@@ -119,5 +127,12 @@ export class UserPosConfigService {
       relations: ['stockLocation', 'defaultCustomer', 'defaultPriceList'],
     });
     return toType(reloaded!);
+  }
+
+  async remove(userId: string, organizationId?: string): Promise<void> {
+    await this.repo.delete({
+      userId,
+      ...(organizationId ? { organizationId } : {}),
+    });
   }
 }

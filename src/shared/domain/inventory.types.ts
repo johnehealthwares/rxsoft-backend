@@ -13,12 +13,14 @@ export type WarehouseType = {
 export type StockLocationType = {
   id: string;
   organizationId: string;
+  locationId: string | null;
   warehouseId: string | null;
   warehouse: WarehouseType | null;
   parentId: string | null;
   parent: {
     id: string;
     organizationId: string;
+    locationId: string | null;
     warehouseId: string | null;
     code: string | null;
     name: string;

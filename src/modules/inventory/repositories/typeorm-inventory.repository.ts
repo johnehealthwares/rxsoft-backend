@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { Brackets, DataSource, IsNull, Repository, SelectQueryBuilder } from 'typeorm';
 import { ItemOrmEntity } from '../../catalog/entities/item.orm-entity';
 import { StockLocationOrmEntity } from '../entities/stock-location.orm-entity';
 import { StockAdjustment } from '../domains/stock-adjustment.entity';
@@ -10,7 +10,11 @@ import { StockAdjustmentOrmEntity } from '../entities/stock-adjustment.orm-entit
 import { StockBalanceOrmEntity } from '../entities/stock-balance.orm-entity';
 import { StockMovementOrmEntity } from '../entities/stock-movement.orm-entity';
 import { StoreStockLocationOrmEntity } from '../entities/store-stock-location.orm-entity';
+import { applyFilters } from '../../../database/list';
+import { convertUomQuantity } from '../../../shared/utils/uom';
+import { DEFAULT_SYSTEM_USER_ID } from '../../../shared/constants/persistence-scope';
 import {
+  BaseUomChangePayload,
   CreateStoreStockLocationPayload,
   InventoryRepository,
   AdjustStockByReferencePayload,
@@ -21,6 +25,73 @@ import {
   StoreStockLocationQuery,
   StockBalanceQuery,
 } from './inventory.repository';
+
+const STOCK_BALANCE_FILTER_COLUMNS: Record<string, string> = {
+  item: 'item.id',
+  itemId: 'item.id',
+  location: 'location.id',
+  locationId: 'location.id',
+  quantityOnHand: 'stock_balance.quantity_on_hand',
+  quantityReserved: 'stock_balance.quantity_reserved',
+  averageCost: 'stock_balance.average_cost',
+  lotId: 'stock_balance.lot_id',
+};
+
+const STOCK_BALANCE_SORT_COLUMNS: Record<string, string> = {
+  item: 'item.name',
+  location: 'location.name',
+  quantityOnHand: 'stock_balance.quantityOnHand',
+  quantityReserved: 'stock_balance.quantityReserved',
+  averageCost: 'stock_balance.averageCost',
+  updatedAt: 'stock_balance.updatedAt',
+  createdAt: 'stock_balance.createdAt',
+  id: 'stock_balance.id',
+};
+
+const STOCK_MOVEMENT_FILTER_COLUMNS: Record<string, string> = {
+  item: 'item.id',
+  itemId: 'item.id',
+  movementType: 'stock_movement.movement_type',
+  occurredAt: 'stock_movement.occurred_at',
+  createdAt: 'stock_movement.created_at',
+};
+
+const STOCK_MOVEMENT_SORT_COLUMNS: Record<string, string> = {
+  item: 'item.name',
+  movementType: 'stock_movement.movementType',
+  quantity: 'stock_movement.quantity',
+  occurredAt: 'stock_movement.occurredAt',
+  createdAt: 'stock_movement.createdAt',
+  id: 'stock_movement.id',
+};
+
+function applyJsonFiltersOrIlike(
+  trimmed: string,
+  qb: SelectQueryBuilder<any>,
+  alias: string,
+  columnMap: Record<string, string>,
+  ilike: (qb: SelectQueryBuilder<any>, needle: string) => void,
+): boolean {
+  if (trimmed.startsWith('{')) {
+    let filters: Record<string, unknown> | null = null;
+    try {
+      filters = JSON.parse(trimmed) as Record<string, unknown>;
+    } catch {
+      filters = null;
+    }
+    if (filters && typeof filters === 'object') {
+      const mapped: Record<string, any> = {};
+      for (const [key, raw] of Object.entries(filters)) {
+        if (raw == null) continue;
+        mapped[columnMap[key] ?? key] = raw;
+      }
+      applyFilters(qb, alias, mapped);
+      return true;
+    }
+  }
+  ilike(qb, trimmed);
+  return false;
+}
 
 @Injectable()
 export class TypeormInventoryRepository implements InventoryRepository {
@@ -49,7 +120,6 @@ export class TypeormInventoryRepository implements InventoryRepository {
       .where('stock_balance.organization_id = :organizationId', {
         organizationId: query.organizationId,
       })
-      .orderBy('stock_balance.updatedAt', 'DESC')
       .skip(query.offset)
       .take(query.limit);
 
@@ -64,6 +134,13 @@ export class TypeormInventoryRepository implements InventoryRepository {
         locationId: query.locationId,
       });
     }
+
+    this.applyStockBalanceSearch(qb, query.search);
+
+    qb.orderBy(
+      this.resolveStockBalanceSort(query.sortBy),
+      query.sortOrder?.toUpperCase() === 'asc' ? 'ASC' : 'DESC',
+    );
 
     const [items, total] = await qb.getManyAndCount();
 
@@ -94,7 +171,6 @@ export class TypeormInventoryRepository implements InventoryRepository {
       .where('stock_movement.organization_id = :organizationId', {
         organizationId: query.organizationId,
       })
-      .orderBy('stock_movement.occurredAt', 'DESC')
       .skip(query.offset)
       .take(query.limit);
 
@@ -120,6 +196,13 @@ export class TypeormInventoryRepository implements InventoryRepository {
     if (query.toDate) {
       qb.andWhere('stock_movement.occurred_at <= :toDate', { toDate: query.toDate });
     }
+
+    this.applyStockMovementSearch(qb, query.search);
+
+    qb.orderBy(
+      this.resolveStockMovementSort(query.sortBy),
+      query.sortOrder?.toUpperCase() === 'asc' ? 'ASC' : 'DESC',
+    );
 
     const [items, total] = await qb.getManyAndCount();
     return {
@@ -148,6 +231,53 @@ export class TypeormInventoryRepository implements InventoryRepository {
       })),
       total,
     };
+  }
+
+  private applyStockBalanceSearch(qb: SelectQueryBuilder<any>, search?: string): void {
+    if (!search) return;
+    const trimmed = search.trim();
+    if (!trimmed) return;
+
+    if (
+      applyJsonFiltersOrIlike(trimmed, qb, 'stock_balance', STOCK_BALANCE_FILTER_COLUMNS, (q, needle) => {
+        q.andWhere(
+          new Brackets((where) => {
+            where.orWhere('item.name ILIKE :search', { search: `%${needle}%` });
+            where.orWhere('item.code ILIKE :search', { search: `%${needle}%` });
+          }),
+        );
+      })
+    ) {
+      return;
+    }
+  }
+
+  private applyStockMovementSearch(qb: SelectQueryBuilder<any>, search?: string): void {
+    if (!search) return;
+    const trimmed = search.trim();
+    if (!trimmed) return;
+
+    if (
+      applyJsonFiltersOrIlike(trimmed, qb, 'stock_movement', STOCK_MOVEMENT_FILTER_COLUMNS, (q, needle) => {
+        q.andWhere(
+          new Brackets((where) => {
+            where.orWhere('item.name ILIKE :search', { search: `%${needle}%` });
+            where.orWhere('item.code ILIKE :search', { search: `%${needle}%` });
+            where.orWhere('stock_movement.movement_type ILIKE :search', { search: `%${needle}%` });
+          }),
+        );
+      })
+    ) {
+      return;
+    }
+  }
+
+  private resolveStockBalanceSort(sortBy?: string): string {
+    return STOCK_BALANCE_SORT_COLUMNS[sortBy ?? ''] ?? 'stock_balance.updatedAt';
+  }
+
+  private resolveStockMovementSort(sortBy?: string): string {
+    return STOCK_MOVEMENT_SORT_COLUMNS[sortBy ?? ''] ?? 'stock_movement.occurredAt';
   }
 
   async applyStockAdjustment(adjustment: StockAdjustment, organizationId: string): Promise<StockBalance> {
@@ -214,7 +344,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const itemRepo = manager.getRepository(ItemOrmEntity);
       const stockLocationRepo = manager.getRepository(StockLocationOrmEntity);
 
-      const item = await itemRepo.findOne({
+const item = await itemRepo.findOne({
         where: { id: payload.itemId },
       });
       if (!item) throw new NotFoundException('Item not found');
@@ -303,7 +433,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
       const [fromLocation, toLocation, item] = await Promise.all([
         stockLocationRepo.findOne({ where: { id: payload.fromLocationId, organizationId: payload.organizationId } }),
         stockLocationRepo.findOne({ where: { id: payload.toLocationId, organizationId: payload.organizationId } }),
-        itemRepo.findOne({ where: { id: payload.itemId, isActive: true } }),
+        itemRepo.findOne({ where: { id: payload.itemId } }),
       ]);
       if (!fromLocation) throw new NotFoundException('Source stock location not found');
       if (!toLocation) throw new NotFoundException('Destination stock location not found');
@@ -378,6 +508,7 @@ export class TypeormInventoryRepository implements InventoryRepository {
           lot: payload.lotId ? { id: payload.lotId } : null,
           fromLocation: delta < 0 ? { id: payload.fromLocationId } : null,
           toLocation: delta > 0 ? { id: payload.toLocationId } : null,
+          uomId: payload.uomId ?? null,
           movementType: 'transfer',
           quantity: payload.quantity,
           unitCost: balance.averageCost ?? null,
@@ -391,6 +522,72 @@ export class TypeormInventoryRepository implements InventoryRepository {
         fromBalance: InventoryMapper.toDomainStockBalance(savedFromBalance),
         toBalance: InventoryMapper.toDomainStockBalance(savedToBalance),
       };
+    });
+  }
+
+  async rebaseStockForBaseUomChange(payload: BaseUomChangePayload): Promise<number> {
+    return this.dataSource.transaction(async (manager) => {
+      const stockBalanceRepo = manager.getRepository(StockBalanceOrmEntity);
+      const stockAdjustmentRepo = manager.getRepository(StockAdjustmentOrmEntity);
+      const stockMovementRepo = manager.getRepository(StockMovementOrmEntity);
+
+      const balances = await stockBalanceRepo.find({
+        where: { item: { id: payload.itemId } },
+        relations: { item: true, location: true, lot: true },
+      });
+
+      // Amount of NEW base units per OLD base unit (reference-relative).
+      const ratio = convertUomQuantity(1, payload.oldBase, payload.newBase);
+      let processed = 0;
+
+      for (const balance of balances) {
+        const oldOnHand = Number(balance.quantityOnHand);
+        const oldReserved = Number(balance.quantityReserved);
+        const oldAvgCost = Number(balance.averageCost ?? 0);
+
+        const newOnHand = Number((oldOnHand * ratio).toFixed(4));
+        const newReserved = Number((oldReserved * ratio).toFixed(4));
+        const newAvgCost = Number((oldAvgCost * ratio).toFixed(4));
+        const delta = Number((newOnHand - oldOnHand).toFixed(4));
+
+        if (delta === 0 && newReserved === oldReserved) {
+          continue;
+        }
+
+        balance.quantityOnHand = newOnHand;
+        balance.quantityReserved = newReserved;
+        balance.averageCost = newAvgCost;
+        const savedBalance = await stockBalanceRepo.save(balance);
+
+        const adjustmentEntity = stockAdjustmentRepo.create({
+          stockBalance: savedBalance,
+          reason: 'base-conversion',
+          deltaQuantity: delta,
+          performedByUserId: payload.performedByUserId ?? DEFAULT_SYSTEM_USER_ID,
+          performedAt: new Date(),
+        });
+        const savedAdjustment = await stockAdjustmentRepo.save(adjustmentEntity);
+
+        const movement = stockMovementRepo.create({
+          organizationId: balance.organizationId,
+          inventoryDocumentId: savedAdjustment.id,
+          inventoryDocumentLineId: null,
+          item: { id: balance.item.id },
+          lot: balance.lot?.id ? { id: balance.lot.id } : null,
+          fromLocation: null,
+          toLocation: null,
+          uomId: payload.newBaseUomId ?? null,
+          movementType: 'base-conversion',
+          quantity: Math.abs(delta),
+          unitCost: savedBalance.averageCost ?? null,
+          occurredAt: new Date(),
+          createdByUserId: payload.performedByUserId ?? DEFAULT_SYSTEM_USER_ID,
+        });
+        await stockMovementRepo.save(movement);
+        processed += 1;
+      }
+
+      return processed;
     });
   }
 

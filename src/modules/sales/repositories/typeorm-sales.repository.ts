@@ -30,6 +30,11 @@ import {
   CreateSaleRefundResult,
   CreateSaleRepositoryPayload,
   CreateSaleResult,
+  SalesAnalytics,
+  SalesAnalyticsCategory,
+  SalesAnalyticsLocation,
+  SalesAnalyticsQuery,
+  SalesAnalyticsTrendPoint,
   SalesListQuery,
   SalesMetrics,
   SalesMetricsQuery,
@@ -57,7 +62,7 @@ function toDomain(entity: SaleOrmEntity & { storeLocationName?: string }): Sale 
 export class TypeormSalesRepository implements SalesRepository {
   async findById(organizationId: string, saleId: string): Promise<Sale | null> {
     const entity = await this.saleRepository.findOne({
-      where: { id: saleId, organizationId },
+      where: { id: saleId, ...(organizationId ? { organizationId } : {}) },
       relations: [
         'customer',
         'lines',
@@ -107,10 +112,14 @@ export class TypeormSalesRepository implements SalesRepository {
   ) {}
 
   async list(query: SalesListQuery): Promise<{ items: Sale[]; total: number }> {
-    const qb = this.saleRepository
-      .createQueryBuilder('sale')
-      .where('sale.organization_id = :organizationId', { organizationId: query.organizationId })
-      .orderBy('sale.saleDate', 'DESC')
+    const qb = this.saleRepository.createQueryBuilder('sale');
+    // Empty organizationId = global super-admin browse: no tenant predicate.
+    if (query.organizationId) {
+      qb.andWhere('sale.organization_id = :organizationId', {
+        organizationId: query.organizationId,
+      });
+    }
+    qb.orderBy('sale.saleDate', 'DESC')
       .skip(query.offset)
       .take(query.limit);
 
@@ -168,8 +177,12 @@ export class TypeormSalesRepository implements SalesRepository {
       }
     };
 
-    const baseQb = this.saleRepository.createQueryBuilder('sale')
-      .where('sale.organization_id = :organizationId', { organizationId: query.organizationId });
+    const baseQb = this.saleRepository.createQueryBuilder('sale');
+    if (query.organizationId) {
+      baseQb.andWhere('sale.organization_id = :organizationId', {
+        organizationId: query.organizationId,
+      });
+    }
     await applySearch(baseQb);
 
     const totalSales = await baseQb.clone().andWhere("sale.status = 'posted'").getCount();
@@ -203,7 +216,6 @@ export class TypeormSalesRepository implements SalesRepository {
       .innerJoin('sale.lines', 'sale_line')
       .innerJoin('sale_line.item', 'item')
       .innerJoin('item.category', 'cat')
-      .where('sale.organization_id = :organizationId', { organizationId: query.organizationId })
       .andWhere("sale.status = 'posted'")
       .select([
         'cat.code AS category',
@@ -211,18 +223,18 @@ export class TypeormSalesRepository implements SalesRepository {
         'COALESCE(SUM(sale_line.line_total), 0) AS revenue',
       ])
       .groupBy('cat.code')
-      .orderBy('revenue', 'DESC')
+      .orderBy('revenue', 'DESC');
+
+    if (query.organizationId) {
+      categoryRows.andWhere('sale.organization_id = :organizationId', {
+        organizationId: query.organizationId,
+      });
+    }
+    const categoryResult = await categoryRows
       .getRawMany<{ category: string; count: string; revenue: string }>();
 
     const byCategory: Record<string, { count: number; revenue: number }> = {};
-    for (const row of categoryRows) {
-      byCategory[row.category] = {
-        count: Number(row.count),
-        revenue: Number(row.revenue),
-      };
-    }
-
-    for (const row of categoryRows) {
+    for (const row of categoryResult) {
       byCategory[row.category] = {
         count: Number(row.count),
         revenue: Number(row.revenue),
@@ -230,6 +242,136 @@ export class TypeormSalesRepository implements SalesRepository {
     }
 
     return { totalSales, totalRevenue, inProgress, byChannel, byCategory };
+  }
+
+  /**
+   * Aggregates the Sales Analytics dashboard payload in one pass. Applies the same
+   * tenant + date/store/category/payment filters to every sub-series so the KPI
+   * cards and chart segments reconcile.
+   */
+  async getAnalytics(query: SalesAnalyticsQuery): Promise<SalesAnalytics> {
+    const [summary, itemsSold, refunds, trendRows, categoryRows, locationRows] = await Promise.all([
+      this.buildAnalyticsBaseQb(query)
+        .select('COUNT(DISTINCT sale.id)', 'totalSales')
+        .addSelect('COALESCE(SUM(sale.total_amount), 0)', 'totalRevenue')
+        .getRawOne<{ totalSales: string; totalRevenue: string }>(),
+      this.buildAnalyticsBaseQb(query)
+        .leftJoin('sale.lines', 'sale_line')
+        .select('COALESCE(SUM(sale_line.quantity), 0)', 'itemsSold')
+        .getRawOne<{ itemsSold: string }>(),
+      this.buildAnalyticsBaseQb(query)
+        .leftJoin('sale.refunds', 'sale_refund')
+        .andWhere("sale_refund.status = 'posted'")
+        .select('COALESCE(SUM(sale_refund.total_amount), 0)', 'refunds')
+        .getRawOne<{ refunds: string }>(),
+      this.buildAnalyticsBaseQb(query)
+        .select("TO_CHAR(sale.sale_date, 'YYYY-MM-DD')", 'day')
+        .addSelect('COUNT(DISTINCT sale.id)', 'orders')
+        .addSelect('COALESCE(SUM(sale.total_amount), 0)', 'revenue')
+        .groupBy('day')
+        .orderBy('day', 'ASC')
+        .getRawMany<{ day: string; orders: string; revenue: string }>(),
+      this.buildAnalyticsBaseQb(query)
+        .innerJoin('sale.lines', 'sale_line')
+        .innerJoin('sale_line.item', 'item')
+        .innerJoin('item.category', 'cat')
+        .select([
+          'cat.code AS code',
+          'cat.name AS name',
+          'COUNT(DISTINCT sale.id) AS orders',
+          'COALESCE(SUM(sale_line.line_total), 0) AS revenue',
+        ])
+        .groupBy('cat.code')
+        .addGroupBy('cat.name')
+        .orderBy('revenue', 'DESC')
+        .limit(5)
+        .getRawMany<{ code: string; name: string; orders: string; revenue: string }>(),
+      this.buildAnalyticsBaseQb(query)
+        .leftJoin(StockLocationOrmEntity, 'loc', 'loc.id = sale.stock_location_id')
+        .select([
+          'sale.stock_location_id AS stockLocationId',
+          "COALESCE(loc.name, 'Unassigned') AS name",
+          'COUNT(DISTINCT sale.id) AS orders',
+          'COALESCE(SUM(sale.total_amount), 0) AS revenue',
+        ])
+        .groupBy('sale.stock_location_id')
+        .addGroupBy('loc.name')
+        .orderBy('revenue', 'DESC')
+        .getRawMany<{ stockLocationId: string; name: string; orders: string; revenue: string }>(),
+    ]);
+
+    const totalSales = Number(summary?.totalSales ?? 0);
+    const totalRevenue = Number(summary?.totalRevenue ?? 0);
+
+    const trend: SalesAnalyticsTrendPoint[] = (trendRows ?? []).map((row) => ({
+      day: row.day,
+      revenue: Number(row.revenue),
+      orders: Number(row.orders),
+    }));
+
+    const byCategory: SalesAnalyticsCategory[] = (categoryRows ?? []).map((row) => ({
+      code: row.code,
+      name: row.name,
+      revenue: Number(row.revenue),
+      orders: Number(row.orders),
+      pct: totalRevenue > 0 ? Number(((Number(row.revenue) / totalRevenue) * 100).toFixed(1)) : 0,
+    }));
+
+    const byLocation: SalesAnalyticsLocation[] = (locationRows ?? []).map((row) => ({
+      stockLocationId: row.stockLocationId,
+      name: row.name,
+      revenue: Number(row.revenue),
+    }));
+
+    return {
+      summary: {
+        totalRevenue,
+        totalSales,
+        averageOrderValue: totalSales > 0 ? Number((totalRevenue / totalSales).toFixed(2)) : 0,
+        itemsSold: Number(itemsSold?.itemsSold ?? 0),
+        refunds: Number(refunds?.refunds ?? 0),
+      },
+      trend,
+      byCategory,
+      byLocation,
+    };
+  }
+
+  private buildAnalyticsBaseQb(query: SalesAnalyticsQuery): import('typeorm').SelectQueryBuilder<SaleOrmEntity> {
+    const qb = this.saleRepository.createQueryBuilder('sale');
+
+    if (query.organizationId) {
+      qb.andWhere('sale.organization_id = :organizationId', { organizationId: query.organizationId });
+    }
+    qb.andWhere("sale.status = 'posted'");
+
+    if (query.from) {
+      qb.andWhere('sale.sale_date >= :from', { from: query.from });
+    }
+    if (query.to) {
+      qb.andWhere('sale.sale_date <= :to', { to: query.to });
+    }
+    if (query.stockLocationId) {
+      qb.andWhere('sale.stock_location_id = :stockLocationId', { stockLocationId: query.stockLocationId });
+    }
+    if (query.categoryCode) {
+      qb.andWhere(
+        `EXISTS (SELECT 1 FROM sale_lines sl_c
+           INNER JOIN items it ON it.id = sl_c.item_id
+           INNER JOIN item_categories cat ON cat.id = it.category_id
+           WHERE sl_c.sale_id = sale.id AND cat.code = :categoryCode)`,
+        { categoryCode: query.categoryCode },
+      );
+    }
+    if (query.paymentMethodId) {
+      qb.andWhere(
+        `EXISTS (SELECT 1 FROM sale_payments sp_p
+           WHERE sp_p.sale_id = sale.id AND sp_p.payment_method_id = :paymentMethodId)`,
+        { paymentMethodId: query.paymentMethodId },
+      );
+    }
+
+    return qb;
   }
 
   async createWithSettlement(payload: CreateSaleRepositoryPayload): Promise<CreateSaleResult> {
@@ -318,7 +460,6 @@ export class TypeormSalesRepository implements SalesRepository {
         const paymentMethods = await paymentMethodRepo.find({
           where: {
             id: In(paymentMethodIds),
-            organizationId: payload.organizationId,
           },
           select: ['id'],
         });
@@ -332,6 +473,7 @@ export class TypeormSalesRepository implements SalesRepository {
         saleNumber: payload.saleNumber,
         saleChannel: payload.saleChannel,
         storeId: payload.storeId,
+        stockLocationId: payload.stockLocationId,
         customerId: payload.customerId,
         status: payload.status ?? 'posted',
         subtotalAmount: payload.subtotalAmount,
@@ -483,6 +625,7 @@ export class TypeormSalesRepository implements SalesRepository {
         itemBaseUomMap,
       });
 
+      sale.stockLocationId = stockLocationId ?? sale.stockLocationId;
       sale.status = 'posted';
       const saved = await saleRepo.save(sale);
       return toDomain(saved);
@@ -721,6 +864,15 @@ export class TypeormSalesRepository implements SalesRepository {
       // Restock refunded quantity at mapped sale_return stock location.
       for (const line of refundLineEntities) {
         const sourceLine = line.saleLine;
+        const refUomId = sourceLine.uom?.id ?? sourceLine.item?.baseUomId ?? null;
+        const baseQty =
+          refUomId && sourceLine.item?.baseUomId
+            ? await this.uomConverter.convertToBaseUom(
+                line.quantity,
+                refUomId,
+                sourceLine.item.baseUomId,
+              )
+            : line.quantity;
         const stockBalance = await stockBalanceRepo.findOne({
           where: {
             organizationId: payload.organizationId,
@@ -742,14 +894,14 @@ export class TypeormSalesRepository implements SalesRepository {
             quantityReserved: 0,
             averageCost: 0,
           });
-        upsertBalance.quantityOnHand = Number((upsertBalance.quantityOnHand + line.quantity).toFixed(4));
+        upsertBalance.quantityOnHand = Number((upsertBalance.quantityOnHand + baseQty).toFixed(4));
         const savedBalance = await stockBalanceRepo.save(upsertBalance);
 
         await stockAdjustmentRepo.save(
           stockAdjustmentRepo.create({
             stockBalance: savedBalance,
             reason: `sale_refund:${savedRefund.refundNumber}`,
-            deltaQuantity: line.quantity,
+            deltaQuantity: baseQty,
             performedByUserId: payload.refundedByUserId,
             performedAt: payload.refundDate,
           }),

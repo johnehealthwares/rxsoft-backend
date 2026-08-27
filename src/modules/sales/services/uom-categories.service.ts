@@ -72,9 +72,10 @@ export class UomCategoriesService {
 
   async create(payload: CreateUomCategoryDto, _organizationId: string): Promise<UomCategoryType> {
     if (payload.code && this.uomCategoryRepository) {
-      const last = await this.uomCategoryRepository.findOne({
+      const [last] = await this.uomCategoryRepository.find({
         order: { createdAt: 'DESC' },
         select: ['code'],
+        take: 1,
       });
       const { valid, expectedCode } = validateSequentialCode({
         providedCode: payload.code,

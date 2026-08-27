@@ -5,9 +5,10 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { ReportsController } from './controllers/reports.controller';
 import { SalesModule } from '../sales/sales.module';
 import { InventoryModule } from '../inventory/inventory.module';
+import { PurchasesModule } from '../purchases/purchases.module';
 
 @Module({
-  imports: [JwtModule.register({}), SalesModule, InventoryModule],
+  imports: [JwtModule.register({}), SalesModule, InventoryModule, PurchasesModule],
   controllers: [ReportsController],
   providers: [JwtAuthGuard, RolesGuard],
 })

@@ -2,6 +2,8 @@ import { PrintPdfService } from './print-pdf.service';
 
 jest.mock('puppeteer-core', () => {
   const mockPage = {
+    setDefaultTimeout: jest.fn(),
+    setDefaultNavigationTimeout: jest.fn(),
     setContent: jest.fn().mockResolvedValue(undefined),
     pdf: jest.fn().mockResolvedValue(Buffer.from('pdf-bytes')),
   };

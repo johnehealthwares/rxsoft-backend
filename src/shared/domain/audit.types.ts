@@ -1,11 +1,15 @@
 export type AuditLogType = {
   id: string;
-  organizationId: string;
+  organizationId: string | null;
   actorUserId: string | null;
+  actorUsername: string | null;
   action: string;
-  resource: string;
-  resourceId: string | null;
-  details: Record<string, unknown> | null;
-  occurredAt: string;
+  httpMethod: string;
+  httpPath: string;
+  statusCode: number;
+  durationMs: number;
+  ipAddress: string | null;
+  userAgent: string | null;
+  metadata: Record<string, unknown> | null;
   createdAt: string;
 };

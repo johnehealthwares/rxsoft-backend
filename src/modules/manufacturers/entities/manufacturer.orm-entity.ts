@@ -1,13 +1,10 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 @Entity('manufacturers')
-@Unique('uq_manufacturers_org_name', ['organizationId', 'name'])
+@Unique('uq_manufacturers_name', ['name'])
 export class ManufacturerOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @Column({ name: 'organization_id', type: 'uuid' })
-  organizationId!: string;
 
   @Column({ type: 'text', nullable: true })
   code!: string | null;

@@ -2,13 +2,10 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Un
 import type { JournalEntryOrmEntity } from './journal-entry.orm-entity';
 
 @Entity('journals')
-@Unique('uq_journals_org_code', ['organizationId', 'code'])
+@Unique('uq_journals_code', ['code'])
 export class JournalOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @Column({ name: 'organization_id', type: 'uuid' })
-  organizationId!: string;
 
   @Column({ type: 'text' })
   code!: string;

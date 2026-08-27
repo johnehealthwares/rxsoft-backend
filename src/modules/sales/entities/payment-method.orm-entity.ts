@@ -1,13 +1,10 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 @Entity('payment_methods')
-@Unique('uq_payment_methods_org_code', ['organizationId', 'code'])
+@Unique('uq_payment_methods_code', ['code'])
 export class PaymentMethodOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @Column({ name: 'organization_id', type: 'text' })
-  organizationId!: string;
 
   @Column({ type: 'text' })
   code!: string;

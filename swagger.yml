@@ -10,6 +10,66 @@ paths:
       summary: Health check
       tags:
         - health
+  /api/audit-logs:
+    get:
+      operationId: AuditLogController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearer: []
+      summary: List audit logs with pagination
+      tags:
+        - audit-logs
   /api/items:
     get:
       operationId: ItemsController_list
@@ -269,6 +329,146 @@ paths:
           description: ''
       security: *ref_0
       summary: Get item metrics
+      tags: *ref_1
+  /api/items/export:
+    get:
+      operationId: ItemsController_exportCsv
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by item name/code
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Search by item name/code
+          schema:
+            type: string
+        - name: categoryCode
+          required: false
+          in: query
+          schema:
+            example: ANALGESICS
+            type: string
+        - name: includeAll
+          required: false
+          in: query
+          schema:
+            example: true
+            type: boolean
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: name
+            type: string
+            enum:
+              - name
+              - code
+              - createdAt
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: asc
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: Export items as CSV
+      tags: *ref_1
+  /api/items/export/pdf:
+    get:
+      operationId: ItemsController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search by item name/code
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Search by item name/code
+          schema:
+            type: string
+        - name: categoryCode
+          required: false
+          in: query
+          schema:
+            example: ANALGESICS
+            type: string
+        - name: includeAll
+          required: false
+          in: query
+          schema:
+            example: true
+            type: boolean
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: name
+            type: string
+            enum:
+              - name
+              - code
+              - createdAt
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: asc
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: ''
+      security: *ref_0
+      summary: Export items as PDF
       tags: *ref_1
   /api/items/me:
     get:
@@ -861,6 +1061,120 @@ paths:
           description: ''
       security: *ref_6
       tags: *ref_7
+  /api/drug-components/export:
+    get:
+      operationId: DrugComponentsController_exportCsv
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_6
+      tags: *ref_7
+  /api/drug-components/export/pdf:
+    get:
+      operationId: DrugComponentsController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_6
+      tags: *ref_7
   /api/drug-components/{drugComponentId}:
     get:
       operationId: DrugComponentsController_get
@@ -934,7 +1248,6 @@ paths:
           required: false
           in: query
           schema:
-            minimum: 1
             default: 1
             allOf:
               - $ref: '#/components/schemas/Object'
@@ -947,6 +1260,40 @@ paths:
             default: 20
             allOf:
               - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
         - name: itemId
           required: false
           in: query
@@ -965,15 +1312,14 @@ paths:
       summary: List stock balances with pagination and filters
       tags: &ref_9
         - inventory
-  /api/inventory/stock-movements:
+  /api/inventory/stock-balances/export:
     get:
-      operationId: InventoryController_listStockMovements
+      operationId: InventoryController_exportStockBalances
       parameters:
         - name: page
           required: false
           in: query
           schema:
-            minimum: 1
             default: 1
             allOf:
               - $ref: '#/components/schemas/Object'
@@ -986,6 +1332,180 @@ paths:
             default: 20
             allOf:
               - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+        - name: itemId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_8
+      summary: Export stock balances as CSV
+      tags: *ref_9
+  /api/inventory/stock-balances/export/pdf:
+    get:
+      operationId: InventoryController_exportStockBalancesPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+        - name: itemId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_8
+      summary: Export stock balances as PDF
+      tags: *ref_9
+  /api/inventory/stock-movements:
+    get:
+      operationId: InventoryController_listStockMovements
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
         - name: movementType
           required: false
           in: query
@@ -996,6 +1516,7 @@ paths:
               - out
               - transfer
               - adjustment
+              - base-conversion
         - name: itemId
           required: false
           in: query
@@ -1030,7 +1551,6 @@ paths:
           required: false
           in: query
           schema:
-            minimum: 1
             default: 1
             allOf:
               - $ref: '#/components/schemas/Object'
@@ -1043,6 +1563,40 @@ paths:
             default: 20
             allOf:
               - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
         - name: movementType
           required: false
           in: query
@@ -1053,6 +1607,7 @@ paths:
               - out
               - transfer
               - adjustment
+              - base-conversion
         - name: itemId
           required: false
           in: query
@@ -1078,6 +1633,97 @@ paths:
           description: ''
       security: *ref_8
       summary: Export stock movements as CSV
+      tags: *ref_9
+  /api/inventory/stock-movements/export/pdf:
+    get:
+      operationId: InventoryController_exportStockMovementsPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+        - name: movementType
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - in
+              - out
+              - transfer
+              - adjustment
+              - base-conversion
+        - name: itemId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: locationId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: fromDate
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: toDate
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_8
+      summary: Export stock movements as PDF
       tags: *ref_9
   /api/inventory/adjustments:
     post:
@@ -1212,6 +1858,142 @@ paths:
         '201':
           description: ''
       security: *ref_10
+      tags: *ref_11
+  /api/stock-locations/export:
+    get:
+      operationId: StockLocationsController_exportCsv
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+        - name: warehouseId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          required: false
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: ''
+      security: *ref_10
+      summary: Export stock locations as CSV
+      tags: *ref_11
+  /api/stock-locations/export/pdf:
+    get:
+      operationId: StockLocationsController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+        - name: warehouseId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          required: false
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: ''
+      security: *ref_10
+      summary: Export stock locations as PDF
       tags: *ref_11
   /api/stock-locations/search:
     get:
@@ -1895,6 +2677,24 @@ paths:
           description: ''
       security: *ref_12
       tags: *ref_13
+  /api/print/pdf:
+    post:
+      operationId: PrintController_printPdf
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrintPdfDto'
+      responses:
+        '201':
+          description: ''
+      security:
+        - bearer: []
+      summary: Render HTML to a PDF file
+      tags:
+        - print
   /api/price-lists:
     get:
       operationId: PricingController_list
@@ -2424,6 +3224,63 @@ paths:
           description: ''
       security: *ref_16
       tags: *ref_17
+  /api/categories/export/pdf:
+    get:
+      operationId: CategoriesController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_16
+      tags: *ref_17
   /api/categories/{categoryId}:
     put:
       operationId: CategoriesController_replace
@@ -2619,6 +3476,63 @@ paths:
           description: ''
       security: *ref_18
       tags: *ref_19
+  /api/customers/export/pdf:
+    get:
+      operationId: CustomersController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_18
+      tags: *ref_19
   /api/customers/{customerId}:
     put:
       operationId: CustomersController_replace
@@ -2745,6 +3659,194 @@ paths:
       security: *ref_20
       summary: Create a supplier
       tags: *ref_21
+  /api/sales/metrics:
+    get:
+      operationId: SalesController_metrics
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - draft
+              - posted
+              - voided
+              - refunded
+      responses:
+        '200':
+          description: ''
+      security: &ref_22
+        - bearer: []
+      summary: Get sales metrics
+      tags: &ref_23
+        - sales
+  /api/sales/export:
+    get:
+      operationId: SalesController_exportCsv
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - draft
+              - posted
+              - voided
+              - refunded
+      responses:
+        '200':
+          description: ''
+      security: *ref_22
+      summary: Export sales as CSV
+      tags: *ref_23
+  /api/sales/export/pdf:
+    get:
+      operationId: SalesController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - draft
+              - posted
+              - voided
+              - refunded
+      responses:
+        '200':
+          description: ''
+      security: *ref_22
+      summary: Export sales as PDF
+      tags: *ref_23
+  /api/sales/lines:
+    get:
+      operationId: SalesController_listSalesLines
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: lineNumber
+            type: string
+            enum:
+              - lineNumber
+              - quantity
+              - unitPrice
+              - lineTotal
+              - saleDate
+              - createdAt
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: asc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: saleId
+          required: false
+          in: query
+          description: Restrict lines to a single sale
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_22
+      summary: List sale lines with filters and pagination
+      tags: *ref_23
   /api/sales/{saleId}:
     get:
       operationId: SalesController_getSale
@@ -2761,11 +3863,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SaleDetailResponseDto'
-      security: &ref_22
-        - bearer: []
+      security: *ref_22
       summary: Get sale detail by ID
-      tags: &ref_23
-        - sales
+      tags: *ref_23
+  /api/sales/{saleId}/receipt/pdf:
+    get:
+      operationId: SalesController_printReceipt
+      parameters:
+        - name: saleId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_22
+      summary: Print an A4 sales receipt as PDF
+      tags: *ref_23
   /api/sales:
     get:
       operationId: SalesController_listSales
@@ -2826,48 +3941,6 @@ paths:
                 $ref: '#/components/schemas/CreateSaleResponseDto'
       security: *ref_22
       summary: Create posted sale and receivable on underpayment
-      tags: *ref_23
-  /api/sales/metrics:
-    get:
-      operationId: SalesController_metrics
-      parameters:
-        - name: page
-          required: false
-          in: query
-          schema:
-            minimum: 1
-            default: 1
-            allOf:
-              - $ref: '#/components/schemas/Object'
-        - name: limit
-          required: false
-          in: query
-          schema:
-            minimum: 1
-            maximum: 100
-            default: 20
-            allOf:
-              - $ref: '#/components/schemas/Object'
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: status
-          required: false
-          in: query
-          schema:
-            type: string
-            enum:
-              - draft
-              - posted
-              - voided
-              - refunded
-      responses:
-        '200':
-          description: ''
-      security: *ref_22
-      summary: Get sales metrics
       tags: *ref_23
   /api/sales/{saleId}/refunds:
     post:
@@ -3292,6 +4365,20 @@ paths:
       summary: List users (proxied from rxsoft-identity)
       tags: &ref_31
         - users-proxy
+    post:
+      operationId: UsersProxyController_create
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      security: *ref_30
+      summary: Create user (proxied to identity; posConfig saved locally)
+      tags: *ref_31
   /api/users/{id}:
     get:
       operationId: UsersProxyController_get
@@ -3331,6 +4418,25 @@ paths:
       security: *ref_30
       summary: Update user (proxied to identity; posConfig saved locally)
       tags: *ref_31
+    patch:
+      operationId: UsersProxyController_patch
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_30
+      summary: Partially update user (proxied to identity; posConfig saved locally)
+      tags: *ref_31
     post:
       operationId: UsersProxyController_updateViaPost
       parameters:
@@ -3349,6 +4455,25 @@ paths:
           description: ''
       security: *ref_30
       summary: Update user via POST (proxied to identity; posConfig saved locally)
+      tags: *ref_31
+    delete:
+      operationId: UsersProxyController_delete
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_30
+      summary: Delete user (proxied to identity; local posConfig removed)
       tags: *ref_31
   /api/auth/login:
     post:
@@ -3761,6 +4886,120 @@ paths:
           description: ''
       security: *ref_41
       tags: *ref_42
+  /api/purchases/export:
+    get:
+      operationId: PurchasesController_exportCsv
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_41
+      tags: *ref_42
+  /api/purchases/export/pdf:
+    get:
+      operationId: PurchasesController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_41
+      tags: *ref_42
   /api/purchases/{purchaseId}:
     get:
       operationId: PurchasesController_getById
@@ -3849,6 +5088,30 @@ paths:
   /api/purchases/{purchaseId}/lines/{lineId}:
     put:
       operationId: PurchasesController_updateLine
+      parameters:
+        - name: purchaseId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: lineId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePurchaseLineDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_41
+      tags: *ref_42
+    patch:
+      operationId: PurchasesController_patchLine
       parameters:
         - name: purchaseId
           required: true
@@ -4301,6 +5564,88 @@ paths:
           description: ''
       security: *ref_47
       tags: *ref_48
+  /api/reports/purchases-analytics:
+    get:
+      operationId: ReportsController_purchasesAnalytics
+      parameters:
+        - name: from
+          required: false
+          in: query
+          description: Start date (YYYY-MM-DD)
+          schema:
+            type: string
+        - name: to
+          required: false
+          in: query
+          description: End date (YYYY-MM-DD)
+          schema:
+            type: string
+        - name: warehouseId
+          required: false
+          in: query
+          description: Filter by warehouse (location) id
+          schema:
+            type: string
+        - name: categoryCode
+          required: false
+          in: query
+          description: Filter by item category code
+          schema:
+            type: string
+        - name: supplierId
+          required: false
+          in: query
+          description: Filter by supplier id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_49
+        - bearer: []
+      summary: Get the purchases analytics dashboard payload
+      tags: &ref_50
+        - reports
+  /api/reports/sales-analytics:
+    get:
+      operationId: ReportsController_salesAnalytics
+      parameters:
+        - name: from
+          required: false
+          in: query
+          description: Start date (YYYY-MM-DD)
+          schema:
+            type: string
+        - name: to
+          required: false
+          in: query
+          description: End date (YYYY-MM-DD)
+          schema:
+            type: string
+        - name: stockLocationId
+          required: false
+          in: query
+          description: Filter by stock location id
+          schema:
+            type: string
+        - name: categoryCode
+          required: false
+          in: query
+          description: Filter by item category code
+          schema:
+            type: string
+        - name: paymentMethodId
+          required: false
+          in: query
+          description: Filter by payment method id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_49
+      summary: Get the sales analytics dashboard payload
+      tags: *ref_50
   /api/reports/daily-sales:
     get:
       operationId: ReportsController_dailySales
@@ -4308,10 +5653,8 @@ paths:
       responses:
         '200':
           description: ''
-      security: &ref_49
-        - bearer: []
-      tags: &ref_50
-        - reports
+      security: *ref_49
+      tags: *ref_50
   /api/reports/inventory-valuation:
     get:
       operationId: ReportsController_inventoryValuation
@@ -4387,65 +5730,6 @@ paths:
           description: ''
       security: *ref_49
       tags: *ref_50
-  /api/audit-logs:
-    get:
-      operationId: AuditController_list
-      parameters:
-        - name: page
-          required: false
-          in: query
-          schema:
-            default: 1
-            allOf:
-              - $ref: '#/components/schemas/Object'
-        - name: limit
-          required: false
-          in: query
-          schema:
-            default: 20
-            allOf:
-              - $ref: '#/components/schemas/Object'
-        - name: search
-          required: false
-          in: query
-          description: Search query
-          schema:
-            type: string
-        - name: sortBy
-          required: false
-          in: query
-          schema:
-            default: createdAt
-            allOf:
-              - $ref: '#/components/schemas/Object'
-        - name: sortOrder
-          required: false
-          in: query
-          schema:
-            default: desc
-            type: string
-            enum:
-              - asc
-              - desc
-        - name: filter
-          required: false
-          in: query
-          description: Generic filter string
-          schema:
-            type: string
-        - name: organizationId
-          required: false
-          in: query
-          description: Filter by organization (superadmin only)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      security:
-        - bearer: []
-      tags:
-        - audit-logs
   /api/website/homepage:
     get:
       operationId: WebsiteController_getHomepage
@@ -7610,6 +8894,122 @@ paths:
       security: *ref_91
       summary: Create a warehouse
       tags: *ref_92
+  /api/warehouses/export:
+    get:
+      operationId: WarehousesController_exportCsv
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_91
+      summary: Export warehouses as CSV
+      tags: *ref_92
+  /api/warehouses/export/pdf:
+    get:
+      operationId: WarehousesController_exportPdf
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            default: 1
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 20
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: sortBy
+          required: false
+          in: query
+          schema:
+            default: createdAt
+            allOf:
+              - $ref: '#/components/schemas/Object'
+        - name: sortOrder
+          required: false
+          in: query
+          schema:
+            default: desc
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: filter
+          required: false
+          in: query
+          description: Generic filter string
+          schema:
+            type: string
+        - name: organizationId
+          required: false
+          in: query
+          description: Filter by organization (superadmin only)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_91
+      summary: Export warehouses as PDF
+      tags: *ref_92
   /api/warehouses/{warehouseId}:
     get:
       operationId: WarehousesController_get
@@ -7659,24 +9059,703 @@ paths:
       security: *ref_91
       summary: Delete a warehouse
       tags: *ref_92
-  /api/print/pdf:
+  /api/payment-providers:
+    get:
+      operationId: PaymentProvidersController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: channel
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - cash
+              - pos
+              - web
+              - wallet
+              - insurance
+      responses:
+        '200':
+          description: ''
+      security: &ref_93
+        - bearer: []
+      tags: &ref_94
+        - payment-providers
     post:
-      operationId: PrintController_printPdf
+      operationId: PaymentProvidersController_create
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PrintPdfDto'
+              $ref: '#/components/schemas/CreatePaymentProviderDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_93
+      tags: *ref_94
+  /api/payment-providers/org:
+    get:
+      operationId: PaymentProvidersController_listForOrg
+      parameters:
+        - name: channel
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_93
+      tags: *ref_94
+  /api/payment-providers/available:
+    get:
+      operationId: PaymentProvidersController_listActiveForOrg
+      parameters:
+        - name: channel
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_93
+      tags: *ref_94
+  /api/payment-providers/{paymentProviderId}:
+    get:
+      operationId: PaymentProvidersController_get
+      parameters:
+        - name: paymentProviderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_93
+      tags: *ref_94
+    put:
+      operationId: PaymentProvidersController_replace
+      parameters:
+        - name: paymentProviderId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentProviderDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_93
+      tags: *ref_94
+    patch:
+      operationId: PaymentProvidersController_patch
+      parameters:
+        - name: paymentProviderId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentProviderDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_93
+      tags: *ref_94
+    delete:
+      operationId: PaymentProvidersController_remove
+      parameters:
+        - name: paymentProviderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_93
+      tags: *ref_94
+  /api/organisation-payment-providers:
+    get:
+      operationId: OrganisationPaymentProvidersController_list
+      parameters:
+        - name: channel
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_95
+        - bearer: []
+      tags: &ref_96
+        - organisation-payment-providers
+  /api/organisation-payment-providers/{paymentProviderId}:
+    put:
+      operationId: OrganisationPaymentProvidersController_upsert
+      parameters:
+        - name: paymentProviderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_95
+      tags: *ref_96
+    delete:
+      operationId: OrganisationPaymentProvidersController_remove
+      parameters:
+        - name: paymentProviderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_95
+      tags: *ref_96
+  /api/payment-method-providers:
+    get:
+      operationId: PaymentMethodProvidersController_list
+      parameters:
+        - name: paymentMethodId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: channel
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_97
+        - bearer: []
+      tags: &ref_98
+        - payment-method-providers
+    post:
+      operationId: PaymentMethodProvidersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentMethodProviderDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_97
+      tags: *ref_98
+  /api/payment-method-providers/{paymentMethodId}/{paymentProviderId}:
+    delete:
+      operationId: PaymentMethodProvidersController_remove
+      parameters:
+        - name: paymentMethodId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: paymentProviderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_97
+      tags: *ref_98
+  /api/payment-method-providers/bulk:
+    put:
+      operationId: PaymentMethodProvidersController_bulk
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkSetPaymentMethodProvidersDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_97
+      tags: *ref_98
+  /api/payments/initialize:
+    post:
+      operationId: PaymentsController_initialize
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitializePaymentDto'
+      responses:
+        '201':
+          description: ''
+      security: &ref_99
+        - bearer: []
+      tags: &ref_100
+        - payments
+  /api/payments/verify/{reference}:
+    get:
+      operationId: PaymentsController_verify
+      parameters:
+        - name: reference
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_99
+      tags: *ref_100
+  /api/payments/pos/initiate:
+    post:
+      operationId: PaymentsController_initiatePos
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiatePosPaymentDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_99
+      tags: *ref_100
+  /api/payments/pos/query/{reference}:
+    get:
+      operationId: PaymentsController_queryPos
+      parameters:
+        - name: reference
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_99
+      tags: *ref_100
+  /api/payments:
+    get:
+      operationId: PaymentsController_list
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_99
+      tags: *ref_100
+  /api/payments/webhook/{provider}:
+    post:
+      operationId: PaymentWebhooksController_handle
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags:
+        - payments-webhooks
+  /api/payment-links:
+    get:
+      operationId: PaymentLinksController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearer: []
+      tags: &ref_101
+        - payment-links
+    post:
+      operationId: PaymentLinksController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentLinkDto'
       responses:
         '201':
           description: ''
       security:
         - bearer: []
-      summary: Render HTML to a PDF file
-      tags:
-        - print
+      tags: *ref_101
+  /api/payment-links/{token}:
+    delete:
+      operationId: PaymentLinksController_revoke
+      parameters:
+        - name: token
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - bearer: []
+      tags: *ref_101
+  /api/payment-links/public/{token}:
+    get:
+      operationId: PaymentLinksController_publicView
+      parameters:
+        - name: token
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags: *ref_101
+  /api/payment-links/{token}/initialize:
+    post:
+      operationId: PaymentLinksController_initializeForLink
+      parameters:
+        - name: token
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      tags: *ref_101
+  /api/payment-links/{token}/status:
+    get:
+      operationId: PaymentLinksController_statusFor
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_101
+  /api/payment-links/{token}/complete:
+    post:
+      operationId: PaymentLinksController_complete
+      parameters:
+        - name: token
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+      tags: *ref_101
+  /api/customer/wallet:
+    get:
+      operationId: CustomerWalletsController_wallet
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: &ref_102
+        - bearer: []
+      tags: &ref_103
+        - customer-wallet
+  /api/customer/wallet/transactions:
+    get:
+      operationId: CustomerWalletsController_transactions
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security: *ref_102
+      tags: *ref_103
+  /api/customer/wallet/debit:
+    post:
+      operationId: CustomerWalletsController_debit
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitWalletDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_102
+      tags: *ref_103
+  /api/customer/wallet/deposit:
+    post:
+      operationId: CustomerWalletsController_deposit
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletDepositDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_102
+      tags: *ref_103
+  /api/pos-terminals:
+    get:
+      operationId: PosTerminalsController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_104
+        - bearer: []
+      tags: &ref_105
+        - pos-terminals
+    post:
+      operationId: PosTerminalsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePosTerminalDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_104
+      tags: *ref_105
+  /api/pos-terminals/{terminalId}:
+    get:
+      operationId: PosTerminalsController_get
+      parameters:
+        - name: terminalId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_104
+      tags: *ref_105
+    put:
+      operationId: PosTerminalsController_replace
+      parameters:
+        - name: terminalId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePosTerminalDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_104
+      tags: *ref_105
+    patch:
+      operationId: PosTerminalsController_patch
+      parameters:
+        - name: terminalId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePosTerminalDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_104
+      tags: *ref_105
+    delete:
+      operationId: PosTerminalsController_remove
+      parameters:
+        - name: terminalId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_104
+      tags: *ref_105
+  /api/insurance-providers:
+    get:
+      operationId: InsuranceProvidersController_list
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: limit
+          required: false
+          in: query
+          schema:
+            $ref: '#/components/schemas/Object'
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: &ref_106
+        - bearer: []
+      tags: &ref_107
+        - insurance-providers
+    post:
+      operationId: InsuranceProvidersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInsuranceProviderDto'
+      responses:
+        '201':
+          description: ''
+      security: *ref_106
+      tags: *ref_107
+  /api/insurance-providers/{providerId}:
+    get:
+      operationId: InsuranceProvidersController_get
+      parameters:
+        - name: providerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_106
+      tags: *ref_107
+    put:
+      operationId: InsuranceProvidersController_replace
+      parameters:
+        - name: providerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInsuranceProviderDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_106
+      tags: *ref_107
+    patch:
+      operationId: InsuranceProvidersController_patch
+      parameters:
+        - name: providerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInsuranceProviderDto'
+      responses:
+        '200':
+          description: ''
+      security: *ref_106
+      tags: *ref_107
+    delete:
+      operationId: InsuranceProvidersController_remove
+      parameters:
+        - name: providerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security: *ref_106
+      tags: *ref_107
 info:
   title: RxSoft Backend API
   description: Phase 3 identity module and API contracts
@@ -7921,6 +10000,15 @@ components:
         saleUomId:
           type: string
           example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        code:
+          type: string
+          example: PCM001
+        barcode:
+          type: string
+          example: '1234567890123'
+        alias:
+          type: string
+          example: Panadol 500mg
         trackLot:
           type: boolean
           default: true
@@ -7968,6 +10056,15 @@ components:
         saleUomId:
           type: string
           example: 8f6c4d74-607a-4d90-96f5-4aa6f4a32b31
+        code:
+          type: string
+          example: PCM001
+        barcode:
+          type: string
+          example: '1234567890123'
+        alias:
+          type: string
+          example: Panadol 500mg
         trackLot:
           type: boolean
           default: true
@@ -8188,6 +10285,11 @@ components:
         quantity:
           type: number
           minimum: 0.001
+        uomId:
+          type: string
+          description: >-
+            UOM the quantity is expressed in. Defaults to the item base UOM; the
+            quantity is converted to base UOM before stock is adjusted.
         reason:
           type: string
       required:
@@ -8198,6 +10300,11 @@ components:
     CreateStockLocationDto:
       type: object
       properties:
+        locationId:
+          type: string
+          description: >-
+            Identity service site (location) id this stock location belongs to;
+            defaults to the caller’s location
         warehouseId:
           type: string
         parentId:
@@ -8226,6 +10333,9 @@ components:
     UpdateStockLocationDto:
       type: object
       properties:
+        locationId:
+          type: string
+          description: Identity service site (location) id this stock location belongs to
         warehouseId:
           type: string
         parentId:
@@ -8418,6 +10528,21 @@ components:
           type: boolean
         isActive:
           type: boolean
+    PrintPdfDto:
+      type: object
+      properties:
+        html:
+          type: string
+          description: HTML content to render to PDF
+        filename:
+          type: string
+          description: 'Download filename (default: document.pdf)'
+        landscape:
+          type: boolean
+          description: Render in landscape orientation
+          default: false
+      required:
+        - html
     CreatePriceListItemDto:
       type: object
       properties:
@@ -9146,7 +11271,7 @@ components:
           type: string
         status:
           type: string
-          enum: &ref_93
+          enum: &ref_108
             - draft
             - approved
             - partially_received
@@ -9192,7 +11317,7 @@ components:
           type: string
         status:
           type: string
-          enum: *ref_93
+          enum: *ref_108
         note:
           type: string
         invoiceNumber:
@@ -9603,6 +11728,11 @@ components:
       properties:
         stockLocationId:
           type: string
+        organizationId:
+          type: string
+          description: >-
+            Organisation to post the order against (also persisted onto the
+            order)
     ReconcileItemDto:
       type: object
       properties: {}
@@ -10542,18 +12672,327 @@ components:
           type: object
         isActive:
           type: boolean
-    PrintPdfDto:
+    ProviderCredentialSetDto:
       type: object
       properties:
-        html:
+        publicKey:
           type: string
-          description: HTML content to render to PDF
-        filename:
+        secretKey:
           type: string
-          description: 'Download filename (default: document.pdf)'
-        landscape:
+        apiKey:
+          type: string
+        apiSecret:
+          type: string
+        contractCode:
+          type: string
+        clientSecret:
+          type: string
+        merchantId:
+          type: string
+        terminalId:
+          type: string
+        webhookSecret:
+          type: string
+        baseUrl:
+          type: string
+        sandboxBaseUrl:
+          type: string
+    CreatePaymentProviderDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        providerType:
+          type: string
+          enum: &ref_109
+            - paystack
+            - monnify
+            - opay
+            - moniepoint
+            - wallet
+            - insurance
+            - cash
+        channel:
+          type: string
+          enum: &ref_110
+            - cash
+            - pos
+            - web
+            - wallet
+            - insurance
+        description:
+          type: string
+        production:
           type: boolean
-          description: Render in landscape orientation
           default: false
+        testConfig:
+          $ref: '#/components/schemas/ProviderCredentialSetDto'
+        liveConfig:
+          $ref: '#/components/schemas/ProviderCredentialSetDto'
+        isActive:
+          type: boolean
+          default: true
+        sortOrder:
+          type: number
       required:
-        - html
+        - code
+        - name
+        - providerType
+        - channel
+    UpdatePaymentProviderDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        providerType:
+          type: string
+          enum: *ref_109
+        channel:
+          type: string
+          enum: *ref_110
+        description:
+          type: string
+        production:
+          type: boolean
+        testConfig:
+          $ref: '#/components/schemas/ProviderCredentialSetDto'
+        liveConfig:
+          $ref: '#/components/schemas/ProviderCredentialSetDto'
+        isActive:
+          type: boolean
+        sortOrder:
+          type: number
+    CreatePaymentMethodProviderDto:
+      type: object
+      properties:
+        paymentMethodId:
+          type: string
+        paymentProviderId:
+          type: string
+        channel:
+          type: string
+          enum: *ref_110
+        isDefault:
+          type: boolean
+        isActive:
+          type: boolean
+          default: true
+      required:
+        - paymentMethodId
+        - paymentProviderId
+        - channel
+    BulkSetPaymentMethodProvidersDto:
+      type: object
+      properties:
+        paymentMethodId:
+          type: string
+        providers:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatePaymentMethodProviderDto'
+      required:
+        - paymentMethodId
+        - providers
+    InitializePaymentDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        paymentMethodId:
+          type: string
+        providerId:
+          type: string
+        sourceType:
+          type: string
+          enum:
+            - order
+            - wallet_deposit
+            - sale
+            - receivable
+        sourceId:
+          type: string
+        customerId:
+          type: string
+        userId:
+          type: string
+        email:
+          type: string
+        customerName:
+          type: string
+        phone:
+          type: string
+        descriptor:
+          type: string
+        returnUrl:
+          type: string
+        callbackUrl:
+          type: string
+      required:
+        - sourceType
+    InitiatePosPaymentDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        paymentMethodId:
+          type: string
+        providerId:
+          type: string
+        terminalId:
+          type: string
+        customerId:
+          type: string
+        userId:
+          type: string
+        descriptor:
+          type: string
+        customerName:
+          type: string
+        phone:
+          type: string
+        callbackUrl:
+          type: string
+      required:
+        - amount
+        - terminalId
+    CreatePaymentLinkDto:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - order_payment
+            - wallet_deposit
+        orderId:
+          type: string
+        customerId:
+          type: string
+        userId:
+          type: string
+        amount:
+          type: number
+        note:
+          type: string
+        expiresInDays:
+          type: number
+          default: 3
+      required:
+        - type
+    DebitWalletDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        reference:
+          type: string
+        note:
+          type: string
+      required:
+        - amount
+    WalletDepositDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        returnUrl:
+          type: string
+        callbackUrl:
+          type: string
+      required:
+        - amount
+    CreatePosTerminalDto:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        providerType:
+          type: string
+          enum: &ref_111
+            - paystack
+            - monnify
+            - opay
+            - moniepoint
+        serial:
+          type: string
+        terminalId:
+          type: string
+        storeId:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+      required:
+        - code
+        - providerType
+    UpdatePosTerminalDto:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        providerType:
+          type: string
+          enum: *ref_111
+        serial:
+          type: string
+        terminalId:
+          type: string
+        storeId:
+          type: string
+        isActive:
+          type: boolean
+    CreateInsuranceProviderDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        providerType:
+          type: string
+          enum:
+            - hmo
+            - company
+            - program
+            - nhis
+            - other
+          default: hmo
+        contactPhone:
+          type: string
+        contactEmail:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+      required:
+        - code
+        - name
+        - providerType
+    UpdateInsuranceProviderDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        providerType:
+          type: string
+          enum:
+            - hmo
+            - company
+            - program
+            - nhis
+            - other
+        contactPhone:
+          type: string
+        contactEmail:
+          type: string
+        isActive:
+          type: boolean

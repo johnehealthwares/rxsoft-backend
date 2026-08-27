@@ -35,6 +35,7 @@ import { UomConverterService } from './services/uom-converter.service';
 import { SALES_REPOSITORY } from './services/sales.di-tokens';
 import { UsersProxyModule } from '../users-proxy/users-proxy.module';
 import { AccountingModule } from '../accounting/accounting.module';
+import { PrintModule } from '../print/print.module';
 
 const salesConfigService = new ConfigService();
 const useInMemoryRepos = salesConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -73,7 +74,7 @@ const salesRepositoryProviders = useInMemoryRepos
     ];
 
 @Module({
-  imports: [JwtModule.register({}), UsersProxyModule, AccountingModule, ...salesPersistenceImports],
+  imports: [JwtModule.register({}), UsersProxyModule, AccountingModule, PrintModule, ...salesPersistenceImports],
   controllers: [SalesController, UomsController, UomCategoriesController, PaymentMethodsController],
   providers: [
     ListSalesUseCase,

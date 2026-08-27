@@ -14,10 +14,9 @@ export class PaymentMethodsService {
     private readonly paymentMethodRepository: Repository<PaymentMethodOrmEntity>,
   ) {}
 
-  async list(query: ListPaymentMethodsDto, organizationId: string): Promise<{ data: PaymentMethodType[]; total: number }> {
+  async list(query: ListPaymentMethodsDto): Promise<{ data: PaymentMethodType[]; total: number }> {
     const qb = this.paymentMethodRepository
       .createQueryBuilder('payment_method')
-      .where('payment_method.organization_id = :organizationId', { organizationId })
       .orderBy('payment_method.updated_at', 'DESC')
       .skip(query.offset)
       .take(query.limit);
@@ -32,17 +31,17 @@ export class PaymentMethodsService {
     return { data: data.map(toPaymentMethodType), total };
   }
 
-  async get(id: string, organizationId: string): Promise<PaymentMethodType> {
-    const item = await this.paymentMethodRepository.findOne({ where: { id, organizationId } });
+  async get(id: string): Promise<PaymentMethodType> {
+    const item = await this.paymentMethodRepository.findOne({ where: { id } });
     if (!item) throw new NotFoundException('Payment method not found');
     return toPaymentMethodType(item);
   }
 
-  async create(payload: CreatePaymentMethodDto, organizationId: string): Promise<PaymentMethodType> {
-    const last = await this.paymentMethodRepository.findOne({
-      where: { organizationId },
+  async create(payload: CreatePaymentMethodDto): Promise<PaymentMethodType> {
+    const [last] = await this.paymentMethodRepository.find({
       order: { createdAt: 'DESC' },
       select: ['code'],
+      take: 1,
     });
     const { valid, expectedCode } = validateSequentialCode({
       providedCode: payload.code,
@@ -53,11 +52,10 @@ export class PaymentMethodsService {
       throw new BadRequestException(`Invalid code '${payload.code}'. Expected '${expectedCode}'.`);
     }
 
-    const duplicate = await this.paymentMethodRepository.findOne({ where: { organizationId, code: payload.code } });
+    const duplicate = await this.paymentMethodRepository.findOne({ where: { code: payload.code } });
     if (duplicate) throw new BadRequestException('Payment method code already exists');
 
     const entity = this.paymentMethodRepository.create({
-      organizationId,
       code: payload.code,
       name: payload.name,
       methodType: payload.methodType,
@@ -67,12 +65,12 @@ export class PaymentMethodsService {
     return toPaymentMethodType(saved);
   }
 
-  async update(id: string, payload: UpdatePaymentMethodDto, organizationId: string): Promise<PaymentMethodType> {
-    const item = await this.paymentMethodRepository.findOne({ where: { id, organizationId } });
+  async update(id: string, payload: UpdatePaymentMethodDto): Promise<PaymentMethodType> {
+    const item = await this.paymentMethodRepository.findOne({ where: { id } });
     if (!item) throw new NotFoundException('Payment method not found');
 
     if (payload.code && payload.code !== item.code) {
-      const duplicate = await this.paymentMethodRepository.findOne({ where: { organizationId, code: payload.code } });
+      const duplicate = await this.paymentMethodRepository.findOne({ where: { code: payload.code } });
       if (duplicate) throw new BadRequestException('Payment method code already exists');
       item.code = payload.code;
     }
@@ -84,8 +82,8 @@ export class PaymentMethodsService {
     return toPaymentMethodType(saved);
   }
 
-  async remove(id: string, organizationId: string): Promise<void> {
-    const result = await this.paymentMethodRepository.delete({ id, organizationId });
+  async remove(id: string): Promise<void> {
+    const result = await this.paymentMethodRepository.delete({ id });
     if (!result.affected) throw new NotFoundException('Payment method not found');
   }
 }

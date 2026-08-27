@@ -76,7 +76,6 @@ export class CreateItemUseCase {
       payload.trackLot ?? true,
       payload.trackExpiry ?? true,
       payload.shelfLifeDays ?? null,
-      payload.isActive ?? true,
       payload.imageUrl ?? null,
       payload.smallImageUrl ?? null,
       payload.mediumImageUrl ?? null,
@@ -87,9 +86,10 @@ export class CreateItemUseCase {
 
     // Every item is org-added for the creating user's org, so it is selectable
     // at point of sale under strict tenant scoping. Carries org identity fields
-    // (code/barcode/alias) when supplied.
+    // (code/barcode/alias) when supplied. isActive = org whitelist/blacklist
+    // (default true → whitelisted for the creating org).
     await this.organisationItemsService?.upsert(organizationId, created.id, {
-      isActive: true,
+      isActive: payload.isActive ?? true,
       alias: payload.alias ?? null,
       code: payload.code ?? null,
       barcode: payload.barcode ?? null,

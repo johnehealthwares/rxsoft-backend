@@ -10,7 +10,7 @@ export class AccountReceivableOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'organization_id', type: 'text' })
+  @Column({ name: 'organization_id', type: 'uuid' })
   organizationId!: string;
 
   @ManyToOne(() => PartyOrmEntity, { nullable: false })

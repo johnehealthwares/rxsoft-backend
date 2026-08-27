@@ -61,14 +61,14 @@ export class AccountingController {
     @Query() query: ListJournalsDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<JournalListResponse> {
-    const result = await this.accountingService.listJournals(query, currentUser.organizationId);
+    const result = await this.accountingService.listJournals(query);
     return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
   }
 
   @Get('journals/:journalId')
   @Roles('admin', 'super_admin', 'auditor')
-  async getJournal(@Param('journalId') journalId: string, @CurrentUser() currentUser: RequestUser): Promise<JournalType> {
-    return this.accountingService.getJournal(journalId, currentUser.organizationId);
+  async getJournal(@Param('journalId') journalId: string): Promise<JournalType> {
+    return this.accountingService.getJournal(journalId);
   }
 
   @Post('journals')
@@ -92,8 +92,8 @@ export class AccountingController {
   @Delete('journals/:journalId')
   @Roles('admin', 'super_admin')
   @AuditAction('accounting.journal.delete')
-  async removeJournal(@Param('journalId') journalId: string, @CurrentUser() currentUser: RequestUser): Promise<void> {
-    await this.accountingService.removeJournal(journalId, currentUser.organizationId);
+  async removeJournal(@Param('journalId') journalId: string): Promise<void> {
+    await this.accountingService.removeJournal(journalId);
   }
 
   @Get('journal-entries')

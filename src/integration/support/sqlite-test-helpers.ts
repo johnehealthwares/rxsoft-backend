@@ -179,7 +179,6 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
     purchaseUom: null,
     saleUomId: baseUom.id,
     saleUom: baseUom,
-    isActive: true,
     trackLot: true,
     trackExpiry: true,
     shelfLifeDays: null,
@@ -238,7 +237,6 @@ async function seedBaseData(moduleFixture: TestingModule): Promise<{ ids: Seeded
 
   const paymentMethod = await paymentMethodRepo.save(
     paymentMethodRepo.create({
-      organizationId,
       code: 'CASH',
       name: 'Cash',
       methodType: 'cash',

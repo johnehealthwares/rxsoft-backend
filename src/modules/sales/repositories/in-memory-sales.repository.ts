@@ -6,6 +6,8 @@ import {
   CreateSaleRefundResult,
   CreateSaleRepositoryPayload,
   CreateSaleResult,
+  SalesAnalytics,
+  SalesAnalyticsQuery,
   SalesListQuery,
   SalesMetrics,
   SalesMetricsQuery,
@@ -45,7 +47,10 @@ export class InMemorySalesRepository implements SalesRepository {
   >();
 
   async list(query: SalesListQuery): Promise<{ items: Sale[]; total: number }> {
-    let items = this.sales.filter((sale) => sale.organizationId === query.organizationId);
+    // Empty organizationId = global super-admin browse: no tenant filter.
+    let items = query.organizationId
+      ? this.sales.filter((sale) => sale.organizationId === query.organizationId)
+      : [...this.sales];
 
     if (query.status) {
       items = items.filter((sale) => sale.status === query.status);
@@ -148,6 +153,46 @@ export class InMemorySalesRepository implements SalesRepository {
     }
 
     return { totalSales, totalRevenue, inProgress: 0, byChannel, byCategory };
+  }
+
+  async getAnalytics(query: SalesAnalyticsQuery): Promise<SalesAnalytics> {
+    let items = this.sales.filter((s) => s.organizationId === query.organizationId);
+
+    if (query.from) {
+      items = items.filter((s) => new Date(s.saleDate).toISOString().slice(0, 10) >= query.from!);
+    }
+    if (query.to) {
+      items = items.filter((s) => new Date(s.saleDate).toISOString().slice(0, 10) <= query.to!);
+    }
+    if (query.stockLocationId) {
+      items = items.filter((s) => s.storeId === query.stockLocationId);
+    }
+
+    const posted = items.filter((s) => s.status === 'posted');
+    const totalRevenue = posted.reduce((sum, s) => sum + s.totalAmount, 0);
+    const totalSales = posted.length;
+
+    const byDay = new Map<string, SalesAnalytics['trend'][number]>();
+    for (const s of posted) {
+      const day = s.saleDate.toISOString().slice(0, 10);
+      const current = byDay.get(day) ?? { day, revenue: 0, orders: 0 };
+      current.revenue += s.totalAmount;
+      current.orders += 1;
+      byDay.set(day, current);
+    }
+
+    return {
+      summary: {
+        totalRevenue,
+        totalSales,
+        averageOrderValue: totalSales > 0 ? Number((totalRevenue / totalSales).toFixed(2)) : 0,
+        itemsSold: 0,
+        refunds: 0,
+      },
+      trend: [...byDay.values()].sort((a, b) => a.day.localeCompare(b.day)),
+      byCategory: [],
+      byLocation: posted.map((s) => ({ stockLocationId: s.storeId, name: s.storeName ?? 'Unassigned', revenue: s.totalAmount })),
+    };
   }
 
   async createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult> {

@@ -18,6 +18,11 @@ export class ListStockLocationsDto extends ListQueryDto {
 }
 
 export class CreateStockLocationDto {
+  @ApiPropertyOptional({ description: 'Identity service site (location) id this stock location belongs to; defaults to the caller\u2019s location' })
+  @IsOptional()
+  @IsString()
+  locationId?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -55,6 +60,11 @@ export class CreateStockLocationDto {
 }
 
 export class UpdateStockLocationDto {
+  @ApiPropertyOptional({ description: 'Identity service site (location) id this stock location belongs to' })
+  @IsOptional()
+  @IsString()
+  locationId?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

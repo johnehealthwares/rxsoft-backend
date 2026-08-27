@@ -5,11 +5,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { RequestLoggingInterceptor } from './common/interceptors/request-logging.interceptor';
-import * as yaml from 'js-yaml'
-import * as fs from 'fs'
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true captures the exact request bytes so provider webhook
+  // signature verification (Paystack, Monnify, Moniepoint) can HMAC them.
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+
   const configService = app.get(ConfigService);
 
   app.useGlobalPipes(

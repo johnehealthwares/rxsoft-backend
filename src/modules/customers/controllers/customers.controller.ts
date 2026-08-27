@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Put, Query, StreamableFile, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -8,6 +8,8 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import type { PartyType } from '../../../shared/domain';
 import { ListQueryDto } from '../../../shared/dto/list-query.dto';
 import { toCsv } from '../../../shared/utils/csv';
+import { buildTableHtml, prepareExportRows } from '../../../shared/utils/export';
+import { PrintPdfService } from '../../print/services/print-pdf.service';
 import { CreateCustomerDto, UpdateCustomerDto } from '../dto/customers.dto';
 import { CustomersService } from '../services/customers.service';
 
@@ -21,7 +23,10 @@ type CustomerListResponse = {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('customers')
 export class CustomersController {
-  constructor(private readonly customersService: CustomersService) {}
+  constructor(
+    private readonly customersService: CustomersService,
+    private readonly printPdfService: PrintPdfService,
+  ) {}
 
   @Get()
   @Roles('super_admin', 'admin', 'manager', 'cashier', 'auditor')
@@ -34,7 +39,25 @@ export class CustomersController {
   @Roles('super_admin', 'admin', 'manager', 'auditor')
   @Header('Content-Type', 'text/csv')
   async export(@Query() query: ListQueryDto, @CurrentUser() currentUser: RequestUser): Promise<string> {
-    return toCsv((await this.customersService.list(currentUser.organizationId, query)).data.map((item) => ({ ...item })) as Array<Record<string, unknown>>);
+    query.page = 1;
+    query.limit = 1000000;
+    return toCsv(prepareExportRows((await this.customersService.list(currentUser.organizationId, query)).data as Array<Record<string, unknown>>));
+  }
+
+  @Get('export/pdf')
+  @Roles('super_admin', 'admin', 'manager', 'auditor')
+  async exportPdf(@Query() query: ListQueryDto, @CurrentUser() currentUser: RequestUser): Promise<StreamableFile> {
+    query.page = 1;
+    query.limit = 1000000;
+    const rows = prepareExportRows((await this.customersService.list(currentUser.organizationId, query)).data as Array<Record<string, unknown>>);
+    const { buffer, filename } = await this.printPdfService.generatePdf(
+      buildTableHtml(rows, 'Customers Export'),
+      { filename: 'customers.pdf' },
+    );
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Post()

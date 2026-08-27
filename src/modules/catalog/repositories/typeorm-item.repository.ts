@@ -38,21 +38,31 @@ export class TypeormItemRepository implements ItemRepository {
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.baseUom', 'baseUom')
       .leftJoinAndSelect('product.purchaseUom', 'purchaseUom')
-      .leftJoinAndSelect('product.saleUom', 'saleUom')
-      .leftJoin(
+      .leftJoinAndSelect('product.saleUom', 'saleUom');
+
+    const hasOrgScope = Boolean(query.organizationId);
+
+    if (hasOrgScope) {
+      qb.leftJoin(
         OrganisationItemOrmEntity,
         'orgItem',
         'orgItem.item_id = product.id AND orgItem.organization_id = :organizationId',
         { organizationId: query.organizationId },
-      )
-      // Default visibility: any product that is not explicitly blacklisted for the org.
-      .where('(orgItem.id IS NULL OR orgItem.is_active = :active)', { active: true });
+      );
+
+      // Default visibility: any product that is not explicitly blacklisted for the
+      // org. When showAll is requested every item is returned (LEFT JOIN keeps the
+      // org overlay on each row) so blacklisted items stay manageable.
+      if (!query.showAll) {
+        qb.where('(orgItem.id IS NULL OR orgItem.is_active = :active)', { active: true });
+      }
+    }
 
     if (query.search) {
       if (query.search.includes('{')) {
         const filters = JSON.parse(query.search);
         await applyFilters(qb, 'product', filters);
-      } else {
+      } else if (hasOrgScope) {
         qb.andWhere(
           new Brackets((b) =>
             b
@@ -60,6 +70,14 @@ export class TypeormItemRepository implements ItemRepository {
               .orWhere('orgItem.alias ILIKE :alias', { alias: `%${query.search}%` })
               .orWhere('orgItem.code ILIKE :code', { code: `%${query.search}%` })
               .orWhere('orgItem.barcode ILIKE :barcode', { barcode: `%${query.search}%` }),
+          ),
+        );
+      } else {
+        qb.andWhere(
+          new Brackets((b) =>
+            b
+              .where('product.name ILIKE :productName', { productName: `%${query.search}%` })
+              .orWhere('product.code ILIKE :code', { code: `%${query.search}%` }),
           ),
         );
       }
@@ -73,7 +91,7 @@ export class TypeormItemRepository implements ItemRepository {
 
     const sortBy = ALLOWED_SORT_COLUMNS.includes(query.sortBy) ? query.sortBy : 'name';
     if (sortBy === 'code') {
-      qb.orderBy('orgItem.code', query.sortOrder.toUpperCase() as 'ASC' | 'DESC')
+      qb.orderBy(hasOrgScope ? 'orgItem.code' : 'product.code', query.sortOrder.toUpperCase() as 'ASC' | 'DESC')
         .addOrderBy('product.name', 'ASC');
     } else {
       qb.orderBy(
@@ -81,12 +99,12 @@ export class TypeormItemRepository implements ItemRepository {
         query.sortOrder.toUpperCase() as 'ASC' | 'DESC',
       );
     }
-    qb.addOrderBy('product.isActive', 'DESC');
+    qb.addOrderBy('product.name', 'ASC');
 
     qb.skip(query.offset).take(query.limit);
 
     const [items, total] = await qb.getManyAndCount();
-    const overlays = await this.loadOverlays(query.organizationId, items.map((i) => i.id));
+    const overlays = hasOrgScope ? await this.loadOverlays(query.organizationId, items.map((i) => i.id)) : new Map();
 
     return {
       items: items.map((entity) => CatalogMapper.toDomainItem(entity, overlays.get(entity.id))),
@@ -106,9 +124,11 @@ export class TypeormItemRepository implements ItemRepository {
     });
     if (!item) return null;
 
-    const overlay = await this.organisationItemRepository.findOne({
-      where: { organizationId, itemId: id },
-    });
+    const overlay = organizationId
+      ? await this.organisationItemRepository.findOne({
+          where: { organizationId, itemId: id },
+        })
+      : null;
 
     return CatalogMapper.toDomainItem(item, overlay);
   }
@@ -171,6 +191,7 @@ export class TypeormItemRepository implements ItemRepository {
   }
 
   async getMetrics(query: ItemMetricsQuery): Promise<ItemMetrics> {
+    const hasOrg = Boolean(query.organizationId);
     const applySearch = async (qb: import('typeorm').SelectQueryBuilder<any>) => {
       if (query.search) {
         if (query.search.includes('{')) {
@@ -192,14 +213,31 @@ export class TypeormItemRepository implements ItemRepository {
       const qb = this.repository
         .createQueryBuilder('product')
         .leftJoin('product.category', 'category');
+      // Active/available state is per-org via organisation_items. Overlay join
+      // is org-scoped; skipped for a global (empty-org) super-admin view.
+      if (hasOrg) {
+        qb.leftJoin(
+          OrganisationItemOrmEntity,
+          'orgItem',
+          'orgItem.item_id = product.id AND orgItem.organization_id = :orgId',
+          { orgId: query.organizationId },
+        );
+      }
       await applySearch(qb);
       if (where) qb.andWhere(where, params);
       return qb.getCount();
     };
 
     const total = await countWith();
-    const active = await countWith('product.is_active = :isActive', { isActive: true });
-    const inactive = await countWith('product.is_active = :isActive', { isActive: false });
+    // Not blacklisted for the org = active; explicitly blacklisted = inactive.
+    const active = hasOrg
+      ? await countWith('(orgItem.id IS NULL OR orgItem.is_active = :active)', {
+          active: true,
+        })
+      : total;
+    const inactive = hasOrg
+      ? await countWith('orgItem.is_active = :inactive', { inactive: false })
+      : 0;
     const noCategory = await countWith(
       '(category.code IS NULL OR LOWER(category.code) = LOWER(:noCatCode))',
       { noCatCode: 'NOT FOUND' },
@@ -226,7 +264,6 @@ export class TypeormItemRepository implements ItemRepository {
       trackLot: product.trackLot,
       trackExpiry: product.trackExpiry,
       shelfLifeDays: product.shelfLifeDays,
-      isActive: product.isActive,
       category,
       baseUom: { id: product.baseUomId } as UomOrmEntity,
       purchaseUom: product.purchaseUomId ? ({ id: product.purchaseUomId } as UomOrmEntity) : null,
@@ -245,7 +282,7 @@ export class TypeormItemRepository implements ItemRepository {
     organizationId: string,
     itemIds: string[],
   ): Promise<Map<string, OrganisationItemOrmEntity>> {
-    if (!itemIds.length) return new Map();
+    if (!organizationId || !itemIds.length) return new Map();
     const overlays = await this.organisationItemRepository.find({
       where: { organizationId, itemId: In(itemIds) },
     });

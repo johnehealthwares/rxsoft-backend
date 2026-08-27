@@ -20,7 +20,7 @@ export class SaleRefundOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'organization_id', type: 'text' })
+  @Column({ name: 'organization_id', type: 'uuid' })
   organizationId!: string;
 
   @ManyToOne('SaleOrmEntity', { nullable: false, onDelete: 'CASCADE' })

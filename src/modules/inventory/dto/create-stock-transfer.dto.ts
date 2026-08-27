@@ -27,6 +27,16 @@ export class CreateStockTransferDto {
   @Min(0.001)
   quantity!: number;
 
+  @ApiProperty({
+    required: false,
+    description:
+      'UOM the quantity is expressed in. Defaults to the item base UOM; the ' +
+      'quantity is converted to base UOM before stock is adjusted.',
+  })
+  @IsOptional()
+  @IsString()
+  uomId?: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()

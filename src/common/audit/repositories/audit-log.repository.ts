@@ -12,7 +12,19 @@ export type CreateAuditLogEntry = {
   metadata: Record<string, unknown> | null;
 };
 
+export type AuditLogRecord = CreateAuditLogEntry & {
+  id: string;
+  createdAt: Date;
+};
+
+export type AuditLogListQuery = {
+  organizationId: string;
+  search?: string;
+  offset: number;
+  limit: number;
+};
+
 export interface AuditLogRepository {
   create(entry: CreateAuditLogEntry): Promise<void>;
+  list(query: AuditLogListQuery): Promise<{ items: AuditLogRecord[]; total: number }>;
 }
-

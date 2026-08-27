@@ -31,7 +31,6 @@ const toIsoString = (value: Date | null | undefined): string | null => value ? v
 
 export const toManufacturerType = (entity: ManufacturerOrmEntity): ManufacturerType => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   code: entity.code,
   name: entity.name,
   createdAt: entity.createdAt.toISOString(),
@@ -50,7 +49,7 @@ export const toItemSummaryType = (entity: ItemOrmEntity): ItemSummaryType => ({
   trackLot: entity.trackLot,
   trackExpiry: entity.trackExpiry,
   shelfLifeDays: entity.shelfLifeDays,
-  isActive: entity.isActive,
+  isActive: true,
   createdAt: entity.createdAt.toISOString(),
   updatedAt: entity.updatedAt.toISOString(),
   deletedAt: toIsoString(entity.deletedAt),
@@ -125,6 +124,7 @@ export const toWarehouseType = (entity: WarehouseOrmEntity): WarehouseType => ({
 export const toStockLocationType = (entity: StockLocationOrmEntity): StockLocationType => ({
   id: entity.id,
   organizationId: entity.organizationId,
+  locationId: entity.locationId ?? null,
   warehouseId: entity.warehouseId,
   warehouse: entity.warehouse ? toWarehouseType(entity.warehouse) : null,
   parentId: entity.parentId,
@@ -132,6 +132,7 @@ export const toStockLocationType = (entity: StockLocationOrmEntity): StockLocati
     ? {
         id: entity.parent.id,
         organizationId: entity.parent.organizationId,
+        locationId: entity.parent.locationId ?? null,
         warehouseId: entity.parent.warehouseId,
         code: entity.parent.code,
         name: entity.parent.name,
@@ -215,7 +216,6 @@ export const toPriceListItemType = (entity: PriceListItemOrmEntity): PriceListIt
 
 export const toPaymentMethodType = (entity: PaymentMethodOrmEntity): PaymentMethodType => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   code: entity.code,
   name: entity.name,
   methodType: entity.methodType,
@@ -226,7 +226,6 @@ export const toPaymentMethodType = (entity: PaymentMethodOrmEntity): PaymentMeth
 
 export const toGlAccountType = (entity: GlAccountOrmEntity) => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   accountCode: entity.accountCode,
   accountName: entity.accountName,
   accountType: entity.accountType,
@@ -238,7 +237,6 @@ export const toGlAccountType = (entity: GlAccountOrmEntity) => ({
 
 export const toJournalType = (entity: JournalOrmEntity) => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   code: entity.code,
   name: entity.name,
   journalType: entity.journalType,
@@ -264,7 +262,6 @@ export const toJournalEntryLineType = (entity: JournalEntryLineOrmEntity) => ({
 
 export const toJournalEntryType = (entity: JournalEntryOrmEntity) => ({
   id: entity.id,
-  organizationId: entity.organizationId,
   journalId: entity.journalId,
   entryNumber: entity.entryNumber,
   entryDate: entity.entryDate,

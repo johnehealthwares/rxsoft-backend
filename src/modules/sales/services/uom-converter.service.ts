@@ -2,10 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UomOrmEntity } from '../entities/uom.orm-entity';
-
-function getEffectiveFactor(uom: { uomType: string; factor: number }): number {
-  return uom.uomType === 'smaller' ? 1 / uom.factor : uom.factor;
-}
+import { convertUomQuantity } from '../../../shared/utils/uom';
 
 @Injectable()
 export class UomConverterService {
@@ -28,10 +25,7 @@ export class UomConverterService {
       );
     }
 
-    const fromEffective = getEffectiveFactor(fromUom);
-    const toEffective = getEffectiveFactor(toUom);
-    const inReference = quantity * fromEffective;
-    return Number((inReference / toEffective).toFixed(4));
+    return convertUomQuantity(quantity, fromUom, toUom);
   }
 
   async convertToBaseUom(

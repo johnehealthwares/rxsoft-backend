@@ -7,7 +7,7 @@ export class GoodsReceiptOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'organization_id', type: 'text' })
+  @Column({ name: 'organization_id', type: 'uuid' })
   organizationId!: string;
 
   @Column({ name: 'receipt_number', type: 'text' })

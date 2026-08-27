@@ -23,6 +23,9 @@ export class ListStockMovementsUseCase {
       locationId: payload.locationId,
       fromDate: payload.fromDate,
       toDate: payload.toDate,
+      search: payload.search,
+      sortBy: payload.sortBy,
+      sortOrder: payload.sortOrder,
     });
   }
 }

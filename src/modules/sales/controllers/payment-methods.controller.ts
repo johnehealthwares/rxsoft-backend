@@ -1,8 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
-import { CurrentUser } from '../../../common/decorators/current-user.decorator';
-import type { RequestUser } from '../../../common/decorators/current-user.decorator';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
@@ -24,31 +22,22 @@ export class PaymentMethodsController {
 
   @Get()
   @Roles('admin', 'super_admin', 'pharmacist', 'cashier')
-  async list(
-    @Query() query: ListPaymentMethodsDto,
-    @CurrentUser() currentUser: RequestUser,
-  ): Promise<PaymentMethodListResponse> {
-    const result = await this.paymentMethodsService.list(query, currentUser.organizationId);
+  async list(@Query() query: ListPaymentMethodsDto): Promise<PaymentMethodListResponse> {
+    const result = await this.paymentMethodsService.list(query);
     return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
   }
 
   @Get(':paymentMethodId')
   @Roles('admin', 'super_admin', 'pharmacist', 'cashier')
-  async get(
-    @Param('paymentMethodId') paymentMethodId: string,
-    @CurrentUser() currentUser: RequestUser,
-  ): Promise<PaymentMethodType> {
-    return this.paymentMethodsService.get(paymentMethodId, currentUser.organizationId);
+  async get(@Param('paymentMethodId') paymentMethodId: string): Promise<PaymentMethodType> {
+    return this.paymentMethodsService.get(paymentMethodId);
   }
 
   @Post()
   @Roles('admin', 'super_admin', 'pharmacist')
   @AuditAction('sales.payment_method.create')
-  async create(
-    @Body() payload: CreatePaymentMethodDto,
-    @CurrentUser() currentUser: RequestUser,
-  ): Promise<PaymentMethodType> {
-    return this.paymentMethodsService.create(payload, currentUser.organizationId);
+  async create(@Body() payload: CreatePaymentMethodDto): Promise<PaymentMethodType> {
+    return this.paymentMethodsService.create(payload);
   }
 
   @Put(':paymentMethodId')
@@ -57,9 +46,8 @@ export class PaymentMethodsController {
   async replace(
     @Param('paymentMethodId') paymentMethodId: string,
     @Body() payload: UpdatePaymentMethodDto,
-    @CurrentUser() currentUser: RequestUser,
   ): Promise<PaymentMethodType> {
-    return this.paymentMethodsService.update(paymentMethodId, payload, currentUser.organizationId);
+    return this.paymentMethodsService.update(paymentMethodId, payload);
   }
 
   @Patch(':paymentMethodId')
@@ -68,15 +56,14 @@ export class PaymentMethodsController {
   async patch(
     @Param('paymentMethodId') paymentMethodId: string,
     @Body() payload: UpdatePaymentMethodDto,
-    @CurrentUser() currentUser: RequestUser,
   ): Promise<PaymentMethodType> {
-    return this.paymentMethodsService.update(paymentMethodId, payload, currentUser.organizationId);
+    return this.paymentMethodsService.update(paymentMethodId, payload);
   }
 
   @Delete(':paymentMethodId')
   @Roles('admin', 'super_admin', 'pharmacist')
   @AuditAction('sales.payment_method.delete')
-  async remove(@Param('paymentMethodId') paymentMethodId: string, @CurrentUser() currentUser: RequestUser): Promise<void> {
-    await this.paymentMethodsService.remove(paymentMethodId, currentUser.organizationId);
+  async remove(@Param('paymentMethodId') paymentMethodId: string): Promise<void> {
+    await this.paymentMethodsService.remove(paymentMethodId);
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Post, Query, StreamableFile, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -7,6 +7,8 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
 import { toCsv } from '../../../shared/utils/csv';
+import { buildTableHtml, prepareExportRows } from '../../../shared/utils/export';
+import { PrintPdfService } from '../../print/services/print-pdf.service';
 import { CreateStockAdjustmentDto } from '../dto/create-stock-adjustment.dto';
 import { CreateStockTransferDto } from '../dto/create-stock-transfer.dto';
 import { ListStockBalancesDto } from '../dto/list-stock-balances.dto';
@@ -60,6 +62,7 @@ export class InventoryController {
     private readonly listStockMovementsUseCase: ListStockMovementsUseCase,
     private readonly createStockAdjustmentUseCase: CreateStockAdjustmentUseCase,
     private readonly inventoryService: InventoryService,
+    private readonly printPdfService: PrintPdfService,
   ) {}
 
   @Get('stock-balances')
@@ -79,6 +82,41 @@ export class InventoryController {
         total: result.total,
       },
     };
+  }
+
+  @Get('stock-balances/export')
+  @Roles('admin', 'super_admin', 'inventory_clerk', 'pharmacist')
+  @Header('Content-Type', 'text/csv')
+  @ApiOperation({ summary: 'Export stock balances as CSV' })
+  async exportStockBalances(
+    @Query() query: ListStockBalancesDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<string> {
+    query.page = 1;
+    query.limit = 1000000;
+    const result = await this.listStockBalancesUseCase.execute(query, currentUser.organizationId);
+    return toCsv(prepareExportRows(result.items.map(mapBalance) as unknown as Array<Record<string, unknown>>));
+  }
+
+  @Get('stock-balances/export/pdf')
+  @Roles('admin', 'super_admin', 'inventory_clerk', 'pharmacist')
+  @ApiOperation({ summary: 'Export stock balances as PDF' })
+  async exportStockBalancesPdf(
+    @Query() query: ListStockBalancesDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<StreamableFile> {
+    query.page = 1;
+    query.limit = 1000000;
+    const result = await this.listStockBalancesUseCase.execute(query, currentUser.organizationId);
+    const rows = prepareExportRows(result.items.map(mapBalance) as unknown as Array<Record<string, unknown>>);
+    const { buffer, filename } = await this.printPdfService.generatePdf(
+      buildTableHtml(rows, 'Stock Balances Export'),
+      { filename: 'stock_balances.pdf' },
+    );
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Get('stock-movements')
@@ -108,8 +146,31 @@ export class InventoryController {
     @Query() query: ListStockMovementsDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<string> {
+    query.page = 1;
+    query.limit = 1000000;
     const result = await this.listStockMovementsUseCase.execute(query, currentUser.organizationId);
     return toCsv(result.items as unknown as Array<Record<string, unknown>>);
+  }
+
+  @Get('stock-movements/export/pdf')
+  @Roles('admin', 'super_admin', 'inventory_clerk')
+  @ApiOperation({ summary: 'Export stock movements as PDF' })
+  async exportStockMovementsPdf(
+    @Query() query: ListStockMovementsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<StreamableFile> {
+    query.page = 1;
+    query.limit = 1000000;
+    const result = await this.listStockMovementsUseCase.execute(query, currentUser.organizationId);
+    const items = prepareExportRows(result.items as unknown as Array<Record<string, unknown>>);
+    const { buffer, filename } = await this.printPdfService.generatePdf(
+      buildTableHtml(items, 'Stock Movements Export'),
+      { filename: 'stock_movements.pdf' },
+    );
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Post('adjustments')

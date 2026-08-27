@@ -316,6 +316,10 @@ export class UpdatePrescriptionStatusDto {
 export class PostOrderAsSaleDto {
   @ApiPropertyOptional() @IsUUID() @IsOptional()
   stockLocationId?: string;
+
+  @ApiPropertyOptional({ description: 'Organisation to post the order against (also persisted onto the order)' })
+  @IsUUID() @IsOptional()
+  organizationId?: string;
 }
 
 export class UpdateOrderStatusDto {

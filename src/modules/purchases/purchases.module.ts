@@ -22,6 +22,7 @@ import {
 import { PartyOrmEntity } from '../customers/entities/party.orm-entity';
 import { OrganisationItemOrmEntity } from '../catalog/entities/organisation-item.orm-entity';
 import { AccountingModule } from '../accounting/accounting.module';
+import { PrintModule } from '../print/print.module';
 
 const purchasesConfigService = new ConfigService();
 const useInMemoryRepos = purchasesConfigService.get<string>('USE_IN_MEMORY_REPOS', 'false') === 'true';
@@ -59,7 +60,7 @@ const purchasesRepositoryProviders = useInMemoryRepos
     ];
 
 @Module({
-  imports: [JwtModule.register({}), AccountingModule, ...purchasesPersistenceImports],
+  imports: [JwtModule.register({}), AccountingModule, PrintModule, ...purchasesPersistenceImports],
   controllers: [PurchasesController, InflowController],
   providers: [
     PurchasesService,

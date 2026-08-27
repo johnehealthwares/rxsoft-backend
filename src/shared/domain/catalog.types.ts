@@ -81,7 +81,6 @@ export type DrugComponentType = {
 
 export type ManufacturerType = {
   id: string;
-  organizationId: string;
   code: string | null;
   name: string;
   createdAt: string;

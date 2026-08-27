@@ -39,6 +39,8 @@ describe('OrganisationItemsService', () => {
           name: 'Paracetamol 500mg',
           category: { id: 'c1', code: 'ANALGESICS', name: 'Analgesics' },
           baseUom: { id: 'u1', code: 'TAB', name: 'Tablet' },
+          saleUomId: 'u2',
+          saleUom: { id: 'u2', code: 'BOX', name: 'Box' },
           imageUrl: 'img.jpg',
           smallImageUrl: null,
           mediumImageUrl: null,
@@ -49,6 +51,8 @@ describe('OrganisationItemsService', () => {
           name: 'Amoxicillin',
           category: null,
           baseUom: null,
+          saleUomId: null,
+          saleUom: null,
           imageUrl: null,
           smallImageUrl: null,
           mediumImageUrl: null,
@@ -68,11 +72,14 @@ describe('OrganisationItemsService', () => {
         displayName: 'Para 500',
         barcode: 'org-barcode',
         visibility: 'whitelisted',
+        saleUomId: 'u2',
+        saleUom: { id: 'u2', code: 'BOX', name: 'Box' },
       });
       expect(result[1]).toMatchObject({
         itemId: 'item2',
         displayName: 'Amoxicillin',
         visibility: 'default',
+        saleUomId: null,
       });
     });
 
@@ -81,7 +88,7 @@ describe('OrganisationItemsService', () => {
         { id: 'oi1', itemId: 'item1', isActive: false },
       ]);
       itemRepo.find.mockResolvedValue([
-        { id: 'item1', name: 'Hidden', category: null, baseUom: null, imageUrl: null, smallImageUrl: null, mediumImageUrl: null, largeImageUrl: null },
+        { id: 'item1', name: 'Hidden', category: null, baseUom: null, saleUom: null, imageUrl: null, smallImageUrl: null, mediumImageUrl: null, largeImageUrl: null },
       ]);
 
       const result = await service.listForOrg('org1');
@@ -91,22 +98,50 @@ describe('OrganisationItemsService', () => {
   });
 
   describe('listActiveForOrg', () => {
-    it('returns only org-added (active whitelist) items', async () => {
+    it('returns only org-added (active whitelist) items, join-driven', async () => {
       orgItemRepo.find.mockResolvedValue([
-        { id: 'oi1', itemId: 'item1', isActive: true, alias: null, code: null, barcode: null },
+        { id: 'oi1', itemId: 'item1', alias: null, code: 'ORG-PCM', barcode: null, isActive: true },
+        { id: 'oi2', itemId: 'item2', alias: null, code: null, barcode: null, isActive: true },
       ]);
       itemRepo.find.mockResolvedValue([
-        { id: 'item1', name: 'Paracetamol', category: null, baseUom: null, imageUrl: null, smallImageUrl: null, mediumImageUrl: null, largeImageUrl: null },
-        { id: 'item2', name: 'Amoxicillin', category: null, baseUom: null, imageUrl: null, smallImageUrl: null, mediumImageUrl: null, largeImageUrl: null },
-        { id: 'item3', name: 'Blacklisted', category: null, baseUom: null, imageUrl: null, smallImageUrl: null, mediumImageUrl: null, largeImageUrl: null },
+        {
+          id: 'item1',
+          name: 'Paracetamol',
+          category: { id: 'c1', code: 'ANALGESICS', name: 'Analgesics' },
+          baseUom: { id: 'u1', code: 'TAB', name: 'Tablet' },
+          saleUomId: 'u2',
+          saleUom: { id: 'u2', code: 'BOX', name: 'Box' },
+          imageUrl: null,
+          smallImageUrl: null,
+          mediumImageUrl: null,
+          largeImageUrl: null,
+        },
+        {
+          id: 'item2',
+          name: 'Amoxicillin',
+          category: null,
+          baseUom: null,
+          saleUomId: null,
+          saleUom: null,
+          imageUrl: null,
+          smallImageUrl: null,
+          mediumImageUrl: null,
+          largeImageUrl: null,
+        },
       ]);
 
       const result = await service.listActiveForOrg('org1');
 
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({ itemId: 'item1', visibility: 'whitelisted' });
-      expect(orgItemRepo.find).toHaveBeenCalledWith({
-        where: { organizationId: 'org1', isActive: true },
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        itemId: 'item1',
+        code: 'ORG-PCM',
+        visibility: 'whitelisted',
+        saleUomId: 'u2',
+        saleUom: { id: 'u2', code: 'BOX', name: 'Box' },
+      });
+      expect(itemRepo.find).toHaveBeenCalledWith({
+        relations: ['category', 'baseUom', 'saleUom'],
       });
     });
   });
@@ -172,6 +207,32 @@ describe('OrganisationItemsService', () => {
       await expect(
         service.upsert('org1', 'item1', { isActive: true, code: 'DUP' }),
       ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('updates an existing row without flipping isActive when not supplied', async () => {
+      const existing = {
+        id: 'oi1',
+        organizationId: 'org1',
+        itemId: 'item1',
+        isActive: false,
+        alias: null,
+        code: null,
+        barcode: null,
+      };
+      itemRepo.findOne.mockResolvedValue({ id: 'item1' });
+      orgItemRepo.findOne.mockResolvedValue(existing);
+      orgItemRepo.save.mockImplementation(async (e) => e);
+
+      await service.upsert('org1', 'item1', { code: 'ORG-PCM', barcode: '123' });
+
+      expect(orgItemRepo.save).toHaveBeenCalledWith({
+        ...existing,
+        code: 'ORG-PCM',
+        barcode: '123',
+      });
+      expect(orgItemRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ isActive: false }),
+      );
     });
 
     it('throws when item not found', async () => {

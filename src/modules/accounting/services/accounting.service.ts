@@ -43,10 +43,9 @@ export class AccountingService {
     private readonly journalEntryLineRepository: Repository<JournalEntryLineOrmEntity>,
   ) {}
 
-  async listJournals(query: ListJournalsDto, organizationId: string): Promise<{ data: JournalType[]; total: number }> {
+  async listJournals(query: ListJournalsDto): Promise<{ data: JournalType[]; total: number }> {
     const qb = this.journalRepository
       .createQueryBuilder('journal')
-      .where('journal.organization_id = :organizationId', { organizationId })
       .orderBy('journal.updated_at', 'DESC')
       .skip(query.offset)
       .take(query.limit);
@@ -59,17 +58,17 @@ export class AccountingService {
     return { data: data.map(toJournalType), total };
   }
 
-  async getJournal(id: string, organizationId: string): Promise<JournalType> {
-    const journal = await this.journalRepository.findOne({ where: { id, organizationId } });
+  async getJournal(id: string): Promise<JournalType> {
+    const journal = await this.journalRepository.findOne({ where: { id } });
     if (!journal) throw new NotFoundException('Journal not found');
     return toJournalType(journal);
   }
 
   async createJournal(payload: CreateJournalDto, organizationId: string): Promise<JournalType> {
-    const last = await this.journalRepository.findOne({
-      where: { organizationId },
+    const [last] = await this.journalRepository.find({
       order: { createdAt: 'DESC' },
       select: ['code'],
+      take: 1,
     });
     const { valid, expectedCode } = validateSequentialCode({
       providedCode: payload.code,
@@ -83,11 +82,10 @@ export class AccountingService {
     await this.ensureAccount(payload.defaultDebitAccountId, organizationId);
     await this.ensureAccount(payload.defaultCreditAccountId, organizationId);
 
-    const duplicate = await this.journalRepository.findOne({ where: { organizationId, code: payload.code } });
+    const duplicate = await this.journalRepository.findOne({ where: { code: payload.code } });
     if (duplicate) throw new BadRequestException('Journal code already exists');
 
     const entity = this.journalRepository.create({
-      organizationId,
       code: payload.code,
       name: payload.name,
       journalType: payload.journalType,
@@ -100,11 +98,11 @@ export class AccountingService {
   }
 
   async updateJournal(id: string, payload: UpdateJournalDto, organizationId: string): Promise<JournalType> {
-    const journal = await this.journalRepository.findOne({ where: { id, organizationId } });
+    const journal = await this.journalRepository.findOne({ where: { id } });
     if (!journal) throw new NotFoundException('Journal not found');
 
     if (payload.code && payload.code !== journal.code) {
-      const duplicate = await this.journalRepository.findOne({ where: { organizationId, code: payload.code } });
+      const duplicate = await this.journalRepository.findOne({ where: { code: payload.code } });
       if (duplicate) throw new BadRequestException('Journal code already exists');
       journal.code = payload.code;
     }
@@ -122,8 +120,8 @@ export class AccountingService {
     return toJournalType(saved);
   }
 
-  async removeJournal(id: string, organizationId: string): Promise<void> {
-    const result = await this.journalRepository.delete({ id, organizationId });
+  async removeJournal(id: string): Promise<void> {
+    const result = await this.journalRepository.delete({ id });
     if (!result.affected) throw new NotFoundException('Journal not found');
   }
 
@@ -154,7 +152,7 @@ export class AccountingService {
   }
 
   async createJournalEntry(payload: CreateJournalEntryDto, currentUser: RequestUser): Promise<JournalEntryType> {
-    const journal = await this.journalRepository.findOne({ where: { id: payload.journalId, organizationId: currentUser.organizationId } });
+    const journal = await this.journalRepository.findOne({ where: { id: payload.journalId } });
     if (!journal) throw new BadRequestException('Journal not found');
 
     const duplicate = await this.journalEntryRepository.findOne({
@@ -186,7 +184,7 @@ export class AccountingService {
     if (!entry) throw new NotFoundException('Journal entry not found');
 
     if (payload.journalId !== undefined) {
-      const journal = await this.journalRepository.findOne({ where: { id: payload.journalId, organizationId: currentUser.organizationId } });
+      const journal = await this.journalRepository.findOne({ where: { id: payload.journalId } });
       if (!journal) throw new BadRequestException('Journal not found');
       entry.journalId = payload.journalId;
     }

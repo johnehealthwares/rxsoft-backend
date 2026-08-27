@@ -1,4 +1,4 @@
-import type { AuditLogOrmEntity } from '../../modules/audit/entities/audit-log.orm-entity';
+import type { AuditLogOrmEntity } from '../../common/audit/entities/audit-log.orm-entity';
 import type { ItemCategoryOrmEntity as CatalogItemCategoryOrmEntity } from '../../modules/catalog/entities/item-category.orm-entity';
 import type { ItemOrmEntity } from '../../modules/catalog/entities/item.orm-entity';
 // import type { ItemCategoryOrmEntity as CategoriesItemCategoryOrmEntity } from '../../modules/categories/entities/item-category.orm-entity';

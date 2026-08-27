@@ -44,4 +44,23 @@ describe('ListItemsUseCase', () => {
       sortOrder: 'desc',
     });
   });
+
+  it('forwards includeAll to the repository as showAll', async () => {
+    itemRepository.list.mockResolvedValue({ items: [], total: 0 });
+
+    await useCase.execute({
+      page: 1,
+      limit: 20,
+      includeAll: true,
+      sortBy: 'name',
+      sortOrder: 'asc',
+      get offset() {
+        return 0;
+      },
+    }, 'org1');
+
+    expect(itemRepository.list).toHaveBeenCalledWith(
+      expect.objectContaining({ showAll: true }),
+    );
+  });
 });

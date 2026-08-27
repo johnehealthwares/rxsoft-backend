@@ -41,7 +41,6 @@ export class InMemoryItemRepository implements ItemRepository {
       true,
       true,
       null,
-      true,
     );
 
     this.items.set(product.id, product);
@@ -53,7 +52,9 @@ export class InMemoryItemRepository implements ItemRepository {
   async list(query: ItemListQuery): Promise<{ items: Item[]; total: number }> {
     const orgFlags = this.orgItems.get(query.organizationId) ?? new Map();
     let items = [...this.items.values()].filter(
-      (product) => product.isActive && orgFlags.get(product.id) !== false,
+      // Visibility is per-org (organisation_items): showAll bypasses the
+      // no-blacklist filter; otherwise hide items blacklisted for the org.
+      (product) => query.showAll || orgFlags.get(product.id) !== false,
     );
 
     if (query.search) {
@@ -101,7 +102,7 @@ export class InMemoryItemRepository implements ItemRepository {
 
   async findById(id: string, organizationId: string): Promise<Item | null> {
     const item = this.items.get(id) ?? null;
-    if (!item || !item.isActive) {
+    if (!item) {
       return null;
     }
     return this.withOverlay(item, organizationId);
@@ -169,10 +170,15 @@ export class InMemoryItemRepository implements ItemRepository {
       items = items.filter((p) => p.category?.code?.toLowerCase() === cc);
     }
 
+    const orgFlags = query.organizationId ? this.orgItems.get(query.organizationId) ?? new Map() : null;
+    // Active/available is per org (organisation_items): not blacklisted = active.
+    const isActiveForOrg = (p: Item) =>
+      !orgFlags || orgFlags.get(p.id) === undefined || orgFlags.get(p.id) === true;
+
     return {
       total: items.length,
-      active: items.filter((p) => p.isActive).length,
-      inactive: items.filter((p) => !p.isActive).length,
+      active: items.filter(isActiveForOrg).length,
+      inactive: items.filter((p) => !isActiveForOrg(p)).length,
       noCategory: items.filter((p) => !p.category?.code || p.category.code.toLowerCase() === 'not found').length,
       noGenericProductCode: items.filter((p) => !p.genericProductCode).length,
     };
@@ -202,7 +208,6 @@ export class InMemoryItemRepository implements ItemRepository {
       item.trackLot,
       item.trackExpiry,
       item.shelfLifeDays,
-      item.isActive,
       item.imageUrl,
       item.smallImageUrl,
       item.mediumImageUrl,

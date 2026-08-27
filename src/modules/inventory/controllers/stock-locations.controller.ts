@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Patch, Post, Put, Query, StreamableFile, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../../common/decorators/current-user.decorator';
@@ -6,7 +6,10 @@ import { AuditAction } from '../../../common/decorators/audit-action.decorator';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
+import { toCsv } from '../../../shared/utils/csv';
+import { buildTableHtml, prepareExportRows } from '../../../shared/utils/export';
 import type { StockLocationType } from '../../../shared/domain';
+import { PrintPdfService } from '../../print/services/print-pdf.service';
 import { CreateStockLocationDto, ListStockLocationsDto, UpdateStockLocationDto } from '../dto/stock-locations.dto';
 import { StockLocationsService } from '../services/stock-locations.service';
 
@@ -25,7 +28,10 @@ type StockLocationSearchResponse = {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('stock-locations')
 export class StockLocationsController {
-  constructor(private readonly stockLocationsService: StockLocationsService) {}
+  constructor(
+    private readonly stockLocationsService: StockLocationsService,
+    private readonly printPdfService: PrintPdfService,
+  ) {}
 
   @Get()
   @Roles('admin', 'super_admin', 'pharmacist', 'cashier', 'inventory_clerk')
@@ -36,6 +42,40 @@ export class StockLocationsController {
   ): Promise<StockLocationListResponse> {
     const result = await this.stockLocationsService.list(query, currentUser.organizationId);
     return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
+  }
+
+  @Get('export')
+  @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
+  @Header('Content-Type', 'text/csv')
+  @ApiOperation({ summary: 'Export stock locations as CSV' })
+  async exportCsv(
+    @Query() query: ListStockLocationsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<string> {
+    query.page = 1;
+    query.limit = 1000000;
+    const rows = prepareExportRows((await this.stockLocationsService.list(query, currentUser.organizationId)).data);
+    return toCsv(rows);
+  }
+
+  @Get('export/pdf')
+  @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
+  @ApiOperation({ summary: 'Export stock locations as PDF' })
+  async exportPdf(
+    @Query() query: ListStockLocationsDto,
+    @CurrentUser() currentUser: RequestUser,
+  ): Promise<StreamableFile> {
+    query.page = 1;
+    query.limit = 1000000;
+    const rows = prepareExportRows((await this.stockLocationsService.list(query, currentUser.organizationId)).data);
+    const { buffer, filename } = await this.printPdfService.generatePdf(
+      buildTableHtml(rows, 'Stock Locations Export'),
+      { filename: 'stock_locations.pdf' },
+    );
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Get('search')
@@ -67,7 +107,7 @@ export class StockLocationsController {
     @Body() payload: CreateStockLocationDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<StockLocationType> {
-    return this.stockLocationsService.create(payload, currentUser.organizationId);
+    return this.stockLocationsService.create(payload, currentUser.organizationId, currentUser.locationId ?? null);
   }
 
   @Put(':stockLocationId')
@@ -78,7 +118,7 @@ export class StockLocationsController {
     @Body() payload: UpdateStockLocationDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<StockLocationType> {
-    return this.stockLocationsService.update(stockLocationId, payload, currentUser.organizationId);
+    return this.stockLocationsService.update(stockLocationId, payload, currentUser.organizationId, currentUser.locationId ?? null);
   }
 
   @Patch(':stockLocationId')
@@ -89,6 +129,6 @@ export class StockLocationsController {
     @Body() payload: UpdateStockLocationDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<StockLocationType> {
-    return this.stockLocationsService.update(stockLocationId, payload, currentUser.organizationId);
+    return this.stockLocationsService.update(stockLocationId, payload, currentUser.organizationId, currentUser.locationId ?? null);
   }
 }

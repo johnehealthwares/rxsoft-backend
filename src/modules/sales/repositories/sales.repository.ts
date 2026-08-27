@@ -21,6 +21,48 @@ export type SalesMetrics = {
   byCategory: Record<string, { count: number; revenue: number }>;
 };
 
+export type SalesAnalyticsQuery = {
+  organizationId: string;
+  from?: string;
+  to?: string;
+  stockLocationId?: string;
+  categoryCode?: string;
+  paymentMethodId?: string;
+};
+
+export type SalesAnalyticsTrendPoint = {
+  day: string;
+  revenue: number;
+  orders: number;
+};
+
+export type SalesAnalyticsCategory = {
+  code: string;
+  name: string;
+  revenue: number;
+  orders: number;
+  pct: number;
+};
+
+export type SalesAnalyticsLocation = {
+  stockLocationId: string;
+  name: string;
+  revenue: number;
+};
+
+export type SalesAnalytics = {
+  summary: {
+    totalRevenue: number;
+    totalSales: number;
+    averageOrderValue: number;
+    itemsSold: number;
+    refunds: number;
+  };
+  trend: SalesAnalyticsTrendPoint[];
+  byCategory: SalesAnalyticsCategory[];
+  byLocation: SalesAnalyticsLocation[];
+};
+
 export type CreateSaleRepositoryPayload = {
   organizationId: string;
   saleNumber: string;
@@ -102,4 +144,5 @@ export interface SalesRepository {
   createRefund(payload: CreateSaleRefundRepositoryPayload): Promise<CreateSaleRefundResult>;
   findLastCreated(organizationId: string): Promise<Pick<Sale, 'saleNumber'> | null>;
   getMetrics(query: SalesMetricsQuery): Promise<SalesMetrics>;
+  getAnalytics(query: SalesAnalyticsQuery): Promise<SalesAnalytics>;
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { DEFAULT_SYSTEM_USER_ID, DEFAULT_UOM_ID } from '../../../shared/constants/persistence-scope';
@@ -8,6 +8,8 @@ import { WarehouseOrmEntity } from '../../inventory/entities';
 import { OrganisationItemOrmEntity } from '../../catalog/entities/organisation-item.orm-entity';
 import { CreatePurchaseDto, CreatePurchaseLineDto, PurchaseLineDto, UpdatePurchaseDto, UpdatePurchaseLineDto } from '../dto/purchases.dto';
 import { PurchaseOrderLineOrmEntity, PurchaseOrderOrmEntity } from '../entities';
+import type { PurchasesAnalytics, PurchasesAnalyticsQuery, PurchasesRepository } from '../repositories/purchases.repository';
+import { PURCHASES_REPOSITORY } from './purchases.di-tokens';
 import { validateSequentialCode } from '../../../shared/utils/code-validation';
 
 type PurchaseSummaryType = {
@@ -55,7 +57,16 @@ export class PurchasesService {
     private readonly warehouseRepository: Repository<WarehouseOrmEntity>,
     @InjectRepository(OrganisationItemOrmEntity)
     private readonly orgItemRepository: Repository<OrganisationItemOrmEntity>,
+    @Inject(PURCHASES_REPOSITORY)
+    private readonly purchasesRepo: PurchasesRepository,
   ) {}
+
+  async getAnalytics(
+    organizationId: string,
+    query: Omit<PurchasesAnalyticsQuery, 'organizationId'>,
+  ): Promise<PurchasesAnalytics> {
+    return this.purchasesRepo.getAnalytics({ ...query, organizationId });
+  }
 
   async list(query: ListQueryDto, organizationId): Promise<{ data: PurchaseSummaryType[]; total: number }> {
     const qb = this.purchaseOrderRepository

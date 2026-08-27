@@ -7,6 +7,7 @@ import { PricingModule } from '../pricing/pricing.module';
 import { ServicesModule } from '../../services/services.module';
 
 import { ITEM_REPOSITORY } from './services/catalog.di-tokens';
+import { PrintModule } from '../print/print.module';
 import { CreateItemUseCase } from './services/create-item.use-case';
 import { GetItemUseCase } from './services/get-item.use-case';
 import { GenericProductsService } from './services/generic-products.service';
@@ -74,6 +75,7 @@ const catalogExtraProviders = useInMemoryRepos ? [] : [GenericProductsService, P
     ConfigModule,
     InventoryModule,
     ServicesModule,
+    PrintModule,
 
     JwtModule.registerAsync({
       inject: [ConfigService],

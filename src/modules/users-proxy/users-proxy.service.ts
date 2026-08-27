@@ -105,6 +105,16 @@ export class UsersProxyService {
     return data;
   }
 
+  async delete(token: string, id: string): Promise<any> {
+    const { data } = await firstValueFrom(
+      this.http.delete(`${this.baseUrl}/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    );
+    await this.cache.invalidateByPrefix('proxy:users:');
+    return data;
+  }
+
   async findById(organizationId: string, userId: string): Promise<any> {
     const key = this.cacheKey('findById', organizationId, userId);
     const cached = await this.cache.get<any>(key);

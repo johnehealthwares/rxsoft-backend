@@ -16,6 +16,14 @@ import {
   GoodsReceiptPayload,
   PurchaseListQuery,
   PurchaseUpdatePayload,
+  PurchasesAnalytics,
+  PurchasesAnalyticsCategory,
+  PurchasesAnalyticsLocation,
+  PurchasesAnalyticsQuery,
+  PurchasesAnalyticsRecentPurchase,
+  PurchasesAnalyticsStatus,
+  PurchasesAnalyticsSupplier,
+  PurchasesAnalyticsTrendPoint,
   PurchasesRepository,
   ReceiveGoodsResult,
   ReceiptListQuery,
@@ -242,6 +250,19 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
       for (const incomingLine of payload.lines) {
         const poLine = po.lines.find((l) => l.itemId === incomingLine.itemId)!;
         poLine.receivedQty = Number(poLine.receivedQty) + Number(incomingLine.receivedQty);
+        // Persist the cost that was applied at receive time back onto the PO
+        // line so the order reflects the actual goods-intake cost.
+        if (incomingLine.unitCost !== undefined && Number(incomingLine.unitCost) > 0) {
+          poLine.unitCost = Number(incomingLine.unitCost);
+          poLine.lineSubtotal = Number(
+            (Number(poLine.orderedQty) * Number(poLine.unitCost)
+              * (1 - Number(poLine.discountPercent ?? 0) / 100)).toFixed(2),
+          );
+          poLine.lineTotal = Number(
+            (Number(poLine.lineSubtotal)
+              * (1 + Number(poLine.taxPercent ?? 0) / 100)).toFixed(2),
+          );
+        }
       }
       await poLineRepo.save(po.lines);
 
@@ -249,6 +270,11 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
         (line) => Number(line.receivedQty) >= Number(line.orderedQty),
       );
       po.status = allFullyReceived ? 'received' : 'partially_received';
+
+      // Recompute PO totals from the (possibly cost-updated) lines.
+      po.subtotalAmount = Number(po.lines.reduce((s, l) => s + Number(l.lineSubtotal ?? 0), 0).toFixed(2));
+      po.taxAmount = Number(po.lines.reduce((s, l) => s + (Number(l.lineTotal ?? 0) - Number(l.lineSubtotal ?? 0)), 0).toFixed(2));
+      po.totalAmount = Number(po.lines.reduce((s, l) => s + Number(l.lineTotal ?? 0), 0).toFixed(2));
       await poRepo.save(po);
 
       const warehouse = await warehouseRepo.findOne({
@@ -489,5 +515,196 @@ export class TypeormPurchasesRepository implements PurchasesRepository {
       select: ['receiptNumber'],
     });
     return receipt ?? null;
+  }
+
+  /**
+   * Aggregates the Purchases Analytics dashboard payload in one pass. Applies the
+   * same tenant + date/warehouse/supplier/category filters to every sub-series so
+   * the KPI cards and chart segments reconcile.
+   */
+  async getAnalytics(query: PurchasesAnalyticsQuery): Promise<PurchasesAnalytics> {
+    const [summary, itemsPurchased, trendRows, categoryRows, supplierRows, locationRows, statusRows, recentRows] =
+      await Promise.all([
+        this.buildAnalyticsBaseQb(query)
+          .leftJoin('purchase.lines', 'po_line')
+          .select('COUNT(DISTINCT purchase.id)', 'totalPOs')
+          .addSelect('COALESCE(SUM(po_line.line_total), 0)', 'totalValue')
+          .addSelect('COUNT(DISTINCT purchase.supplier_id)', 'activeSuppliers')
+          .getRawOne<{ totalPOs: string; totalValue: string; activeSuppliers: string }>(),
+        this.buildAnalyticsBaseQb(query)
+          .leftJoin('purchase.lines', 'po_line')
+          .select('COALESCE(SUM(po_line.ordered_qty), 0)', 'itemsPurchased')
+          .getRawOne<{ itemsPurchased: string }>(),
+        this.buildAnalyticsBaseQb(query)
+          .leftJoin('purchase.lines', 'po_line')
+          .select("TO_CHAR(purchase.order_date, 'YYYY-MM-DD')", 'day')
+          .addSelect('COUNT(DISTINCT purchase.id)', 'orders')
+          .addSelect('COALESCE(SUM(po_line.line_total), 0)', 'value')
+          .groupBy('day')
+          .orderBy('day', 'ASC')
+          .getRawMany<{ day: string; orders: string; value: string }>(),
+        this.buildAnalyticsBaseQb(query)
+          .innerJoin('purchase.lines', 'po_line')
+          .innerJoin('po_line.item', 'item')
+          .innerJoin('item.category', 'cat')
+          .select([
+            'cat.code AS code',
+            'cat.name AS name',
+            'COALESCE(SUM(po_line.line_total), 0) AS value',
+          ])
+          .groupBy('cat.code')
+          .addGroupBy('cat.name')
+          .orderBy('value', 'DESC')
+          .limit(5)
+          .getRawMany<{ code: string; name: string; value: string }>(),
+        this.buildAnalyticsBaseQb(query)
+          .leftJoin('purchase.lines', 'po_line')
+          .innerJoin('purchase.supplier', 'supplier')
+          .select([
+            'purchase.supplier_id AS supplierId',
+            'supplier.name AS name',
+            'COALESCE(SUM(po_line.line_total), 0) AS value',
+          ])
+          .groupBy('purchase.supplier_id')
+          .addGroupBy('supplier.name')
+          .orderBy('value', 'DESC')
+          .getRawMany<{ supplierId: string; name: string; value: string }>(),
+        this.buildAnalyticsBaseQb(query)
+          .leftJoin('purchase.lines', 'po_line')
+          .leftJoin(WarehouseOrmEntity, 'warehouse', 'warehouse.id = purchase.warehouse_id')
+          .select([
+            'purchase.warehouse_id AS warehouseId',
+            "COALESCE(warehouse.name, 'Unassigned') AS name",
+            'COALESCE(SUM(po_line.line_total), 0) AS value',
+          ])
+          .groupBy('purchase.warehouse_id')
+          .addGroupBy('warehouse.name')
+          .orderBy('value', 'DESC')
+          .getRawMany<{ warehouseId: string; name: string; value: string }>(),
+        this.buildAnalyticsBaseQb(query)
+          .select('purchase.status AS status')
+          .addSelect('COUNT(DISTINCT purchase.id) AS count')
+          .groupBy('purchase.status')
+          .getRawMany<{ status: string; count: string }>(),
+        this.purchaseOrderRepository
+          .createQueryBuilder('purchase')
+          .leftJoin('purchase.lines', 'po_line')
+          .leftJoin('purchase.supplier', 'supplier')
+          .select('purchase.id', 'id')
+          .addSelect('purchase.purchase_order_number', 'purchaseOrderNumber')
+          .addSelect("TO_CHAR(purchase.order_date, 'YYYY-MM-DD')", 'orderDate')
+          .addSelect('purchase.status', 'status')
+          .addSelect('COALESCE(SUM(po_line.line_total), 0)', 'totalAmount')
+          .addSelect('supplier.name', 'supplierName')
+          .where('purchase.organization_id = :organizationId', { organizationId: query.organizationId })
+          .groupBy('purchase.id')
+          .addGroupBy('purchase.purchase_order_number')
+          .addGroupBy('purchase.order_date')
+          .addGroupBy('purchase.status')
+          .addGroupBy('supplier.name')
+          .orderBy('purchase.order_date', 'DESC')
+          .take(5)
+          .getRawMany<{
+            id: string;
+            purchaseOrderNumber: string;
+            orderDate: string;
+            status: string;
+            totalAmount: string;
+            supplierName: string | null;
+          }>(),
+      ]);
+
+    const totalPOs = Number(summary?.totalPOs ?? 0);
+    const totalValue = Number(summary?.totalValue ?? 0);
+
+    const trend: PurchasesAnalyticsTrendPoint[] = (trendRows ?? []).map((row) => ({
+      day: row.day,
+      value: Number(row.value),
+      orders: Number(row.orders),
+    }));
+
+    const byCategory: PurchasesAnalyticsCategory[] = (categoryRows ?? []).map((row) => ({
+      code: row.code,
+      name: row.name,
+      value: Number(row.value),
+      pct: totalValue > 0 ? Number(((Number(row.value) / totalValue) * 100).toFixed(1)) : 0,
+    }));
+
+    const bySupplier: PurchasesAnalyticsSupplier[] = (supplierRows ?? []).map((row) => ({
+      supplierId: row.supplierId,
+      name: row.name,
+      value: Number(row.value),
+    }));
+
+    const byLocation: PurchasesAnalyticsLocation[] = (locationRows ?? []).map((row) => ({
+      warehouseId: row.warehouseId,
+      name: row.name,
+      value: Number(row.value),
+      pct: totalValue > 0 ? Number(((Number(row.value) / totalValue) * 100).toFixed(1)) : 0,
+    }));
+
+    const byStatus: PurchasesAnalyticsStatus[] = (statusRows ?? []).map((row) => ({
+      status: row.status,
+      count: Number(row.count),
+    }));
+
+    const recent: PurchasesAnalyticsRecentPurchase[] = (recentRows ?? []).map((po) => ({
+      id: po.id,
+      purchaseOrderNumber: po.purchaseOrderNumber,
+      orderDate: po.orderDate,
+      status: po.status,
+      totalAmount: Number(po.totalAmount),
+      supplierName: po.supplierName ?? null,
+    }));
+
+    return {
+      summary: {
+        totalValue,
+        totalPOs,
+        itemsPurchased: Number(itemsPurchased?.itemsPurchased ?? 0),
+        averagePOValue: totalPOs > 0 ? Number((totalValue / totalPOs).toFixed(2)) : 0,
+        activeSuppliers: Number(summary?.activeSuppliers ?? 0),
+        topSupplier: bySupplier[0] ? { ...bySupplier[0] } : null,
+      },
+      trend,
+      byCategory,
+      bySupplier,
+      byLocation,
+      byStatus,
+      recent,
+    };
+  }
+
+  private buildAnalyticsBaseQb(
+    query: PurchasesAnalyticsQuery,
+  ): import('typeorm').SelectQueryBuilder<PurchaseOrderOrmEntity> {
+    const qb = this.purchaseOrderRepository.createQueryBuilder('purchase');
+
+    if (query.organizationId) {
+      qb.andWhere('purchase.organization_id = :organizationId', { organizationId: query.organizationId });
+    }
+    if (query.from) {
+      qb.andWhere('purchase.order_date >= :from', { from: query.from });
+    }
+    if (query.to) {
+      qb.andWhere('purchase.order_date <= :to', { to: query.to });
+    }
+    if (query.warehouseId) {
+      qb.andWhere('purchase.warehouse_id = :warehouseId', { warehouseId: query.warehouseId });
+    }
+    if (query.supplierId) {
+      qb.andWhere('purchase.supplier_id = :supplierId', { supplierId: query.supplierId });
+    }
+    if (query.categoryCode) {
+      qb.andWhere(
+        `EXISTS (SELECT 1 FROM purchase_order_lines pol_c
+           INNER JOIN items it ON it.id = pol_c.item_id
+           INNER JOIN item_categories cat ON cat.id = it.category_id
+           WHERE pol_c.purchase_order_id = purchase.id AND cat.code = :categoryCode)`,
+        { categoryCode: query.categoryCode },
+      );
+    }
+
+    return qb;
   }
 }

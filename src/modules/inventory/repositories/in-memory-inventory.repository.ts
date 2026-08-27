@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   AdjustStockByReferencePayload,
+  BaseUomChangePayload,
   CreateStoreStockLocationPayload,
   InventoryRepository,
   StockBalanceQuery,
@@ -10,6 +11,7 @@ import {
   StockMovement,
   TransferStockPayload,
 } from './inventory.repository';
+import { convertUomQuantity } from '../../../shared/utils/uom';
 import { StockAdjustment } from '../domains/stock-adjustment.entity';
 import { StockBalance } from '../domains/stock-balance.entity';
 
@@ -53,6 +55,8 @@ export class InMemoryInventoryRepository implements InventoryRepository {
       items = items.filter((item) => item.location.id === query.locationId);
     }
 
+    items = applyBalanceFilters(items, query.search);
+
     const total = items.length;
 
     return {
@@ -72,6 +76,19 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     }
 
     return item;
+  }
+
+  async rebaseStockForBaseUomChange(payload: BaseUomChangePayload): Promise<number> {
+    const ratio = convertUomQuantity(1, payload.oldBase, payload.newBase);
+    let processed = 0;
+    for (const balance of this.stockBalances.values()) {
+      if (balance.item.id !== payload.itemId) continue;
+      const newQty = Number((balance.quantityOnHand * ratio).toFixed(4));
+      if (newQty === balance.quantityOnHand) continue;
+      balance.quantityOnHand = newQty;
+      processed += 1;
+    }
+    return processed;
   }
 
   async listStockMovements(query: StockMovementQuery): Promise<{ items: StockMovement[]; total: number }> {
@@ -104,6 +121,9 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     }
 
     items.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime());
+
+    items = applyMovementFilters(items, query.search);
+
     const total = items.length;
     return {
       items: items.slice(query.offset, query.offset + query.limit),
@@ -273,4 +293,72 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     toBal.quantityOnHand += payload.quantity;
     return { fromBalance: fromBal, toBalance: toBal };
   }
+}
+
+function applyBalanceFilters(items: StockBalance[], search?: string): StockBalance[] {
+  if (!search) return items;
+  const trimmed = search.trim();
+  if (!trimmed) return items;
+
+  if (trimmed.startsWith('{')) {
+    let filters: Record<string, any> | null = null;
+    try {
+      filters = JSON.parse(trimmed);
+    } catch {
+      filters = null;
+    }
+    if (filters) {
+      let out = items;
+      if (filters.item) {
+        const value = String(filters.item).split('|')[1];
+        if (value) out = out.filter((b) => b.item.id === value);
+      }
+      if (filters.location) {
+        const value = String(filters.location).split('|')[1];
+        if (value) out = out.filter((b) => b.location.id === value);
+      }
+      return out;
+    }
+  }
+
+  const needle = trimmed.toLowerCase();
+  return items.filter(
+    (b) =>
+      b.item.name.toLowerCase().includes(needle) ||
+      (b.item.code ?? '').toLowerCase().includes(needle),
+  );
+}
+
+function applyMovementFilters(items: StockMovement[], search?: string): StockMovement[] {
+  if (!search) return items;
+  const trimmed = search.trim();
+  if (!trimmed) return items;
+
+  if (trimmed.startsWith('{')) {
+    let filters: Record<string, any> | null = null;
+    try {
+      filters = JSON.parse(trimmed);
+    } catch {
+      filters = null;
+    }
+    if (filters) {
+      let out = items;
+      if (filters.item) {
+        const value = String(filters.item).split('|')[1];
+        if (value) out = out.filter((m) => m.itemId === value);
+      }
+      if (filters.movementType) {
+        const value = String(filters.movementType).split('|')[1];
+        if (value) out = out.filter((m) => m.movementType === value);
+      }
+      return out;
+    }
+  }
+
+  const needle = trimmed.toLowerCase();
+  return items.filter(
+    (m) =>
+      (m.item?.name ?? '').toLowerCase().includes(needle) ||
+      m.movementType.toLowerCase().includes(needle),
+  );
 }

@@ -33,7 +33,11 @@ export class PrintPdfService {
     });
     try {
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      // Big export tables can take longer than Chrome's default 30s timeouts;
+      // rendering is local-only so there is no network to wait on.
+      await page.setDefaultTimeout(0);
+      await page.setDefaultNavigationTimeout(0);
+      await page.setContent(html, { waitUntil: 'load' });
       const buffer = await page.pdf({
         format: 'A4',
         printBackground: true,

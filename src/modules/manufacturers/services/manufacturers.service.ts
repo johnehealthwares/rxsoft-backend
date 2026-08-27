@@ -14,11 +14,10 @@ export class ManufacturersService {
     private readonly manufacturerRepository: Repository<ManufacturerOrmEntity>,
   ) {}
 
-  async list(query: ListManufacturersDto, organizationId): Promise<{ data: ManufacturerType[]; total: number }> {
+  async list(query: ListManufacturersDto): Promise<{ data: ManufacturerType[]; total: number }> {
     const qb = this.manufacturerRepository
       .createQueryBuilder('manufacturer')
-      .where('manufacturer.organization_id = :organizationId', { organizationId })
-      .andWhere('manufacturer.deleted_at IS NULL')
+      .where('manufacturer.deleted_at IS NULL')
       .orderBy('manufacturer.updated_at', 'DESC')
       .skip(query.offset)
       .take(query.limit);
@@ -33,26 +32,26 @@ export class ManufacturersService {
     return { data: data.map(toManufacturerType), total };
   }
 
-  async getLastCreated(organizationId): Promise<{ id: string; code: string; createdAt: string } | null> {
+  async getLastCreated(): Promise<{ id: string; code: string; createdAt: string } | null> {
     const entity = await this.manufacturerRepository.findOne({
-      where: { organizationId, deletedAt: IsNull() },
+      where: { deletedAt: IsNull() },
       order: { createdAt: 'DESC' },
     });
     if (!entity) return null;
     return { id: entity.id, code: entity.code ?? entity.name, createdAt: entity.createdAt.toISOString() };
   }
 
-  async get(id: string, organizationId): Promise<ManufacturerType> {
+  async get(id: string): Promise<ManufacturerType> {
     const manufacturer = await this.manufacturerRepository.findOne({
-      where: { id, organizationId, deletedAt: IsNull() },
+      where: { id, deletedAt: IsNull() },
     });
     if (!manufacturer) throw new NotFoundException('Manufacturer not found');
     return toManufacturerType(manufacturer);
   }
 
-  async create(payload: CreateManufacturerDto, organizationId): Promise<ManufacturerType> {
+  async create(payload: CreateManufacturerDto): Promise<ManufacturerType> {
     if (payload.code) {
-      const last = await this.getLastCreated(organizationId);
+      const last = await this.getLastCreated();
       const { valid, expectedCode } = validateSequentialCode({
         providedCode: payload.code,
         lastCode: last?.code,
@@ -64,12 +63,11 @@ export class ManufacturersService {
     }
 
     const duplicate = await this.manufacturerRepository.findOne({
-      where: { organizationId, name: payload.name, deletedAt: IsNull() },
+      where: { name: payload.name, deletedAt: IsNull() },
     });
     if (duplicate) throw new BadRequestException('Manufacturer name already exists');
 
     const entity = this.manufacturerRepository.create({
-      organizationId,
       code: payload.code ?? null,
       name: payload.name,
     });
@@ -77,15 +75,15 @@ export class ManufacturersService {
     return toManufacturerType(saved);
   }
 
-  async update(id: string, payload: UpdateManufacturerDto, organizationId): Promise<ManufacturerType> {
+  async update(id: string, payload: UpdateManufacturerDto): Promise<ManufacturerType> {
     const manufacturer = await this.manufacturerRepository.findOne({
-      where: { id, organizationId, deletedAt: IsNull() },
+      where: { id, deletedAt: IsNull() },
     });
     if (!manufacturer) throw new NotFoundException('Manufacturer not found');
 
     if (payload.name && payload.name !== manufacturer.name) {
       const duplicate = await this.manufacturerRepository.findOne({
-        where: { organizationId, name: payload.name, deletedAt: IsNull() },
+        where: { name: payload.name, deletedAt: IsNull() },
       });
       if (duplicate) throw new BadRequestException('Manufacturer name already exists');
       manufacturer.name = payload.name;
@@ -97,8 +95,8 @@ export class ManufacturersService {
     return toManufacturerType(saved);
   }
 
-  async remove(id: string, organizationId): Promise<void> {
-    const result = await this.manufacturerRepository.softDelete({ id, organizationId });
+  async remove(id: string): Promise<void> {
+    const result = await this.manufacturerRepository.softDelete({ id });
     if (!result.affected) throw new NotFoundException('Manufacturer not found');
   }
 }

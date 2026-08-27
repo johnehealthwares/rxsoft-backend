@@ -80,8 +80,7 @@ export class WebsiteService {
     const qb = this.itemRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.category', 'category')
-      .where('item.deletedAt IS NULL')
-      .andWhere('item.isActive = :active', { active: true });
+      .where('item.deletedAt IS NULL');
 
     if (organizationId) {
       qb.leftJoin(
@@ -126,8 +125,7 @@ export class WebsiteService {
     const qb = this.itemRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.category', 'category')
-      .where('item.id = :id', { id })
-      .andWhere('item.isActive = :active', { active: true });
+      .where('item.id = :id', { id });
 
     if (organizationId) {
       qb.leftJoin(
@@ -149,7 +147,6 @@ export class WebsiteService {
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.category', 'category')
       .where('item.deletedAt IS NULL')
-      .andWhere('item.isActive = :active', { active: true })
       .andWhere('item.id != :id', { id })
       .andWhere('category.id = :catId', { catId: product.category?.id })
       .take(4);

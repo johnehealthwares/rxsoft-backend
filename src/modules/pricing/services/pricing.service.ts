@@ -35,7 +35,7 @@ export class PricingService {
   ) { }
 
   private async assertItemVisible(organizationId: string, itemId: string): Promise<ItemOrmEntity> {
-    const item = await this.itemRepository.findOne({ where: { id: itemId, isActive: true } });
+    const item = await this.itemRepository.findOne({ where: { id: itemId } });
     if (!item) throw new BadRequestException('Item not found');
     const blacklisted = await this.organisationItemRepository.findOne({
       where: { organizationId, itemId, isActive: false },
@@ -48,12 +48,12 @@ export class PricingService {
     query: ListPriceListsDto,
     organizationId : string,
   ): Promise<{ data: PriceListType[]; total: number }> {
-
+    if (!organizationId) return { data: [], total: 0 };
 
     const qb = this.priceListRepository
       .createQueryBuilder('price_list')
       .where('price_list.organization_id = :organizationId', { organizationId })
-      .where('price_list.is_active = :is_active', { is_active: true })
+      .andWhere('price_list.is_active = :is_active', { is_active: true })
 
       .orderBy('price_list.updated_at', 'DESC')
       .skip(query.offset)
@@ -141,12 +141,15 @@ export class PricingService {
     query: ListPriceListItemsDto,
     organizationId : string,
   ): Promise<{ data: PriceListItemType[]; total: number }> {
+    if (!organizationId) return { data: [], total: 0 };
     if (priceListId) await this.getPriceList(priceListId, organizationId);
     const qb = this.priceListItemRepository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.item', 'itemRef')
       //.leftJoinAndSelect('item.location', 'location')
       .leftJoinAndSelect('item.priceList', 'priceList')
+
+    qb.andWhere('priceList.organization_id = :organizationId', { organizationId });
 
     if (query.search) {
       try {

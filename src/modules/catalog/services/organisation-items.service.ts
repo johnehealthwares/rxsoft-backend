@@ -27,8 +27,7 @@ export class OrganisationItemsService {
     const [orgItems, items] = await Promise.all([
       this.orgItemRepo.find({ where: { organizationId: orgId } }),
       this.itemRepo.find({
-        where: { isActive: true },
-        relations: ['category', 'baseUom'],
+        relations: ['category', 'baseUom', 'saleUom'],
       }),
     ]);
 
@@ -45,10 +44,14 @@ export class OrganisationItemsService {
           name: item.name,
           alias: oi?.alias ?? null,
           displayName: oi?.alias ?? item.name,
-          code: oi?.code ?? null,
+          code: item.code ?? oi?.code ?? null,
           barcode: oi?.barcode ?? null,
           isActive: oi?.isActive ?? null,
           visibility,
+          saleUomId: item.saleUomId ?? null,
+          saleUom: item.saleUom
+            ? { id: item.saleUom.id, code: item.saleUom.code, name: item.saleUom.name }
+            : null,
           category: item.category
             ? { id: item.category.id, code: item.category.code, name: item.category.name }
             : null,
@@ -70,8 +73,7 @@ export class OrganisationItemsService {
     const [orgItems, items] = await Promise.all([
       this.orgItemRepo.find({ where: { organizationId: orgId, isActive: true } }),
       this.itemRepo.find({
-        where: { isActive: true },
-        relations: ['category', 'baseUom'],
+        relations: ['category', 'baseUom', 'saleUom'],
       }),
     ]);
 
@@ -88,10 +90,14 @@ export class OrganisationItemsService {
           name: item.name,
           alias: oi.alias,
           displayName: oi.alias ?? item.name,
-          code: oi.code,
+          code: item.code ?? oi.code,
           barcode: oi.barcode,
           isActive: true,
           visibility: 'whitelisted',
+          saleUomId: item.saleUomId ?? null,
+          saleUom: item.saleUom
+            ? { id: item.saleUom.id, code: item.saleUom.code, name: item.saleUom.name }
+            : null,
           category: item.category
             ? { id: item.category.id, code: item.category.code, name: item.category.name }
             : null,
@@ -110,7 +116,7 @@ export class OrganisationItemsService {
   // org-added (whitelisted) row, idempotently. Existing rows are left untouched.
   async bulkWhitelistAll(orgId: string) {
     const [items, existing] = await Promise.all([
-      this.itemRepo.find({ where: { isActive: true }, select: ['id'] }),
+      this.itemRepo.find({ select: ['id'] }),
       this.orgItemRepo.find({ where: { organizationId: orgId }, select: ['itemId'] }),
     ]);
     const existingItemIds = new Set(existing.map((o) => o.itemId));
@@ -164,7 +170,10 @@ export class OrganisationItemsService {
     });
 
     if (existing) {
-      existing.isActive = isActive;
+      // Only touch visibility when the payload explicitly carries isActive.
+      // A plain upgrade of code/barcode/alias must not flip a blacklisted item
+      // back to whitelisted (and vice versa).
+      if (body?.isActive !== undefined) existing.isActive = isActive;
       if (body?.alias !== undefined) existing.alias = body.alias ?? null;
       if (code !== undefined) existing.code = code ?? null;
       if (barcode !== undefined) existing.barcode = barcode ?? null;

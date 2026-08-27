@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Put, Query, StreamableFile, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuditAction } from '../../../common/decorators/audit-action.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
@@ -6,9 +6,12 @@ import type { RequestUser } from '../../../common/decorators/current-user.decora
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
+import { toCsv } from '../../../shared/utils/csv';
+import { buildTableHtml, prepareExportRows } from '../../../shared/utils/export';
 import type { WarehouseType } from '../../../shared/domain';
 import { CreateWarehouseDto, ListWarehousesDto, UpdateWarehouseDto } from '../dto/warehouses.dto';
 import { WarehousesService } from '../services/warehouses.service';
+import { PrintPdfService } from '../../print/services/print-pdf.service';
 
 type WarehouseListResponse = {
   data: WarehouseType[];
@@ -20,7 +23,10 @@ type WarehouseListResponse = {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('warehouses')
 export class WarehousesController {
-  constructor(private readonly warehousesService: WarehousesService) {}
+  constructor(
+    private readonly warehousesService: WarehousesService,
+    private readonly printPdfService: PrintPdfService,
+  ) {}
 
   @Get()
   @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
@@ -28,6 +34,34 @@ export class WarehousesController {
   async list(@Query() query: ListWarehousesDto, @CurrentUser() currentUser: RequestUser): Promise<WarehouseListResponse> {
     const result = await this.warehousesService.list(query, currentUser.organizationId);
     return { data: result.data, meta: { page: query.page, limit: query.limit, total: result.total } };
+  }
+
+  @Get('export')
+  @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
+  @Header('Content-Type', 'text/csv')
+  @ApiOperation({ summary: 'Export warehouses as CSV' })
+  async exportCsv(@Query() query: ListWarehousesDto, @CurrentUser() currentUser: RequestUser): Promise<string> {
+    query.page = 1;
+    query.limit = 1000000;
+    const rows = prepareExportRows((await this.warehousesService.list(query, currentUser.organizationId)).data);
+    return toCsv(rows);
+  }
+
+  @Get('export/pdf')
+  @Roles('admin', 'super_admin', 'pharmacist', 'inventory_clerk')
+  @ApiOperation({ summary: 'Export warehouses as PDF' })
+  async exportPdf(@Query() query: ListWarehousesDto, @CurrentUser() currentUser: RequestUser): Promise<StreamableFile> {
+    query.page = 1;
+    query.limit = 1000000;
+    const rows = prepareExportRows((await this.warehousesService.list(query, currentUser.organizationId)).data);
+    const { buffer, filename } = await this.printPdfService.generatePdf(
+      buildTableHtml(rows, 'Warehouses Export'),
+      { filename: 'warehouses.pdf' },
+    );
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Get(':warehouseId')

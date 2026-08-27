@@ -8,6 +8,7 @@ import { Item } from '../domains/item.entity';
 import { ReplaceItemDto } from '../dto/replace-item.dto';
 import { validateUoms } from './utils';
 import { GenericDrugCacheService } from '../../../services/generic-drug-cache.service';
+import { OrganisationItemsService } from './organisation-items.service';
 
 @Injectable()
 export class UpdateItemUseCase {
@@ -21,6 +22,8 @@ export class UpdateItemUseCase {
     private readonly inventoryService?: InventoryService,
     @Optional()
     private readonly cacheService?: AppCacheService,
+    @Optional()
+    private readonly organisationItemsService?: OrganisationItemsService,
   ) { }
 
   async execute(productId: string, payload: ReplaceItemDto, organizationId: string, performedByUserId?: string): Promise<Item> {
@@ -57,6 +60,10 @@ export class UpdateItemUseCase {
 
     validateUoms({ baseUom, saleUom, purchaseUom })
 
+    // Capture the current base UOM so a base-UOM change can re-express existing
+    // stock (reference-relative) and record a 'base-conversion' adjustment.
+    const existingItem = await this.productRepository.findById(productId, organizationId, true);
+
     const product = new Item(
       productId,
       payload.name,
@@ -72,7 +79,6 @@ export class UpdateItemUseCase {
       payload.trackLot ?? true,
       payload.trackExpiry ?? true,
       payload.shelfLifeDays ?? null,
-      payload.isActive ?? true,
       payload.imageUrl ?? null,
       payload.smallImageUrl ?? null,
       payload.mediumImageUrl ?? null,
@@ -80,6 +86,45 @@ export class UpdateItemUseCase {
     );
 
     const created = await this.productRepository.save(product);
+
+    // Base UOM changed → convert existing stock quantities into the new base
+    // UOM (recorded as 'base-conversion' stock adjustments).
+    if (
+      this.inventoryService &&
+      existingItem &&
+      existingItem.baseUomId &&
+      existingItem.baseUomId !== payload.baseUomId
+    ) {
+      const oldBase = await this.productRepository.findUomById(existingItem.baseUomId);
+      if (oldBase) {
+        await this.inventoryService.rebaseForBaseUomChange({
+          itemId: productId,
+          oldBase,
+          newBase: baseUom,
+          newBaseUomId: payload.baseUomId,
+          performedByUserId: performedByUserId ?? null,
+        });
+      }
+    }
+
+    // Persist org-level override fields (code/barcode/alias) onto the org's
+    // organisation_items row. The upsert is idempotent and only fires when the
+    // payload carries at least one of these fields (or isActive); is_active
+    // routes onto organisation_items, so an item's default/whitelist/blacklist
+    // state is controlled per org rather than on a global items column.
+    if (
+      payload.code !== undefined ||
+      payload.barcode !== undefined ||
+      payload.alias !== undefined ||
+      payload.isActive !== undefined
+    ) {
+      await this.organisationItemsService?.upsert(organizationId, created.id, {
+        ...(payload.isActive !== undefined ? { isActive: payload.isActive } : {}),
+        alias: payload.alias ?? null,
+        code: payload.code ?? null,
+        barcode: payload.barcode ?? null,
+      });
+    }
 
     for (const item of payload.priceListItems ?? []) {
       if (!item.priceListId) {

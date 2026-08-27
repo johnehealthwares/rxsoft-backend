@@ -10,6 +10,9 @@ export class ItemOrmEntity {
   @Column({ type: 'text' })
   name!: string;
 
+  @Column({ type: 'text', nullable: true })
+  code!: string | null;
+
   @ManyToOne(() => ItemCategoryOrmEntity, (category) => category.items, {
     nullable: false,
   })
@@ -48,9 +51,6 @@ export class ItemOrmEntity {
 
   @Column({ name: 'shelf_life_days', type: 'int', nullable: true })
   shelfLifeDays!: number | null;
-
-  @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive!: boolean;
 
   @Column({ name: 'image_url', type: 'text', nullable: true })
   imageUrl!: string | null;

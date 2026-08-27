@@ -24,6 +24,9 @@ export class ListStockBalancesUseCase {
       query.limit,
       query.itemId ?? '',
       query.locationId ?? '',
+      query.search ?? '',
+      query.sortBy ?? '',
+      query.sortOrder ?? '',
     ].join(':');
     const cached = await this.cacheService?.get<Awaited<ReturnType<InventoryRepository['listStockBalances']>>>(key);
     if (cached) {
@@ -36,6 +39,9 @@ export class ListStockBalancesUseCase {
       limit: query.limit,
       itemId: query.itemId,
       locationId: query.locationId,
+      search: query.search,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
     });
 
     await this.cacheService?.set(key, result, 30);

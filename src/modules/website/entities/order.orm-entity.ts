@@ -12,7 +12,7 @@ export class OrderOrmEntity {
   @Column({ name: 'order_number', type: 'text' })
   orderNumber!: string;
 
-  @Column({ name: 'organization_id', type: 'text', nullable: true })
+  @Column({ name: 'organization_id', type: 'uuid', nullable: true })
   organizationId!: string | null;
 
   @Column({ name: 'stock_location_id', type: 'uuid', nullable: true })

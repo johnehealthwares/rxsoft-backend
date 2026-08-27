@@ -3,10 +3,6 @@ import { ItemOrmEntity } from './item.orm-entity';
 
 @Entity('organisation_items')
 @Unique('uq_org_item_org_item', ['organizationId', 'itemId'])
-@Index('uq_org_item_org_code', ['organizationId', 'code'], {
-  unique: true,
-  where: 'code IS NOT NULL',
-})
 @Index('uq_org_item_org_barcode', ['organizationId', 'barcode'], {
   unique: true,
   where: 'barcode IS NOT NULL',
@@ -15,7 +11,7 @@ export class OrganisationItemOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'organization_id', type: 'text' })
+  @Column({ name: 'organization_id', type: 'uuid' })
   organizationId!: string;
 
   @Column({ name: 'item_id', type: 'uuid' })

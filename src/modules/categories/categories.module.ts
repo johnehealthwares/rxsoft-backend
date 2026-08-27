@@ -6,10 +6,11 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { CategoriesController } from './controllers/categories.controller';
 import { CategoriesService } from './services/categories.service';
 import { ItemCategoryOrmEntity } from '../catalog/entities';
+import { PrintModule } from '../print/print.module';
 // import { ItemCategoryOrmEntity } from './entities';
 
 @Module({
-  imports: [JwtModule.register({}), TypeOrmModule.forFeature([ItemCategoryOrmEntity])],
+  imports: [JwtModule.register({}), TypeOrmModule.forFeature([ItemCategoryOrmEntity]), PrintModule],
   controllers: [CategoriesController],
   providers: [CategoriesService, JwtAuthGuard, RolesGuard],
   exports: [CategoriesService],

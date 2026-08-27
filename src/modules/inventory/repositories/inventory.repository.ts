@@ -1,5 +1,6 @@
 import { StockAdjustment } from '../domains/stock-adjustment.entity';
 import { StockBalance } from '../domains/stock-balance.entity';
+import type { UomFactorInfo } from '../../../shared/utils/uom';
 
 export type StockBalanceQuery = {
   organizationId: string;
@@ -7,6 +8,9 @@ export type StockBalanceQuery = {
   limit: number;
   itemId?: string;
   locationId?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 };
 
 export type StoreStockLocation = {
@@ -30,7 +34,7 @@ export type StockMovement = {
   fromLocation?: { id: string; name: string } | null;
   toLocationId: string | null;
   toLocation?: { id: string; name: string } | null;
-  movementType: 'in' | 'out' | 'transfer' | 'adjustment';
+  movementType: 'in' | 'out' | 'transfer' | 'adjustment' | 'base-conversion';
   quantity: number;
   unitCost: number | null;
   occurredAt: Date;
@@ -42,11 +46,14 @@ export type StockMovementQuery = {
   organizationId: string;
   offset: number;
   limit: number;
-  movementType?: 'in' | 'out' | 'transfer' | 'adjustment';
+  movementType?: 'in' | 'out' | 'transfer' | 'adjustment' | 'base-conversion';
   itemId?: string;
   locationId?: string;
   fromDate?: string;
   toDate?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 };
 
 export type StoreStockLocationQuery = {
@@ -88,6 +95,15 @@ export type TransferStockPayload = {
   quantity: number;
   reason: string;
   performedByUserId: string;
+  uomId?: string | null;
+};
+
+export type BaseUomChangePayload = {
+  itemId: string;
+  oldBase: UomFactorInfo;
+  newBase: UomFactorInfo;
+  newBaseUomId?: string | null;
+  performedByUserId?: string | null;
 };
 
 export interface InventoryRepository {
@@ -95,6 +111,7 @@ export interface InventoryRepository {
   listStockMovements(query: StockMovementQuery): Promise<{ items: StockMovement[]; total: number }>;
   findStockBalanceById(id: string, organizationId: string): Promise<StockBalance | null>;
   applyStockAdjustment(adjustment: StockAdjustment, organizationId: string): Promise<StockBalance>;
+  rebaseStockForBaseUomChange(payload: BaseUomChangePayload): Promise<number>;
   listStoreStockLocations(query: StoreStockLocationQuery): Promise<{ items: StoreStockLocation[]; total: number }>;
   createStoreStockLocation(payload: CreateStoreStockLocationPayload): Promise<StoreStockLocation>;
   setStoreStockLocationActivation(

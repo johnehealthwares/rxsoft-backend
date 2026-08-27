@@ -1,5 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { AdjustStockByReferenceDto } from 'src/modules/inventory/dto/stock-locations.dto';
+import { CreatePriceListItemDto } from 'src/modules/pricing/dto/pricing.dto';
 
 export class PatchItemDto {
   @ApiPropertyOptional({ example: 'Paracetamol 500mg Tablet' })
@@ -31,6 +33,23 @@ export class PatchItemDto {
   @IsOptional()
   @IsString()
   saleUomId?: string;
+
+  // Org-level override fields (stored on the organisation_items whitelist row)
+  @ApiPropertyOptional({ example: 'PCM001' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  code?: string;
+
+  @ApiPropertyOptional({ example: '1234567890123' })
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
+  @ApiPropertyOptional({ example: 'Panadol 500mg' })
+  @IsOptional()
+  @IsString()
+  alias?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()
@@ -71,4 +90,10 @@ export class PatchItemDto {
   @IsOptional()
   @IsString()
   largeImageUrl?: string;
+
+  @IsOptional()
+  priceListItems?: CreatePriceListItemDto[];
+
+  @IsOptional()
+  stockItems?: AdjustStockByReferenceDto[];
 }

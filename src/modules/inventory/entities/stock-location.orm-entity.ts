@@ -8,8 +8,12 @@ export class StockLocationOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'organization_id', type: 'text' })
+  @Column({ name: 'organization_id', type: 'uuid' })
   organizationId!: string;
+
+  // Identity-service site (identity locations.id) this stock location belongs to.
+  @Column({ name: 'location_id', type: 'text', nullable: true })
+  locationId!: string | null;
 
   @Column({ name: 'warehouse_id', type: 'text', nullable: true })
   warehouseId!: string | null;

@@ -43,6 +43,7 @@ export type UomLookup = {
 export type ItemMetricsQuery = {
   search?: string;
   categoryCode?: string;
+  organizationId?: string;
 };
 
 export type ItemMetrics = {

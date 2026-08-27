@@ -107,9 +107,10 @@ export class UomsService {
 
   async create(payload: CreateUomDto, _organizationId: string): Promise<UomType> {
     if (payload.code) {
-      const last = await this.uomRepository!.findOne({
+      const [last] = await this.uomRepository!.find({
         order: { createdAt: 'DESC' },
         select: ['code'],
+        take: 1,
       });
       const { valid, expectedCode } = validateSequentialCode({
         providedCode: payload.code,
@@ -152,6 +153,11 @@ export class UomsService {
     });
 
     await this.validateReferenceUnit(entity.categoryId, entity.uomType, entity.id);
+    if (entity.uomType === 'reference' && entity.factor !== 1) {
+      throw new BadRequestException(
+        'The reference UOM of a category must have a factor of 1',
+      );
+    }
 
     const savedEntity = await this.uomRepository.save(entity);
     return toUomType(savedEntity);
@@ -193,6 +199,11 @@ export class UomsService {
     if (payload.isActive !== undefined) existing.isActive = payload.isActive;
 
     await this.validateReferenceUnit(payload.categoryId!, existing.uomType, existing.id);
+    if (existing.uomType === 'reference' && existing.factor !== 1) {
+      throw new BadRequestException(
+        'The reference UOM of a category must have a factor of 1',
+      );
+    }
 
     const savedEntity = await this.uomRepository.save(existing);
     return toUomType(savedEntity);

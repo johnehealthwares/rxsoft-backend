@@ -81,6 +81,72 @@ export type UnpostGoodsPayload = {
   performedByUserId: string;
 };
 
+export type PurchasesAnalyticsQuery = {
+  organizationId: string;
+  from?: string;
+  to?: string;
+  warehouseId?: string;
+  categoryCode?: string;
+  supplierId?: string;
+};
+
+export type PurchasesAnalyticsTrendPoint = {
+  day: string;
+  value: number;
+  orders: number;
+};
+
+export type PurchasesAnalyticsCategory = {
+  code: string;
+  name: string;
+  value: number;
+  pct: number;
+};
+
+export type PurchasesAnalyticsSupplier = {
+  supplierId: string;
+  name: string;
+  value: number;
+};
+
+export type PurchasesAnalyticsLocation = {
+  warehouseId: string;
+  name: string;
+  value: number;
+  pct: number;
+};
+
+export type PurchasesAnalyticsStatus = {
+  status: string;
+  count: number;
+};
+
+export type PurchasesAnalyticsRecentPurchase = {
+  id: string;
+  purchaseOrderNumber: string;
+  orderDate: string;
+  status: string;
+  totalAmount: number;
+  supplierName: string | null;
+};
+
+export type PurchasesAnalytics = {
+  summary: {
+    totalValue: number;
+    totalPOs: number;
+    itemsPurchased: number;
+    averagePOValue: number;
+    activeSuppliers: number;
+    topSupplier: { supplierId: string; name: string; value: number } | null;
+  };
+  trend: PurchasesAnalyticsTrendPoint[];
+  byCategory: PurchasesAnalyticsCategory[];
+  bySupplier: PurchasesAnalyticsSupplier[];
+  byLocation: PurchasesAnalyticsLocation[];
+  byStatus: PurchasesAnalyticsStatus[];
+  recent: PurchasesAnalyticsRecentPurchase[];
+};
+
 export interface PurchasesRepository {
   list(query: PurchaseListQuery): Promise<{ items: PurchaseOrderOrmEntity[]; total: number }>;
   getById(id: string, organizationId: string): Promise<PurchaseOrderOrmEntity | null>;
@@ -91,4 +157,5 @@ export interface PurchasesRepository {
   unpostGoods(payload: UnpostGoodsPayload): Promise<void>;
   listReceipts(query: ReceiptListQuery): Promise<{ items: GoodsReceiptOrmEntity[]; total: number }>;
   findLastReceipt(organizationId: string): Promise<Pick<GoodsReceiptOrmEntity, 'receiptNumber'> | null>;
+  getAnalytics(query: PurchasesAnalyticsQuery): Promise<PurchasesAnalytics>;
 }

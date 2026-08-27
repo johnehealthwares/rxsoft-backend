@@ -53,6 +53,7 @@ export class StockLocationsService {
   async create(
     payload: CreateStockLocationDto,
     organizationId : string,
+    locationId: string | null = null,
   ): Promise<StockLocationType> {
     if (payload.code) {
       const last = await this.stockLocationRepository.findOne({
@@ -87,6 +88,7 @@ export class StockLocationsService {
 
     const entity = this.stockLocationRepository.create({
       organizationId,
+      locationId: payload.locationId ?? locationId,
       warehouseId: warehouse?.id ?? null,
       warehouse,
       parentId: parent?.id ?? null,
@@ -108,6 +110,7 @@ export class StockLocationsService {
     id: string,
     payload: UpdateStockLocationDto,
     organizationId : string,
+    locationId: string | null = null,
   ): Promise<StockLocationType> {
     const item = await this.stockLocationRepository.findOne({
       where: { id, organizationId },
@@ -151,6 +154,7 @@ export class StockLocationsService {
     if (payload.code !== undefined) item.code = payload.code ?? null;
     if (payload.name !== undefined) item.name = payload.name;
     if (payload.locationType !== undefined) item.locationType = payload.locationType;
+    if (payload.locationId !== undefined) item.locationId = payload.locationId || locationId;
     if (payload.isActive !== undefined) item.isActive = payload.isActive;
 
     const savedItem = await this.stockLocationRepository.save(item);

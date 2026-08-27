@@ -19,7 +19,6 @@ export class Item {
     public readonly trackLot: boolean,
     public readonly trackExpiry: boolean,
     public readonly shelfLifeDays: number | null,
-    public readonly isActive: boolean,
     public readonly imageUrl: string | null = null,
     public readonly smallImageUrl: string | null = null,
     public readonly mediumImageUrl: string | null = null,
